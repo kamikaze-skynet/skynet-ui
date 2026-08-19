@@ -1,0 +1,1098 @@
+/* ==========================================================================
+   Skynet UI v1.0.0
+   A tiny dark-first UI framework. Pure CSS — no build step.
+   Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
+   Theme everything by editing the variables in :root below.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. THEME VARIABLES — edit these to re-skin every site in one place
+   -------------------------------------------------------------------------- */
+:root {
+  /* Backgrounds (darkest → lightest) */
+  --sk-bg:          #0b0f17;   /* page background */
+  --sk-surface:     #111826;   /* cards, navbar, sidebar */
+  --sk-surface-2:   #172033;   /* hovered rows, inputs on cards */
+  --sk-border:      #1e2836;   /* subtle borders */
+  --sk-border-2:    #2a3547;   /* stronger borders (inputs, outline buttons) */
+
+  /* Text */
+  --sk-text:        #e6eaf2;   /* main text */
+  --sk-text-2:      #aeb7c7;   /* secondary text */
+  --sk-muted:       #8b95a7;   /* muted / hints */
+  --sk-faint:       #5b6474;   /* placeholders */
+
+  /* Accent + status colors */
+  --sk-primary:        #6366f1;
+  --sk-primary-hover:  #4f52e0;
+  --sk-primary-soft:   rgba(99, 102, 241, 0.15);
+  --sk-success:        #16a34a;
+  --sk-success-soft:   rgba(22, 163, 74, 0.15);
+  --sk-success-text:   #4ade80;
+  --sk-warning:        #d97706;
+  --sk-warning-soft:   rgba(217, 119, 6, 0.15);
+  --sk-warning-text:   #fbbf24;
+  --sk-danger:         #dc2626;
+  --sk-danger-hover:   #b91c1c;
+  --sk-danger-soft:    rgba(220, 38, 38, 0.15);
+  --sk-danger-text:    #f87171;
+  --sk-info:           #0ea5e9;
+  --sk-info-soft:      rgba(14, 165, 233, 0.15);
+  --sk-info-text:      #38bdf8;
+
+  /* Shape + effects */
+  --sk-radius:      10px;
+  --sk-radius-sm:   7px;
+  --sk-radius-lg:   16px;
+  --sk-shadow:      0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  --sk-shadow-lg:   0 8px 40px rgba(0,0,0,.5);
+  --sk-transition:  0.18s ease;
+
+  /* Typography */
+  --sk-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sk-font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
+
+  /* Layout */
+  --sk-container: 1140px;
+  --sk-navbar-height: 60px;
+  --sk-sidebar-width: 250px;
+}
+
+/* Optional light theme: add data-theme="light" to <html> or <body> */
+[data-theme="light"] {
+  --sk-bg:        #f4f6fa;
+  --sk-surface:   #ffffff;
+  --sk-surface-2: #eef1f6;
+  --sk-border:    #e2e7ef;
+  --sk-border-2:  #cdd5e1;
+  --sk-text:      #16202e;
+  --sk-text-2:    #3d4a5d;
+  --sk-muted:     #64748b;
+  --sk-faint:     #94a3b8;
+  --sk-shadow:    0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.08);
+  --sk-shadow-lg: 0 8px 40px rgba(16,24,40,.16);
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET + BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--sk-bg);
+  color: var(--sk-text);
+  font-family: var(--sk-font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, video, svg { max-width: 100%; height: auto; display: block; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5em;
+  line-height: 1.25;
+  font-weight: 650;
+  color: var(--sk-text);
+}
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.15rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+p { margin: 0 0 1em; }
+
+a { color: var(--sk-primary); text-decoration: none; transition: color var(--sk-transition); }
+a:hover { color: var(--sk-primary-hover); text-decoration: underline; }
+
+hr { border: none; border-top: 1px solid var(--sk-border); margin: 1.5rem 0; }
+
+code, pre {
+  font-family: var(--sk-font-mono);
+  font-size: 0.875em;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-sm);
+}
+code { padding: 0.15em 0.4em; }
+pre { padding: 1rem; overflow-x: auto; }
+pre code { background: none; border: none; padding: 0; }
+
+::selection { background: var(--sk-primary); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--sk-primary);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT — container, grid, flex helpers
+   -------------------------------------------------------------------------- */
+.sk-container {
+  width: 100%;
+  max-width: var(--sk-container);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.sk-container-fluid { width: 100%; padding-left: 1rem; padding-right: 1rem; }
+
+/* Grid: mobile-first. .sk-grid is 1 column on phones.
+   Add .sk-cols-2/3/4 to become multi-column from 640px up. */
+.sk-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+.sk-grid.gap-0 { gap: 0; }
+.sk-grid.gap-sm { gap: 0.5rem; }
+.sk-grid.gap-lg { gap: 1.5rem; }
+
+@media (min-width: 640px) {
+  .sk-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .sk-cols-3 { grid-template-columns: repeat(2, 1fr); }
+  .sk-cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .sk-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .sk-cols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+/* Auto-fit grid: as many columns as fit, min 240px each */
+.sk-grid-auto { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+/* Make one item span the full row */
+.sk-span-all { grid-column: 1 / -1; }
+
+/* Flexbox utilities */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.flex-wrap { flex-wrap: wrap; }
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1 1 0%; }
+.grow { flex-grow: 1; }
+.shrink-0 { flex-shrink: 0; }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+
+/* Display */
+.block { display: block; }
+.inline-block { display: inline-block; }
+.hidden { display: none; }
+.grid { display: grid; }
+
+/* Show/hide by screen size (mobile-first) */
+@media (max-width: 767px) { .hide-mobile { display: none !important; } }
+@media (min-width: 768px) { .hide-desktop { display: none !important; } }
+
+/* Position */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.sticky-top { position: sticky; top: 0; z-index: 50; }
+
+/* --------------------------------------------------------------------------
+   4. SPACING UTILITIES  (scale: 1=0.25rem, 2=0.5rem, 3=0.75rem, 4=1rem,
+                          5=1.25rem, 6=1.5rem, 8=2rem, 10=2.5rem, 12=3rem, 16=4rem)
+   -------------------------------------------------------------------------- */
+.m-0 { margin: 0; }        .p-0 { padding: 0; }
+.m-1 { margin: 0.25rem; }  .p-1 { padding: 0.25rem; }
+.m-2 { margin: 0.5rem; }   .p-2 { padding: 0.5rem; }
+.m-3 { margin: 0.75rem; }  .p-3 { padding: 0.75rem; }
+.m-4 { margin: 1rem; }     .p-4 { padding: 1rem; }
+.m-6 { margin: 1.5rem; }   .p-6 { padding: 1.5rem; }
+.m-8 { margin: 2rem; }     .p-8 { padding: 2rem; }
+
+.mt-0 { margin-top: 0; }       .pt-0 { padding-top: 0; }
+.mt-1 { margin-top: 0.25rem; } .pt-1 { padding-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }  .pt-2 { padding-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; } .pt-3 { padding-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }    .pt-4 { padding-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }  .pt-6 { padding-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }    .pt-8 { padding-top: 2rem; }
+.mt-12 { margin-top: 3rem; }   .pt-12 { padding-top: 3rem; }
+.mt-16 { margin-top: 4rem; }   .pt-16 { padding-top: 4rem; }
+
+.mb-0 { margin-bottom: 0; }       .pb-0 { padding-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; } .pb-1 { padding-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }  .pb-2 { padding-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; } .pb-3 { padding-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }    .pb-4 { padding-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }  .pb-6 { padding-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }    .pb-8 { padding-bottom: 2rem; }
+.mb-12 { margin-bottom: 3rem; }   .pb-12 { padding-bottom: 3rem; }
+.mb-16 { margin-bottom: 4rem; }   .pb-16 { padding-bottom: 4rem; }
+
+.ml-1 { margin-left: 0.25rem; }  .pl-1 { padding-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }   .pl-2 { padding-left: 0.5rem; }
+.ml-3 { margin-left: 0.75rem; }  .pl-3 { padding-left: 0.75rem; }
+.ml-4 { margin-left: 1rem; }     .pl-4 { padding-left: 1rem; }
+.ml-auto { margin-left: auto; }
+
+.mr-1 { margin-right: 0.25rem; } .pr-1 { padding-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }  .pr-2 { padding-right: 0.5rem; }
+.mr-3 { margin-right: 0.75rem; } .pr-3 { padding-right: 0.75rem; }
+.mr-4 { margin-right: 1rem; }    .pr-4 { padding-right: 1rem; }
+.mr-auto { margin-right: auto; }
+
+.mx-auto { margin-left: auto; margin-right: auto; }
+.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+.mx-4 { margin-left: 1rem; margin-right: 1rem; }
+.my-2 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+.my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+.my-8 { margin-top: 2rem; margin-bottom: 2rem; }
+
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+.py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+
+/* Sizing */
+.w-full { width: 100%; }
+.w-auto { width: auto; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+.max-w-sm { max-width: 24rem; }
+.max-w-md { max-width: 28rem; }
+.max-w-lg { max-width: 32rem; }
+.max-w-xl { max-width: 36rem; }
+.max-w-2xl { max-width: 42rem; }
+.max-w-3xl { max-width: 48rem; }
+
+/* --------------------------------------------------------------------------
+   5. TEXT UTILITIES
+   -------------------------------------------------------------------------- */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
+
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-mono { font-family: var(--sk-font-mono); }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
+.capitalize { text-transform: capitalize; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leading-tight { line-height: 1.25; }
+.leading-relaxed { line-height: 1.75; }
+.no-underline { text-decoration: none !important; }
+
+/* Text colors */
+.text-main { color: var(--sk-text); }
+.text-secondary { color: var(--sk-text-2); }
+.text-muted { color: var(--sk-muted); }
+.text-primary { color: var(--sk-primary); }
+.text-success { color: var(--sk-success-text); }
+.text-warning { color: var(--sk-warning-text); }
+.text-danger { color: var(--sk-danger-text); }
+.text-info { color: var(--sk-info-text); }
+.text-white { color: #fff; }
+
+/* Backgrounds */
+.bg-page { background: var(--sk-bg); }
+.bg-surface { background: var(--sk-surface); }
+.bg-surface-2 { background: var(--sk-surface-2); }
+.bg-primary { background: var(--sk-primary); }
+.bg-success { background: var(--sk-success); }
+.bg-warning { background: var(--sk-warning); }
+.bg-danger { background: var(--sk-danger); }
+
+/* Borders + radius + shadow */
+.border { border: 1px solid var(--sk-border); }
+.border-2 { border: 1px solid var(--sk-border-2); }
+.border-t { border-top: 1px solid var(--sk-border); }
+.border-b { border-bottom: 1px solid var(--sk-border); }
+.rounded { border-radius: var(--sk-radius); }
+.rounded-sm { border-radius: var(--sk-radius-sm); }
+.rounded-lg { border-radius: var(--sk-radius-lg); }
+.rounded-full { border-radius: 9999px; }
+.shadow { box-shadow: var(--sk-shadow); }
+.shadow-lg { box-shadow: var(--sk-shadow-lg); }
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.cursor-pointer { cursor: pointer; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS
+   -------------------------------------------------------------------------- */
+.sk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.925rem;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  color: var(--sk-text);
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--sk-transition), border-color var(--sk-transition),
+              color var(--sk-transition), transform 0.08s ease, box-shadow var(--sk-transition);
+}
+.sk-btn:hover { background: var(--sk-border); text-decoration: none; color: var(--sk-text); }
+.sk-btn:active { transform: scale(0.97); }
+.sk-btn:disabled, .sk-btn.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.sk-btn-primary { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
+.sk-btn-primary:hover { background: var(--sk-primary-hover); border-color: var(--sk-primary-hover); color: #fff; }
+
+.sk-btn-success { background: var(--sk-success); border-color: var(--sk-success); color: #fff; }
+.sk-btn-success:hover { background: #15803d; border-color: #15803d; color: #fff; }
+
+.sk-btn-danger { background: var(--sk-danger); border-color: var(--sk-danger); color: #fff; }
+.sk-btn-danger:hover { background: var(--sk-danger-hover); border-color: var(--sk-danger-hover); color: #fff; }
+
+.sk-btn-outline { background: transparent; border-color: var(--sk-border-2); color: var(--sk-text-2); }
+.sk-btn-outline:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+
+.sk-btn-ghost { background: transparent; border-color: transparent; color: var(--sk-text-2); }
+.sk-btn-ghost:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+
+/* Sizes */
+.sk-btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+.sk-btn-lg { padding: 0.75rem 1.5rem; font-size: 1.05rem; }
+.sk-btn-block { display: flex; width: 100%; }
+
+/* Icon-only round button */
+.sk-btn-icon { padding: 0.55rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; }
+
+/* --------------------------------------------------------------------------
+   7. CARDS
+   -------------------------------------------------------------------------- */
+.sk-card {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow);
+  overflow: hidden;
+}
+.sk-card-body { padding: 1.25rem; }
+.sk-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.sk-card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--sk-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.sk-card-title { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.35rem; }
+.sk-card-subtitle { font-size: 0.875rem; color: var(--sk-muted); margin: 0 0 0.75rem; }
+
+/* Card that lifts slightly on hover — nice for clickable cards */
+.sk-card-hover { transition: transform var(--sk-transition), border-color var(--sk-transition), box-shadow var(--sk-transition); }
+.sk-card-hover:hover { transform: translateY(-3px); border-color: var(--sk-border-2); box-shadow: var(--sk-shadow-lg); }
+
+/* Stat card helpers */
+.sk-stat-label { font-size: 0.8rem; color: var(--sk-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.sk-stat-value { font-size: 1.9rem; font-weight: 650; line-height: 1.2; margin-top: 0.25rem; }
+
+/* --------------------------------------------------------------------------
+   8. BADGES + ALERTS
+   -------------------------------------------------------------------------- */
+.sk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: var(--sk-surface-2);
+  color: var(--sk-text-2);
+  border: 1px solid var(--sk-border-2);
+  white-space: nowrap;
+}
+.sk-badge-primary { background: var(--sk-primary-soft); color: #a5b4fc; border-color: transparent; }
+.sk-badge-success { background: var(--sk-success-soft); color: var(--sk-success-text); border-color: transparent; }
+.sk-badge-warning { background: var(--sk-warning-soft); color: var(--sk-warning-text); border-color: transparent; }
+.sk-badge-danger  { background: var(--sk-danger-soft);  color: var(--sk-danger-text);  border-color: transparent; }
+.sk-badge-info    { background: var(--sk-info-soft);    color: var(--sk-info-text);    border-color: transparent; }
+
+.sk-alert {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--sk-radius-sm);
+  border: 1px solid var(--sk-border-2);
+  background: var(--sk-surface);
+  color: var(--sk-text-2);
+  font-size: 0.925rem;
+}
+.sk-alert-success { background: var(--sk-success-soft); border-color: rgba(22,163,74,.35); color: var(--sk-success-text); }
+.sk-alert-warning { background: var(--sk-warning-soft); border-color: rgba(217,119,6,.35); color: var(--sk-warning-text); }
+.sk-alert-danger  { background: var(--sk-danger-soft);  border-color: rgba(220,38,38,.35); color: var(--sk-danger-text); }
+.sk-alert-info    { background: var(--sk-info-soft);    border-color: rgba(14,165,233,.35); color: var(--sk-info-text); }
+
+/* --------------------------------------------------------------------------
+   9. FORMS
+   -------------------------------------------------------------------------- */
+.sk-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sk-text-2);
+  margin-bottom: 0.35rem;
+}
+.sk-help { font-size: 0.8rem; color: var(--sk-muted); margin-top: 0.3rem; }
+.sk-field { margin-bottom: 1rem; }
+
+.sk-input, .sk-select, .sk-textarea {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.925rem;
+  font-family: inherit;
+  color: var(--sk-text);
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-input::placeholder, .sk-textarea::placeholder { color: var(--sk-faint); }
+.sk-input:focus, .sk-select:focus, .sk-textarea:focus {
+  outline: none;
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-textarea { min-height: 100px; resize: vertical; }
+.sk-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b95a7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+.sk-input.sk-invalid, .sk-select.sk-invalid, .sk-textarea.sk-invalid {
+  border-color: var(--sk-danger);
+}
+.sk-error { font-size: 0.8rem; color: var(--sk-danger-text); margin-top: 0.3rem; }
+
+/* Checkboxes + radios */
+.sk-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.925rem;
+  color: var(--sk-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.sk-check input[type="checkbox"], .sk-check input[type="radio"] {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  border: 1px solid var(--sk-border-2);
+  background: var(--sk-bg);
+  cursor: pointer;
+  transition: background var(--sk-transition), border-color var(--sk-transition);
+  flex-shrink: 0;
+}
+.sk-check input[type="checkbox"] { border-radius: 5px; }
+.sk-check input[type="radio"] { border-radius: 50%; }
+.sk-check input:checked {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+}
+.sk-check input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  background-size: 70%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.sk-check input[type="radio"]:checked {
+  box-shadow: inset 0 0 0 3.5px var(--sk-bg);
+}
+
+/* Toggle switch — use: <label class="sk-toggle"><input type="checkbox"><span></span> Label text</label> */
+.sk-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.925rem;
+  color: var(--sk-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.sk-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.sk-toggle span {
+  width: 42px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--sk-border-2);
+  position: relative;
+  transition: background var(--sk-transition);
+  flex-shrink: 0;
+}
+.sk-toggle span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--sk-transition);
+}
+.sk-toggle input:checked + span { background: var(--sk-primary); }
+.sk-toggle input:checked + span::after { transform: translateX(18px); }
+.sk-toggle input:focus-visible + span { outline: 2px solid var(--sk-primary); outline-offset: 2px; }
+
+/* Input group: label above, input below, all widths aligned */
+.sk-input-group { display: flex; }
+.sk-input-group .sk-input { border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm); }
+.sk-input-group .sk-btn { border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0; }
+
+/* --------------------------------------------------------------------------
+   10. NAVBAR
+   -------------------------------------------------------------------------- */
+.sk-navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--sk-navbar-height);
+  padding: 0.5rem 1.25rem;
+  background: var(--sk-surface);
+  border-bottom: 1px solid var(--sk-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.sk-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-navbar-brand:hover { color: var(--sk-text); text-decoration: none; }
+.sk-navbar-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--sk-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.sk-navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sk-navbar-nav a {
+  display: block;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--sk-transition), background var(--sk-transition);
+}
+.sk-navbar-nav a:hover { color: var(--sk-text); background: var(--sk-surface-2); text-decoration: none; }
+.sk-navbar-nav a.active { color: var(--sk-text); background: var(--sk-surface-2); }
+.sk-navbar-end { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Hamburger button — hidden on desktop */
+.sk-navbar-burger {
+  display: none;
+  background: none;
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text);
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Mobile: hide the nav links, show the burger.
+   JS toggles .sk-open on the navbar to reveal a dropdown menu. */
+@media (max-width: 767px) {
+  .sk-navbar { flex-wrap: wrap; }
+  .sk-navbar-burger { display: block; margin-left: auto; }
+  .sk-navbar-end { margin-left: 0; }
+  .sk-navbar-nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    order: 10;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sk-border);
+    margin-top: 0.5rem;
+  }
+  .sk-navbar.sk-open .sk-navbar-nav { display: flex; }
+}
+
+/* --------------------------------------------------------------------------
+   11. SIDEBAR LAYOUT
+   Use: <div class="sk-layout">
+          <aside class="sk-sidebar"> ... </aside>
+          <main class="sk-main"> ... </main>
+        </div>
+   On mobile the sidebar slides in from the left (JS toggles .sk-open).
+   -------------------------------------------------------------------------- */
+.sk-layout { display: flex; min-height: 100vh; }
+
+.sk-sidebar {
+  width: var(--sk-sidebar-width);
+  flex-shrink: 0;
+  background: var(--sk-surface);
+  border-right: 1px solid var(--sk-border);
+  padding: 1.25rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sk-sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sk-faint);
+  padding: 0.75rem 0.85rem 0.35rem;
+}
+.sk-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--sk-transition), background var(--sk-transition);
+}
+.sk-sidebar a:hover { color: var(--sk-text); background: var(--sk-surface-2); text-decoration: none; }
+.sk-sidebar a.active { color: #c7d2fe; background: var(--sk-primary-soft); }
+
+.sk-main { flex: 1; min-width: 0; padding: 1.5rem; }
+@media (min-width: 768px) { .sk-main { padding: 2rem; } }
+
+/* Backdrop shown behind the mobile sidebar (JS adds/removes .sk-show) */
+.sk-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 190;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sk-transition);
+}
+.sk-backdrop.sk-show { opacity: 1; pointer-events: auto; }
+
+@media (max-width: 767px) {
+  .sk-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+  }
+  .sk-sidebar.sk-open { transform: translateX(0); box-shadow: var(--sk-shadow-lg); }
+}
+
+/* --------------------------------------------------------------------------
+   12. TABLES
+   Wrap in <div class="sk-table-wrap"> for horizontal scrolling on phones.
+   -------------------------------------------------------------------------- */
+.sk-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  background: var(--sk-surface);
+}
+.sk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.sk-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sk-muted);
+  border-bottom: 1px solid var(--sk-border);
+  background: var(--sk-surface);
+  white-space: nowrap;
+}
+.sk-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--sk-border);
+  color: var(--sk-text-2);
+}
+.sk-table tbody tr:last-child td { border-bottom: none; }
+.sk-table-hover tbody tr { transition: background var(--sk-transition); }
+.sk-table-hover tbody tr:hover { background: var(--sk-surface-2); }
+.sk-table-striped tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
+
+/* --------------------------------------------------------------------------
+   13. TABS
+   Use: <div class="sk-tabs" data-sk-tabs>
+          <button class="sk-tab active" data-sk-tab="panel-1">Tab 1</button>
+          ...
+        </div>
+        <div class="sk-tab-panel active" id="panel-1"> ... </div>
+   -------------------------------------------------------------------------- */
+.sk-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  overflow-x: auto;
+}
+.sk-tab {
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--sk-transition), border-color var(--sk-transition);
+}
+.sk-tab:hover { color: var(--sk-text); }
+.sk-tab.active { color: var(--sk-primary); border-bottom-color: var(--sk-primary); }
+
+.sk-tab-panel { display: none; padding-top: 1.25rem; }
+.sk-tab-panel.active { display: block; animation: sk-fade-in 0.25s ease; }
+
+/* Pill-style tabs variant: add .sk-tabs-pills to the container */
+.sk-tabs-pills { border-bottom: none; gap: 0.4rem; }
+.sk-tabs-pills .sk-tab {
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  margin-bottom: 0;
+  padding: 0.45rem 1rem;
+}
+.sk-tabs-pills .sk-tab.active {
+  color: #fff;
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+}
+
+/* --------------------------------------------------------------------------
+   14. MODALS
+   Use: <button data-sk-open="my-modal">Open</button>
+        <div class="sk-modal" id="my-modal">
+          <div class="sk-modal-box"> ...content...
+            <button data-sk-close>Close</button>
+          </div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.sk-modal.sk-open { opacity: 1; pointer-events: auto; }
+
+.sk-modal-box {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.2s ease;
+}
+.sk-modal.sk-open .sk-modal-box { transform: translateY(0) scale(1); }
+.sk-modal-box.sk-modal-lg { max-width: 720px; }
+.sk-modal-box.sk-modal-sm { max-width: 360px; }
+
+.sk-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.35rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.sk-modal-body { padding: 1.35rem; }
+.sk-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.35rem;
+  border-top: 1px solid var(--sk-border);
+}
+.sk-modal-x {
+  background: none;
+  border: none;
+  color: var(--sk-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: var(--sk-radius-sm);
+  transition: color var(--sk-transition);
+}
+.sk-modal-x:hover { color: var(--sk-text); }
+
+body.sk-modal-open { overflow: hidden; }
+
+/* --------------------------------------------------------------------------
+   15. TOASTS  (created by skynet-ui.js — call skToast("Saved!", "success"))
+   -------------------------------------------------------------------------- */
+.sk-toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: calc(100vw - 2.5rem);
+}
+.sk-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 260px;
+  max-width: 380px;
+  padding: 0.85rem 1.1rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-left: 3px solid var(--sk-primary);
+  border-radius: var(--sk-radius-sm);
+  box-shadow: var(--sk-shadow-lg);
+  color: var(--sk-text);
+  font-size: 0.9rem;
+  animation: sk-toast-in 0.25s ease;
+}
+.sk-toast.sk-toast-leaving { animation: sk-toast-out 0.25s ease forwards; }
+.sk-toast-success { border-left-color: var(--sk-success); }
+.sk-toast-warning { border-left-color: var(--sk-warning); }
+.sk-toast-danger  { border-left-color: var(--sk-danger); }
+.sk-toast-x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--sk-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem;
+}
+.sk-toast-x:hover { color: var(--sk-text); }
+
+@keyframes sk-toast-in {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sk-toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(30px); }
+}
+@keyframes sk-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   16. DROPDOWNS
+   Use: <div class="sk-dropdown">
+          <button class="sk-btn" data-sk-dropdown>Menu ▾</button>
+          <div class="sk-dropdown-menu">
+            <a href="#">Item</a> ...
+          </div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-dropdown { position: relative; display: inline-block; }
+.sk-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 150;
+  min-width: 180px;
+  padding: 0.4rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  box-shadow: var(--sk-shadow-lg);
+  display: none;
+}
+.sk-dropdown-menu.sk-right { left: auto; right: 0; }
+.sk-dropdown.sk-open .sk-dropdown-menu { display: block; animation: sk-fade-in 0.15s ease; }
+.sk-dropdown-menu a, .sk-dropdown-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  color: var(--sk-text-2);
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-dropdown-menu a:hover, .sk-dropdown-menu button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-dropdown-divider { border: none; border-top: 1px solid var(--sk-border); margin: 0.4rem 0; }
+
+/* --------------------------------------------------------------------------
+   17. MISC — avatar, spinner, progress, kbd
+   -------------------------------------------------------------------------- */
+.sk-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--sk-primary-soft);
+  color: #a5b4fc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.sk-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sk-avatar-sm { width: 28px; height: 28px; font-size: 0.7rem; }
+.sk-avatar-lg { width: 52px; height: 52px; font-size: 1.1rem; }
+
+.sk-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--sk-border-2);
+  border-top-color: var(--sk-primary);
+  border-radius: 50%;
+  animation: sk-spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes sk-spin { to { transform: rotate(360deg); } }
+
+.sk-progress {
+  width: 100%;
+  height: 8px;
+  background: var(--sk-surface-2);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sk-progress-bar {
+  height: 100%;
+  background: var(--sk-primary);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+kbd {
+  font-family: var(--sk-font-mono);
+  font-size: 0.8em;
+  padding: 0.15em 0.45em;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--sk-text-2);
+}
+
+/* Divider with centered text: <div class="sk-divider">or</div> */
+.sk-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--sk-faint);
+  font-size: 0.8rem;
+  margin: 1.25rem 0;
+}
+.sk-divider::before, .sk-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--sk-border);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

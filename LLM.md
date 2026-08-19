@@ -1,0 +1,221 @@
+# Skynet UI — LLM reference (v1.0.0)
+
+Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
+
+RULES FOR GENERATION:
+- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>`. Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Dark theme is the default; no class needed. Light theme: `data-theme="light"` on `<html>`.
+- Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
+- Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
+- Mobile-first: `.sk-grid` is 1 column on phones; `sk-cols-*` add columns at ≥640px/≥1024px. Navbar collapses behind a `data-sk-burger` button; sidebar slides in via a `data-sk-sidebar` button.
+- Spacing scale: number × 0.25rem (`4` = 1rem). Available steps: 0,1,2,3,4,6,8 (plus 12,16 for mt/mb/py).
+- Do not invent class names not listed here.
+
+## CSS variables (in :root — override to theme)
+--sk-bg #0b0f17 page bg | --sk-surface #111826 cards/nav | --sk-surface-2 #172033 hover/inputs-on-cards | --sk-border #1e2836 subtle border | --sk-border-2 #2a3547 stronger border
+--sk-text #e6eaf2 main | --sk-text-2 #aeb7c7 secondary | --sk-muted #8b95a7 | --sk-faint #5b6474 placeholder
+--sk-primary #6366f1 | --sk-primary-hover #4f52e0 | --sk-primary-soft rgba(99,102,241,.15)
+--sk-success #16a34a / --sk-success-text #4ade80 / --sk-success-soft | --sk-warning #d97706 / --sk-warning-text #fbbf24 / --sk-warning-soft | --sk-danger #dc2626 / --sk-danger-hover / --sk-danger-text #f87171 / --sk-danger-soft | --sk-info #0ea5e9 / --sk-info-text #38bdf8 / --sk-info-soft
+--sk-radius 10px | --sk-radius-sm 7px | --sk-radius-lg 16px | --sk-shadow | --sk-shadow-lg | --sk-transition .18s ease
+--sk-font | --sk-font-mono | --sk-container 1140px | --sk-navbar-height 60px | --sk-sidebar-width 250px
+
+## JS API (global, from skynet-ui.js)
+skToast(message, type?, durationMs?) — type: "info"(default)|"success"|"warning"|"danger"; duration default 3500, 0 = sticky
+skOpenModal(id) / skCloseModal(id)
+
+## Data attributes (wire up behavior, no JS)
+data-sk-open="modal-id" — button opens that modal
+data-sk-close — element inside a modal closes it (backdrop click + Esc also close)
+data-sk-tabs — on tab container; data-sk-tab="panel-id" — on each tab button (panel = element with that id)
+data-sk-dropdown — on trigger button inside .sk-dropdown
+data-sk-sidebar — button toggles .sk-sidebar on mobile
+data-sk-burger — button toggles navbar links on mobile
+data-sk-toast="Msg" + optional data-sk-toast-type="success|warning|danger" — button shows toast
+
+## Components
+
+### Button
+Classes: sk-btn (base, required) + variant: sk-btn-primary | sk-btn-success | sk-btn-danger | sk-btn-outline | sk-btn-ghost. Sizes: sk-btn-sm | sk-btn-lg | sk-btn-block (full width) | sk-btn-icon (round). Works on <button> and <a>.
+```html
+<button class="sk-btn sk-btn-primary">Save</button>
+```
+
+### Card
+sk-card > optional sk-card-header (flex, title left / extras right), sk-card-body, sk-card-footer. Inside body: sk-card-title, sk-card-subtitle. Hover lift: add sk-card-hover to sk-card. Stat cards: sk-stat-label + sk-stat-value inside body.
+```html
+<div class="sk-card"><div class="sk-card-body">
+  <h3 class="sk-card-title">Title</h3>
+  <p class="sk-card-subtitle">Subtitle</p>
+  <p class="text-secondary">Content</p>
+</div></div>
+```
+
+### Badge
+sk-badge + optional sk-badge-primary | sk-badge-success | sk-badge-warning | sk-badge-danger | sk-badge-info
+```html
+<span class="sk-badge sk-badge-success">Active</span>
+```
+
+### Alert
+sk-alert + sk-alert-success | sk-alert-warning | sk-alert-danger | sk-alert-info
+```html
+<div class="sk-alert sk-alert-warning">Disk usage above 80%.</div>
+```
+
+### Form field
+sk-field (wrapper, adds margin) > sk-label + sk-input|sk-select|sk-textarea + optional sk-help. Error: add sk-invalid to input, follow with div.sk-error.
+```html
+<div class="sk-field">
+  <label class="sk-label" for="email">Email</label>
+  <input class="sk-input" id="email" type="email" placeholder="name@site.com">
+  <div class="sk-help">Hint text.</div>
+</div>
+```
+Input+button joined: div.sk-input-group > input.sk-input + button.sk-btn
+
+### Checkbox / radio
+label.sk-check wrapping a bare input
+```html
+<label class="sk-check"><input type="checkbox" checked> Remember me</label>
+<label class="sk-check"><input type="radio" name="plan"> Pro</label>
+```
+
+### Toggle switch
+label.sk-toggle > input[type=checkbox] + empty span (required) + label text
+```html
+<label class="sk-toggle"><input type="checkbox" checked><span></span> Dark mode</label>
+```
+
+### Navbar (sticky top; collapses on mobile)
+```html
+<nav class="sk-navbar">
+  <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Site</a>
+  <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+  <ul class="sk-navbar-nav">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+  <div class="sk-navbar-end"><a href="/login" class="sk-btn sk-btn-primary sk-btn-sm">Log in</a></div>
+</nav>
+```
+active class marks current page. sk-navbar-end right-aligns its contents.
+
+### Sidebar layout (desktop fixed 250px; mobile slide-in)
+```html
+<div class="sk-layout">
+  <aside class="sk-sidebar">
+    <div class="sk-sidebar-title">Section</div>
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/settings">Settings</a>
+  </aside>
+  <main class="sk-main">
+    <button class="sk-btn sk-btn-outline sk-btn-sm hide-desktop" data-sk-sidebar>&#9776; Menu</button>
+    ...page content...
+  </main>
+</div>
+```
+
+### Table (always wrap for mobile scroll)
+sk-table-wrap > table.sk-table. Modifiers on table: sk-table-hover, sk-table-striped.
+```html
+<div class="sk-table-wrap">
+  <table class="sk-table sk-table-hover">
+    <thead><tr><th>Name</th><th>Status</th></tr></thead>
+    <tbody><tr><td>Job</td><td><span class="sk-badge sk-badge-success">OK</span></td></tr></tbody>
+  </table>
+</div>
+```
+
+### Tabs
+Container div.sk-tabs[data-sk-tabs] holds button.sk-tab[data-sk-tab="panel-id"]. Panels are div.sk-tab-panel with matching id. Mark starting tab AND its panel with class active. Pill style: add sk-tabs-pills to container.
+```html
+<div class="sk-tabs" data-sk-tabs>
+  <button class="sk-tab active" data-sk-tab="p1">First</button>
+  <button class="sk-tab" data-sk-tab="p2">Second</button>
+</div>
+<div class="sk-tab-panel active" id="p1">One</div>
+<div class="sk-tab-panel" id="p2">Two</div>
+```
+
+### Modal (place at end of body)
+div.sk-modal#id > div.sk-modal-box (sizes: sk-modal-sm | sk-modal-lg) > sk-modal-header (+ button.sk-modal-x[data-sk-close]), sk-modal-body, sk-modal-footer.
+```html
+<button class="sk-btn sk-btn-primary" data-sk-open="m1">Open</button>
+<div class="sk-modal" id="m1" role="dialog" aria-modal="true">
+  <div class="sk-modal-box">
+    <div class="sk-modal-header">Title <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button></div>
+    <div class="sk-modal-body"><p>Content</p></div>
+    <div class="sk-modal-footer">
+      <button class="sk-btn sk-btn-ghost" data-sk-close>Cancel</button>
+      <button class="sk-btn sk-btn-primary" data-sk-close>Save</button>
+    </div>
+  </div>
+</div>
+```
+
+### Toast
+No markup needed. JS: skToast("Saved", "success") or declarative:
+```html
+<button class="sk-btn" data-sk-toast="Saved!" data-sk-toast-type="success">Save</button>
+```
+
+### Dropdown
+div.sk-dropdown > trigger[data-sk-dropdown] + div.sk-dropdown-menu (add sk-right to right-align) containing <a>/<button> items and hr.sk-dropdown-divider.
+```html
+<div class="sk-dropdown">
+  <button class="sk-btn" data-sk-dropdown>Menu &#9662;</button>
+  <div class="sk-dropdown-menu sk-right">
+    <a href="/profile">Profile</a>
+    <hr class="sk-dropdown-divider">
+    <button>Sign out</button>
+  </div>
+</div>
+```
+
+### Misc
+sk-avatar (initials or img inside; sizes sk-avatar-sm/sk-avatar-lg) | sk-spinner | sk-progress > sk-progress-bar (set inline width %) | sk-divider (line with centered text) | kbd (styled automatically)
+```html
+<span class="sk-avatar">SK</span>
+<div class="sk-progress"><div class="sk-progress-bar" style="width:60%"></div></div>
+<div class="sk-divider">or</div>
+```
+
+## Layout classes
+sk-container — centered max-width 1140px with side padding | sk-container-fluid — full width
+sk-grid — grid, 1 col mobile, gap 1rem. Modifiers: sk-cols-2 (2 cols ≥640px) | sk-cols-3 (2 ≥640px, 3 ≥1024px) | sk-cols-4 (2 ≥640px, 4 ≥1024px) | gap-0 gap-sm gap-lg
+sk-grid-auto — auto-fit columns min 240px | sk-span-all — child spans full row
+
+## Utility classes (complete list)
+Display: block inline-block hidden grid flex inline-flex
+Flex: flex-col flex-row flex-wrap items-start items-center items-end justify-start justify-center justify-end justify-between flex-1 grow shrink-0 gap-1 gap-2 gap-3 gap-4 gap-6 gap-8
+Responsive visibility: hide-mobile (<768px) hide-desktop (≥768px)
+Position: relative absolute sticky-top
+Margin: m-0..8, mt-0..16, mb-0..16, ml-1..4, mr-1..4, ml-auto mr-auto mx-auto mx-2 mx-4 my-2 my-4 my-8 (steps: 0 1 2 3 4 6 8; mt/mb also 12 16)
+Padding: p-0..8, pt-0..12, pb-0..16, pl-1..4, pr-1..4, px-2 px-3 px-4 px-6, py-2 py-3 py-4 py-6 py-8 py-12
+Size: w-full w-auto h-full min-h-screen max-w-sm max-w-md max-w-lg max-w-xl max-w-2xl max-w-3xl
+Text size: text-xs text-sm text-base text-lg text-xl text-2xl text-3xl text-4xl
+Font: font-normal font-medium font-semibold font-bold font-mono
+Align: text-left text-center text-right
+Transform: uppercase capitalize truncate leading-tight leading-relaxed no-underline
+Text color: text-main text-secondary text-muted text-primary text-success text-warning text-danger text-info text-white
+Background: bg-page bg-surface bg-surface-2 bg-primary bg-success bg-warning bg-danger
+Border/shape: border border-2 border-t border-b rounded rounded-sm rounded-lg rounded-full shadow shadow-lg
+Other: overflow-hidden overflow-auto cursor-pointer opacity-50 opacity-75
+
+## Page skeleton
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page</title>
+  <link rel="stylesheet" href="/skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">...</nav>
+  <div class="sk-container py-8">...</div>
+  <script src="/skynet-ui.js" defer></script>
+</body>
+</html>
+```
