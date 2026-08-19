@@ -1,11 +1,14 @@
 /* ==========================================================================
-   Skynet UI v1.2.0 — behavior script
+   Skynet UI v1.3.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
    Everything works through data attributes — no JS knowledge needed:
-     data-sk-open="id"         → opens that modal or drawer
+     data-sk-open="id"         → opens that modal, drawer, or command palette
      data-sk-close             → closes the modal/drawer it's inside
+     data-sk-popover           → toggles the .sk-popover-panel next to it
+     data-sk-carousel-prev / data-sk-carousel-next
+                               → scroll the carousel track one view
      data-sk-tab="panel-id"    → tab button showing that panel
      data-sk-dropdown          → toggles the dropdown menu next to it
      data-sk-sidebar           → toggles the sidebar on mobile
@@ -22,10 +25,15 @@
      data-sk-scrollspy         → on a sidebar/nav of #links: highlights the
                                  link whose section is currently on screen
 
+   Keyboard: Ctrl+K (Cmd+K on Mac) opens the page's .sk-cmdk command
+   palette; type to filter its items, ↑/↓ to move, Enter to run, Esc closes.
+
    Global functions:
      skToast("Saved!", "success")   types: "info" (default), "success",
                                            "warning", "danger"
-     skOpenModal(id) / skCloseModal(id)   (drawers too)
+       3rd arg: duration ms (0 = sticky) OR options object
+       {duration, actionText, onAction} for an action button ("Undo")
+     skOpenModal(id) / skCloseModal(id)   (drawers + command palettes too)
      skToggleTheme()                flips light/dark and remembers the choice
      skConfirm("Delete this?", {title, okText, cancelText, danger})
                                     → Promise<boolean> confirm dialog
@@ -93,9 +101,12 @@
     return toastContainer;
   }
 
-  function skToast(message, type, duration) {
+  function skToast(message, type, durationOrOpts) {
     type = type || "info";
-    duration = typeof duration === "number" ? duration : 3500;
+    var opts = {};
+    if (typeof durationOrOpts === "number") opts.duration = durationOrOpts;
+    else if (durationOrOpts && typeof durationOrOpts === "object") opts = durationOrOpts;
+    var duration = typeof opts.duration === "number" ? opts.duration : 3500;
 
     var toast = document.createElement("div");
     toast.className = "sk-toast" + (type !== "info" ? " sk-toast-" + type : "");
@@ -104,6 +115,17 @@
     var text = document.createElement("span");
     text.textContent = message;
     toast.appendChild(text);
+
+    if (opts.actionText) {
+      var actionBtn = document.createElement("button");
+      actionBtn.className = "sk-toast-action";
+      actionBtn.textContent = opts.actionText;
+      actionBtn.addEventListener("click", function () {
+        if (typeof opts.onAction === "function") opts.onAction();
+        removeToast(toast);
+      });
+      toast.appendChild(actionBtn);
+    }
 
     var closeBtn = document.createElement("button");
     closeBtn.className = "sk-toast-x";
@@ -131,18 +153,21 @@
   window.skToast = skToast;
 
   /* ----------------------------------------------------------------------
-     MODALS + DRAWERS (same open/close mechanics)
+     MODALS + DRAWERS + COMMAND PALETTES (same open/close mechanics)
      ---------------------------------------------------------------------- */
+  var OPEN_OVERLAYS = ".sk-modal.sk-open, .sk-drawer.sk-open, .sk-cmdk.sk-open";
+
   function openModal(modal) {
     if (!modal) return;
     modal.classList.add("sk-open");
     document.body.classList.add("sk-modal-open");
+    if (modal.classList.contains("sk-cmdk")) resetCmdk(modal);
   }
 
   function closeModal(modal) {
     if (!modal) return;
     modal.classList.remove("sk-open");
-    if (!document.querySelector(".sk-modal.sk-open, .sk-drawer.sk-open")) {
+    if (!document.querySelector(OPEN_OVERLAYS)) {
       document.body.classList.remove("sk-modal-open");
     }
   }
@@ -198,7 +223,7 @@
       function done(result) {
         document.removeEventListener("keydown", onKey);
         if (modal.parentNode) modal.parentNode.removeChild(modal);
-        if (!document.querySelector(".sk-modal.sk-open, .sk-drawer.sk-open")) {
+        if (!document.querySelector(OPEN_OVERLAYS)) {
           document.body.classList.remove("sk-modal-open");
         }
         resolve(result);
@@ -268,12 +293,59 @@
   }
 
   /* ----------------------------------------------------------------------
-     DROPDOWNS
+     DROPDOWNS + POPOVERS
      ---------------------------------------------------------------------- */
   function closeAllDropdowns(except) {
     document.querySelectorAll(".sk-dropdown.sk-open").forEach(function (d) {
       if (d !== except) d.classList.remove("sk-open");
     });
+  }
+
+  function closeAllPopovers(except) {
+    document.querySelectorAll(".sk-popover.sk-open").forEach(function (p) {
+      if (p !== except) p.classList.remove("sk-open");
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     COMMAND PALETTE — filtering + keyboard navigation
+     ---------------------------------------------------------------------- */
+  function cmdkItems(cmdk) {
+    var list = cmdk.querySelector(".sk-cmdk-list");
+    return list ? Array.prototype.slice.call(list.children) : [];
+  }
+
+  function cmdkVisibleItems(cmdk) {
+    return cmdkItems(cmdk).filter(function (item) {
+      return item.style.display !== "none";
+    });
+  }
+
+  function cmdkSetActive(cmdk, item) {
+    cmdkItems(cmdk).forEach(function (i) { i.classList.remove("active"); });
+    if (item) {
+      item.classList.add("active");
+      if (item.scrollIntoView) item.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  function filterCmdk(cmdk, query) {
+    cmdkItems(cmdk).forEach(function (item) {
+      var haystack = (item.textContent + " " + (item.getAttribute("data-sk-keywords") || "")).toLowerCase();
+      item.style.display = haystack.indexOf(query) > -1 ? "" : "none";
+    });
+    var visible = cmdkVisibleItems(cmdk);
+    cmdk.classList.toggle("sk-no-results", visible.length === 0);
+    cmdkSetActive(cmdk, visible[0] || null);
+  }
+
+  function resetCmdk(cmdk) {
+    var input = cmdk.querySelector(".sk-cmdk-input");
+    if (input) {
+      input.value = "";
+      filterCmdk(cmdk, "");
+      setTimeout(function () { input.focus(); }, 0);
+    }
   }
 
   /* ----------------------------------------------------------------------
@@ -282,10 +354,11 @@
   document.addEventListener("click", function (e) {
     var t;
 
-    /* Open modal */
+    /* Open modal/drawer/palette (a trigger inside the palette closes it first) */
     t = e.target.closest("[data-sk-open]");
     if (t) {
       e.preventDefault();
+      closeModal(t.closest(".sk-cmdk.sk-open"));
       openModal(document.getElementById(t.getAttribute("data-sk-open")));
       return;
     }
@@ -298,10 +371,43 @@
       return;
     }
 
-    /* Click on the dark area outside the modal/drawer box closes it */
+    /* Click on the dark area outside the modal/drawer/palette box closes it */
     if (e.target.classList &&
-        (e.target.classList.contains("sk-modal") || e.target.classList.contains("sk-drawer"))) {
+        (e.target.classList.contains("sk-modal") ||
+         e.target.classList.contains("sk-drawer") ||
+         e.target.classList.contains("sk-cmdk"))) {
       closeModal(e.target);
+      return;
+    }
+
+    /* Choosing a command palette item closes the palette; the item's own
+       link/onclick/data-sk-* behavior still runs below */
+    t = e.target.closest(".sk-cmdk-list > *");
+    if (t) closeModal(t.closest(".sk-cmdk"));
+
+    /* Popover toggle */
+    t = e.target.closest("[data-sk-popover]");
+    if (t) {
+      e.preventDefault();
+      var pop = t.closest(".sk-popover");
+      if (pop) {
+        var popWillOpen = !pop.classList.contains("sk-open");
+        closeAllPopovers();
+        if (popWillOpen) pop.classList.add("sk-open");
+      }
+      return;
+    }
+
+    /* Carousel arrows */
+    t = e.target.closest("[data-sk-carousel-prev], [data-sk-carousel-next]");
+    if (t) {
+      e.preventDefault();
+      var carousel = t.closest(".sk-carousel");
+      var track = carousel && carousel.querySelector(".sk-carousel-track");
+      if (track) {
+        var dir = t.hasAttribute("data-sk-carousel-next") ? 1 : -1;
+        track.scrollBy({ left: dir * track.clientWidth, behavior: "smooth" });
+      }
       return;
     }
 
@@ -416,16 +522,52 @@
       closeSidebar();
     }
 
-    /* Any other click closes open dropdowns */
+    /* Any other click closes open dropdowns and popovers */
     if (!e.target.closest(".sk-dropdown")) closeAllDropdowns();
+    if (!e.target.closest(".sk-popover")) closeAllPopovers();
   });
 
-  /* Escape closes modals, drawers, dropdowns, and the mobile sidebar */
+  /* Escape closes overlays, dropdowns, popovers, and the mobile sidebar.
+     Ctrl/Cmd+K toggles the command palette; ↑/↓/Enter navigate it. */
   document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    document.querySelectorAll(".sk-modal.sk-open, .sk-drawer.sk-open").forEach(closeModal);
-    closeAllDropdowns();
-    closeSidebar();
+    if (e.key === "Escape") {
+      document.querySelectorAll(OPEN_OVERLAYS).forEach(closeModal);
+      closeAllDropdowns();
+      closeAllPopovers();
+      closeSidebar();
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+      var cmdk = document.querySelector(".sk-cmdk");
+      if (cmdk) {
+        e.preventDefault();
+        if (cmdk.classList.contains("sk-open")) closeModal(cmdk);
+        else openModal(cmdk);
+      }
+      return;
+    }
+
+    var openCmdk = document.querySelector(".sk-cmdk.sk-open");
+    if (!openCmdk) return;
+
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      var visible = cmdkVisibleItems(openCmdk);
+      if (!visible.length) return;
+      var current = visible.indexOf(openCmdk.querySelector(".sk-cmdk-list > .active"));
+      var next = e.key === "ArrowDown"
+        ? Math.min(current + 1, visible.length - 1)
+        : Math.max(current - 1, 0);
+      cmdkSetActive(openCmdk, visible[next]);
+    } else if (e.key === "Enter") {
+      var active = openCmdk.querySelector(".sk-cmdk-list > .active");
+      if (active) {
+        e.preventDefault();
+        closeModal(openCmdk);
+        active.click();
+      }
+    }
   });
 
   /* ----------------------------------------------------------------------
@@ -470,6 +612,14 @@
      contain the typed text.
      ---------------------------------------------------------------------- */
   document.addEventListener("input", function (e) {
+    /* Command palette search box */
+    var cmdkInput = e.target.closest(".sk-cmdk-input");
+    if (cmdkInput) {
+      var cmdk = cmdkInput.closest(".sk-cmdk");
+      if (cmdk) filterCmdk(cmdk, cmdkInput.value.toLowerCase());
+      return;
+    }
+
     var input = e.target.closest("[data-sk-filter]");
     if (!input) return;
     var target = document.getElementById(input.getAttribute("data-sk-filter"));

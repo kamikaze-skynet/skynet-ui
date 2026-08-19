@@ -227,6 +227,13 @@ Input with attached button:
 </div>
 ```
 
+Date and time inputs are just `sk-input` too — the framework sets `color-scheme`, so the browser's native date/time pickers automatically match the dark (or light) theme:
+
+```html
+<input class="sk-input" type="date">
+<input class="sk-input" type="time">
+```
+
 ### Checkboxes, radios, toggles
 
 ```html
@@ -364,6 +371,16 @@ skToast("Stays until dismissed", "info", 0);  // 3rd arg = ms; 0 = sticky
 
 Toasts appear bottom-right and dismiss themselves after 3.5 seconds.
 
+The third argument can also be an options object, which is how you add an action button ("Undo" patterns):
+
+```js
+skToast("Message archived", "info", {
+  duration: 6000,             // optional, ms; 0 = sticky
+  actionText: "Undo",
+  onAction: () => restoreMessage(),   // runs on click, then the toast closes
+});
+```
+
 ### Dropdown menus
 
 ```html
@@ -379,6 +396,66 @@ Toasts appear bottom-right and dismiss themselves after 3.5 seconds.
 ```
 
 Add `sk-right` to the menu to align it to the right edge (useful at the end of a navbar). Clicking elsewhere or pressing Esc closes it.
+
+### Popovers
+
+A dropdown's bigger sibling: a click-toggled panel for rich content instead of menu items.
+
+```html
+<div class="sk-popover">
+  <button class="sk-btn" data-sk-popover>Details &#9662;</button>
+  <div class="sk-popover-panel">
+    <div class="sk-popover-title">Optional title</div>
+    Any content — text, lists, even buttons.
+  </div>
+</div>
+```
+
+Opens below the trigger. On the panel: `sk-top` opens above, `sk-right` aligns to the trigger's right edge. Outside click and Esc close it.
+
+### Command palette (Ctrl+K)
+
+Put one `.sk-cmdk` near the end of `<body>` and it opens with <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd><kbd>K</kbd> on Mac) or any `data-sk-open` button. Typing filters the items, <kbd>↑</kbd>/<kbd>↓</kbd> moves, <kbd>Enter</kbd> runs the highlighted one, Esc closes.
+
+```html
+<div class="sk-cmdk" id="cmdk" role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="sk-cmdk-box">
+    <input class="sk-cmdk-input" type="text" placeholder="Type a command…" aria-label="Search commands">
+    <div class="sk-cmdk-list">
+      <a href="/dashboard">&#128200; Dashboard</a>
+      <a href="/settings" data-sk-keywords="preferences account">&#9881; Settings</a>
+      <button onclick="deploy()">&#128640; Deploy now</button>
+    </div>
+    <div class="sk-cmdk-empty">No matching commands.</div>
+    <div class="sk-cmdk-hint">
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+      <span><kbd>Enter</kbd> run</span>
+      <span><kbd>Esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+```
+
+Items are plain links or buttons — choosing one closes the palette and runs it. `data-sk-keywords` adds extra words the filter matches (the hint bar and empty state are optional).
+
+### Carousel
+
+Scroll-snap based: swiping and momentum come from the browser, so the track works with zero JS. The optional arrow buttons scroll one view per click.
+
+```html
+<div class="sk-carousel sk-carousel-peek">
+  <div class="sk-carousel-track">
+    <div class="sk-carousel-slide"><div class="sk-card">…</div></div>
+    <div class="sk-carousel-slide"><div class="sk-card">…</div></div>
+  </div>
+  <div class="flex gap-2 mt-3">
+    <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-prev aria-label="Previous">&larr;</button>
+    <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-next aria-label="Next">&rarr;</button>
+  </div>
+</div>
+```
+
+One slide per view by default. On the carousel: `sk-carousel-peek` shows the edge of the next slide; `sk-carousel-cols-2` / `sk-carousel-cols-3` show 2/3 per view from 768px up.
 
 ### Badges and alerts
 

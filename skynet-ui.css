@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.2.0
+   Skynet UI v1.3.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -9,6 +9,9 @@
    1. THEME VARIABLES — edit these to re-skin every site in one place
    -------------------------------------------------------------------------- */
 :root {
+  /* Native widgets (date pickers, scrollbars, select lists) follow the theme */
+  color-scheme: dark;
+
   /* Backgrounds (darkest → lightest) */
   --sk-bg:          #0b0f17;   /* page background */
   --sk-surface:     #111826;   /* cards, navbar, sidebar */
@@ -60,6 +63,7 @@
 
 /* Optional light theme: add data-theme="light" to <html> or <body> */
 [data-theme="light"] {
+  color-scheme: light;
   --sk-bg:        #f4f6fa;
   --sk-surface:   #ffffff;
   --sk-surface-2: #eef1f6;
@@ -1821,6 +1825,192 @@ th[data-sk-sort]::after {
 }
 th[data-sk-sort].sk-sort-asc::after  { content: "\2191"; opacity: 1; color: var(--sk-primary); }
 th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(--sk-primary); }
+
+/* --------------------------------------------------------------------------
+   37. POPOVER — click-toggled rich panel (dropdown's bigger sibling)
+   Use: <div class="sk-popover">
+          <button class="sk-btn" data-sk-popover>Details</button>
+          <div class="sk-popover-panel">
+            <div class="sk-popover-title">Optional title</div>
+            Any content — text, lists, buttons.
+          </div>
+        </div>
+   Opens below the trigger. On the panel: sk-top opens above, sk-right
+   aligns to the trigger's right edge. Outside click + Esc close.
+   -------------------------------------------------------------------------- */
+.sk-popover { position: relative; display: inline-block; }
+.sk-popover-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 1rem 1.1rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  font-size: 0.9rem;
+  color: var(--sk-text-2);
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity var(--sk-transition), transform var(--sk-transition),
+              visibility var(--sk-transition);
+}
+.sk-popover.sk-open > .sk-popover-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.sk-popover-panel.sk-top { top: auto; bottom: calc(100% + 8px); transform: translateY(-4px); }
+.sk-popover.sk-open > .sk-popover-panel.sk-top { transform: none; }
+.sk-popover-panel.sk-right { left: auto; right: 0; }
+.sk-popover-title { font-weight: 600; color: var(--sk-text); margin-bottom: 0.35rem; }
+
+/* --------------------------------------------------------------------------
+   38. COMMAND PALETTE — Ctrl/Cmd+K opens it; type to filter; ↑↓ + Enter
+   Use (place near the end of <body>):
+     <div class="sk-cmdk" id="my-cmdk" role="dialog" aria-modal="true">
+       <div class="sk-cmdk-box">
+         <input class="sk-cmdk-input" type="text" placeholder="Type a command…" aria-label="Search commands">
+         <div class="sk-cmdk-list">
+           <a href="/dashboard">&#128200; Dashboard</a>
+           <button onclick="doThing()">&#9889; Run thing</button>
+         </div>
+         <div class="sk-cmdk-empty">No matches.</div>
+       </div>
+     </div>
+   Also opens from a button with data-sk-open="my-cmdk". Items can carry
+   data-sk-keywords="extra search words". All behavior is in skynet-ui.js.
+   -------------------------------------------------------------------------- */
+.sk-cmdk {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.62);
+  z-index: 310;
+  padding: 10vh 1rem 0;
+  opacity: 0;
+  visibility: hidden;
+  /* visibility flips only after the fade-out; on open it flips instantly
+     (see .sk-open below) so the input can be focused right away */
+  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+}
+.sk-cmdk.sk-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease;
+}
+.sk-cmdk-box {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-lg);
+  box-shadow: var(--sk-shadow-lg);
+  overflow: hidden;
+  transform: translateY(-8px) scale(0.98);
+  transition: transform 0.15s ease;
+}
+.sk-cmdk.sk-open .sk-cmdk-box { transform: none; }
+.sk-cmdk-input {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--sk-border);
+  color: var(--sk-text);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+.sk-cmdk-input::placeholder { color: var(--sk-faint); }
+.sk-cmdk-list { max-height: 320px; overflow-y: auto; padding: 0.4rem; }
+.sk-cmdk-list > * {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  background: none;
+  color: var(--sk-text-2);
+  font-family: inherit;
+  font-size: 0.925rem;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sk-cmdk-list > *:hover { background: var(--sk-surface-2); color: var(--sk-text); text-decoration: none; }
+.sk-cmdk-list > .active { background: var(--sk-primary-soft); color: var(--sk-text); }
+.sk-cmdk-empty { display: none; padding: 1.25rem; text-align: center; color: var(--sk-muted); font-size: 0.875rem; }
+.sk-cmdk.sk-no-results .sk-cmdk-empty { display: block; }
+.sk-cmdk-hint {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 1.1rem;
+  border-top: 1px solid var(--sk-border);
+  color: var(--sk-faint);
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   39. CAROUSEL — scroll-snap slider (swipe on touch; optional arrow buttons)
+   Use: <div class="sk-carousel">
+          <div class="sk-carousel-track">
+            <div class="sk-carousel-slide">…</div>
+            <div class="sk-carousel-slide">…</div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-prev aria-label="Previous">&larr;</button>
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-next aria-label="Next">&rarr;</button>
+          </div>
+        </div>
+   One slide per view by default. On the carousel: sk-carousel-peek shows the
+   edge of the next slide; sk-carousel-cols-2 / -cols-3 show 2/3 per view
+   from 768px up.
+   -------------------------------------------------------------------------- */
+.sk-carousel { position: relative; }
+.sk-carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sk-carousel-track::-webkit-scrollbar { display: none; }
+.sk-carousel-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.sk-carousel-peek .sk-carousel-slide { flex-basis: 85%; }
+@media (min-width: 768px) {
+  .sk-carousel-cols-2 .sk-carousel-slide { flex-basis: calc(50% - 0.5rem); }
+  .sk-carousel-cols-3 .sk-carousel-slide { flex-basis: calc(33.333% - 0.667rem); }
+}
+
+/* --------------------------------------------------------------------------
+   40. TOAST ACTION BUTTON  (created by skynet-ui.js — see skToast options:
+       skToast("Deleted", "info", {actionText: "Undo", onAction: fn}))
+   -------------------------------------------------------------------------- */
+.sk-toast-action {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0.1rem 0.2rem;
+  color: var(--sk-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sk-toast-action:hover { text-decoration: underline; }
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
