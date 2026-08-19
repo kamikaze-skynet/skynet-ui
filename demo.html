@@ -22,6 +22,7 @@
       <li><a href="#modals">Overlays</a></li>
     </ul>
     <div class="sk-navbar-end">
+      <button class="sk-btn sk-btn-outline sk-btn-sm hide-mobile" data-sk-open="demo-cmdk">Search&hellip; <kbd>Ctrl K</kbd></button>
       <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle data-sk-tip="Toggle theme" aria-label="Toggle light/dark theme">&#9681;</button>
       <div class="sk-dropdown">
         <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-dropdown>Account &#9662;</button>
@@ -50,6 +51,8 @@
       <a href="#navigation">Breadcrumbs &amp; pagination</a>
       <a href="#accordion">Accordion</a>
       <a href="#chips">Chips &amp; tooltips</a>
+      <a href="#popovers">Popovers &amp; palette</a>
+      <a href="#carousel">Carousel</a>
       <a href="#progress">Stepper &amp; timeline</a>
       <a href="#groups">Groups &amp; avatars</a>
       <a href="#callouts">Callouts</a>
@@ -68,7 +71,7 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v1.2.0 &middot; no build step</span>
+        <span class="sk-badge sk-badge-primary mb-3">v1.3.0 &middot; no build step</span>
         <h1 class="mt-2">Build modern dark UIs with two files</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a tiny CSS + JS framework: utility classes for layout and spacing,
@@ -85,7 +88,7 @@
       <div class="sk-grid sk-cols-4 mb-12">
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Components</div>
-          <div class="sk-stat-value">35+</div>
+          <div class="sk-stat-value">40+</div>
         </div></div>
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Dependencies</div>
@@ -280,6 +283,16 @@
                 <label class="sk-label" for="demo-file">Attachment (file input)</label>
                 <input class="sk-file" id="demo-file" type="file">
               </div>
+              <div class="sk-grid sk-cols-2 gap-sm">
+                <div>
+                  <label class="sk-label" for="demo-date">Date</label>
+                  <input class="sk-input" id="demo-date" type="date" value="2026-08-19">
+                </div>
+                <div>
+                  <label class="sk-label" for="demo-time">Time</label>
+                  <input class="sk-input" id="demo-time" type="time" value="09:30">
+                </div>
+              </div>
             </div>
           </div></div>
         </div>
@@ -372,6 +385,7 @@
             <button class="sk-btn sk-btn-success" data-sk-toast="Saved successfully" data-sk-toast-type="success">Success toast</button>
             <button class="sk-btn" data-sk-toast="Careful with that" data-sk-toast-type="warning">Warning toast</button>
             <button class="sk-btn sk-btn-danger" data-sk-toast="Something went wrong" data-sk-toast-type="danger">Danger toast</button>
+            <button class="sk-btn" onclick="skToast('Message archived', 'info', {duration: 6000, actionText: 'Undo', onAction: function(){ skToast('Restored', 'success'); }})">Toast with Undo</button>
           </div>
         </div></div>
       </section>
@@ -435,6 +449,63 @@
             <button class="sk-btn sk-btn-outline sk-btn-icon sk-tip-bottom" data-sk-tip="Settings" aria-label="Settings">&#9881;</button>
           </div>
         </div></div>
+      </section>
+
+      <!-- ============ POPOVERS + COMMAND PALETTE ============ -->
+      <section id="popovers" class="mb-12">
+        <h2>Popovers &amp; command palette</h2>
+        <div class="sk-card"><div class="sk-card-body">
+          <p class="text-muted text-sm">Popovers are click-toggled rich panels — like a dropdown, but for content instead of menu items. Outside click and <kbd>Esc</kbd> close them.</p>
+          <div class="flex gap-3 flex-wrap mb-6">
+            <div class="sk-popover">
+              <button class="sk-btn" data-sk-popover>What's this? &#9662;</button>
+              <div class="sk-popover-panel">
+                <div class="sk-popover-title">Usage-based billing</div>
+                You're charged only for the compute you use, metered per second. The first 100 hours each month are free.
+              </div>
+            </div>
+            <div class="sk-popover">
+              <button class="sk-btn sk-btn-outline" data-sk-popover>With actions &#9662;</button>
+              <div class="sk-popover-panel">
+                <div class="sk-popover-title">Delete workspace?</div>
+                <p class="text-sm">This removes all projects and members.</p>
+                <button class="sk-btn sk-btn-danger sk-btn-sm" onclick="skToast('Workspace deleted', 'danger')">Delete</button>
+              </div>
+            </div>
+          </div>
+          <p class="text-muted text-sm mb-3">The command palette opens with <kbd>Ctrl</kbd>+<kbd>K</kbd> (or <kbd>&#8984;</kbd><kbd>K</kbd>), or from any <code>data-sk-open</code> button. Type to filter, <kbd>&uarr;</kbd><kbd>&darr;</kbd> to move, <kbd>Enter</kbd> to run.</p>
+          <button class="sk-btn sk-btn-primary" data-sk-open="demo-cmdk">Open command palette</button>
+        </div></div>
+      </section>
+
+      <!-- ============ CAROUSEL ============ -->
+      <section id="carousel" class="mb-12">
+        <h2>Carousel</h2>
+        <p class="text-muted">Scroll-snap based — swipe on touch, arrows via <code>data-sk-carousel-prev/next</code>. Add <code>sk-carousel-peek</code> or <code>sk-carousel-cols-2/3</code> to show more per view.</p>
+        <div class="sk-carousel sk-carousel-peek">
+          <div class="sk-carousel-track">
+            <div class="sk-carousel-slide"><div class="sk-card"><div class="sk-card-body">
+              <h3 class="sk-card-title">Slide one</h3>
+              <p class="text-secondary text-sm mb-0">Each slide is any markup — cards work well. This carousel uses <code>sk-carousel-peek</code> so the next slide shows at the edge.</p>
+            </div></div></div>
+            <div class="sk-carousel-slide"><div class="sk-card"><div class="sk-card-body">
+              <h3 class="sk-card-title">Slide two</h3>
+              <p class="text-secondary text-sm mb-0">Swipe, drag the scrollbar-less track, or use the arrow buttons below.</p>
+            </div></div></div>
+            <div class="sk-carousel-slide"><div class="sk-card"><div class="sk-card-body">
+              <h3 class="sk-card-title">Slide three</h3>
+              <p class="text-secondary text-sm mb-0">Slides snap into place thanks to CSS scroll-snap — no JS involved in the scrolling.</p>
+            </div></div></div>
+            <div class="sk-carousel-slide"><div class="sk-card"><div class="sk-card-body">
+              <h3 class="sk-card-title">Slide four</h3>
+              <p class="text-secondary text-sm mb-0">The last slide. Arrows scroll one full view at a time.</p>
+            </div></div></div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-prev aria-label="Previous slide">&larr;</button>
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-next aria-label="Next slide">&rarr;</button>
+          </div>
+        </div>
       </section>
 
       <!-- ============ STEPPER + TIMELINE ============ -->
@@ -650,7 +721,7 @@
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v1.2.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v1.3.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
@@ -712,6 +783,28 @@
       <div class="sk-drawer-footer">
         <button class="sk-btn sk-btn-ghost" data-sk-close>Cancel</button>
         <button class="sk-btn sk-btn-primary" data-sk-close onclick="skToast('Preferences saved', 'success')">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COMMAND PALETTE (Ctrl/Cmd+K) ============ -->
+  <div class="sk-cmdk" id="demo-cmdk" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="sk-cmdk-box">
+      <input class="sk-cmdk-input" type="text" placeholder="Type a command or search&hellip;" aria-label="Search commands">
+      <div class="sk-cmdk-list">
+        <a href="#buttons">&#128290; Go to Buttons</a>
+        <a href="#forms" data-sk-keywords="input select textarea">&#128221; Go to Forms</a>
+        <a href="#tables" data-sk-keywords="sort filter">&#128202; Go to Tables</a>
+        <a href="#carousel" data-sk-keywords="slider slides">&#127902; Go to Carousel</a>
+        <button data-sk-theme-toggle>&#9681; Toggle theme</button>
+        <button data-sk-toast="Cache cleared" data-sk-toast-type="success" data-sk-keywords="purge">&#9889; Clear cache</button>
+        <button data-sk-open="demo-drawer" data-sk-keywords="settings notifications">&#128276; Notification settings</button>
+      </div>
+      <div class="sk-cmdk-empty">No matching commands.</div>
+      <div class="sk-cmdk-hint">
+        <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> navigate</span>
+        <span><kbd>Enter</kbd> run</span>
+        <span><kbd>Esc</kbd> close</span>
       </div>
     </div>
   </div>

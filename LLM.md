@@ -1,4 +1,4 @@
-# Skynet UI — LLM reference (v1.2.0)
+# Skynet UI — LLM reference (v1.3.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
@@ -20,14 +20,16 @@ RULES FOR GENERATION:
 --sk-font | --sk-font-mono | --sk-container 1140px | --sk-navbar-height 60px | --sk-sidebar-width 250px
 
 ## JS API (global, from skynet-ui.js)
-skToast(message, type?, durationMs?) — type: "info"(default)|"success"|"warning"|"danger"; duration default 3500, 0 = sticky
-skOpenModal(id) / skCloseModal(id) — also open/close drawers
+skToast(message, type?, durationMsOrOpts?) — type: "info"(default)|"success"|"warning"|"danger"; 3rd arg: duration ms (default 3500, 0 = sticky) OR {duration, actionText, onAction} for an action button ("Undo")
+skOpenModal(id) / skCloseModal(id) — also open/close drawers and command palettes
 skToggleTheme() — flips light/dark and persists the choice in localStorage
 skConfirm(message, opts?) → Promise<boolean> — builds a confirm modal; opts: {title, okText, cancelText, danger}
 
 ## Data attributes (wire up behavior, no JS)
-data-sk-open="id" — button opens that modal OR drawer
+data-sk-open="id" — button opens that modal, drawer, OR command palette
 data-sk-close — element inside a modal/drawer closes it (backdrop click + Esc also close)
+data-sk-popover — trigger button inside .sk-popover toggles its .sk-popover-panel (outside click + Esc close)
+data-sk-carousel-prev / data-sk-carousel-next — buttons inside .sk-carousel scroll the track one view
 data-sk-tabs — on tab container; data-sk-tab="panel-id" — on each tab button (panel = element with that id)
 data-sk-dropdown — on trigger button inside .sk-dropdown
 data-sk-sidebar — button toggles .sk-sidebar on mobile
@@ -235,6 +237,35 @@ th[data-sk-sort] → click-sortable column. input[data-sk-filter="table-or-list-
 ```html
 <input class="sk-input mb-3" type="search" data-sk-filter="t1" placeholder="Filter…">
 <div class="sk-table-wrap"><table class="sk-table" id="t1"><thead><tr><th data-sk-sort>Name</th></tr></thead><tbody>…</tbody></table></div>
+```
+
+### Popover (click-toggled rich panel)
+div.sk-popover > trigger[data-sk-popover] + div.sk-popover-panel (optional div.sk-popover-title first; panel modifiers: sk-top opens above, sk-right right-aligns).
+```html
+<div class="sk-popover"><button class="sk-btn" data-sk-popover>Details &#9662;</button><div class="sk-popover-panel"><div class="sk-popover-title">Title</div>Content, even buttons.</div></div>
+```
+
+### Command palette (Ctrl/Cmd+K; place at end of body; ONE per page)
+div.sk-cmdk#id > div.sk-cmdk-box > input.sk-cmdk-input + div.sk-cmdk-list (children = <a>/<button> commands; optional data-sk-keywords="extra words") + optional div.sk-cmdk-empty + optional div.sk-cmdk-hint. Opens via Ctrl/Cmd+K or [data-sk-open="id"]. Typing filters; ↑↓ move; Enter runs; Esc/backdrop close. Choosing an item closes the palette and runs its link/onclick/data-sk-*.
+```html
+<div class="sk-cmdk" id="cmdk" role="dialog" aria-modal="true" aria-label="Command palette"><div class="sk-cmdk-box">
+  <input class="sk-cmdk-input" type="text" placeholder="Type a command…" aria-label="Search commands">
+  <div class="sk-cmdk-list"><a href="/dashboard">Dashboard</a><button data-sk-theme-toggle>Toggle theme</button></div>
+  <div class="sk-cmdk-empty">No matches.</div>
+</div></div>
+```
+
+### Carousel (CSS scroll-snap; arrows optional)
+div.sk-carousel (modifiers: sk-carousel-peek shows next slide's edge; sk-carousel-cols-2|-cols-3 show 2/3 per view ≥768px) > div.sk-carousel-track > div.sk-carousel-slide each. Arrow buttons anywhere inside the carousel: [data-sk-carousel-prev] / [data-sk-carousel-next].
+```html
+<div class="sk-carousel sk-carousel-peek"><div class="sk-carousel-track"><div class="sk-carousel-slide">…</div><div class="sk-carousel-slide">…</div></div>
+<div class="flex gap-2 mt-3"><button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-prev aria-label="Previous">&larr;</button><button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-next aria-label="Next">&rarr;</button></div></div>
+```
+
+### Date/time inputs
+Just use sk-input — color-scheme makes native pickers match the theme.
+```html
+<input class="sk-input" type="date"> <input class="sk-input" type="time">
 ```
 
 ### Breadcrumbs
