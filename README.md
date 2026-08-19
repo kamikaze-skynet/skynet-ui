@@ -119,6 +119,18 @@ Want a user-facing switch instead? Put `data-sk-theme-toggle` on any button and 
 
 Sizes: add `sk-btn-sm` or `sk-btn-lg`. Full-width: `sk-btn-block`. Round icon button: `sk-btn-icon`. Links can be buttons too: `<a class="sk-btn sk-btn-primary" href="/signup">Sign up</a>`.
 
+Loading state: add `sk-btn-loading` — a spinner appears before the label and clicks are blocked (toggle the class from your JS while a request is in flight).
+
+Button groups join buttons into one bar; add `data-sk-segment` to turn the group into a segmented control where clicking moves the `active` highlight automatically:
+
+```html
+<div class="sk-btn-group" data-sk-segment>
+  <button class="sk-btn active">Day</button>
+  <button class="sk-btn">Week</button>
+  <button class="sk-btn">Month</button>
+</div>
+```
+
 ### Cards
 
 ```html
@@ -248,6 +260,20 @@ The toggle needs that empty `<span></span>` right after the input — that's the
 
 Always keep the `sk-table-wrap` wrapper — it gives the rounded border and lets wide tables scroll sideways on phones instead of breaking the layout. Options: `sk-table-hover` (row highlight), `sk-table-striped` (zebra rows).
 
+Sorting: put `data-sk-sort` on any `<th>` and clicking it sorts the rows by that column (click again to reverse). Columns whose cells are all numbers — including `99.98%` or `$1,200` — sort numerically.
+
+Filtering: an input with `data-sk-filter="table-id"` hides rows that don't contain the typed text as you type. It works on lists too — point it at a `.sk-list` (or any container) and it filters the direct children:
+
+```html
+<input class="sk-input mb-3" type="search" placeholder="Filter…" data-sk-filter="my-table">
+<div class="sk-table-wrap">
+  <table class="sk-table" id="my-table">
+    <thead><tr><th data-sk-sort>Name</th><th data-sk-sort>Uptime</th></tr></thead>
+    <tbody>…</tbody>
+  </table>
+</div>
+```
+
 ### Tabs
 
 ```html
@@ -285,6 +311,38 @@ Rules: the container gets `data-sk-tabs`; each button's `data-sk-tab` value matc
 ```
 
 `data-sk-open="the-modal-id"` opens; anything with `data-sk-close` inside the modal closes it. Clicking the dark backdrop or pressing Esc also closes. Sizes: add `sk-modal-sm` or `sk-modal-lg` to the `sk-modal-box`. From your own JS you can also call `skOpenModal('my-modal')` / `skCloseModal('my-modal')`.
+
+For a quick confirmation you don't need any markup — `skConfirm` builds the dialog for you and returns a promise:
+
+```js
+skConfirm("Delete this project?", { danger: true, okText: "Delete" })
+  .then(ok => { if (ok) deleteProject(); });
+// options (all optional): title, okText, cancelText, danger
+```
+
+### Drawers (slide-in panels)
+
+Same wiring as modals — `data-sk-open` / `data-sk-close` / backdrop / Esc — but the box slides in from the side. Good for filters, settings, carts.
+
+```html
+<button class="sk-btn" data-sk-open="my-drawer">Open drawer</button>
+
+<!-- put drawers near the end of <body>, like modals -->
+<div class="sk-drawer" id="my-drawer" role="dialog" aria-modal="true">
+  <div class="sk-drawer-box">
+    <div class="sk-drawer-header">
+      Title
+      <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button>
+    </div>
+    <div class="sk-drawer-body">Anything can go here.</div>
+    <div class="sk-drawer-footer">
+      <button class="sk-btn sk-btn-primary" data-sk-close>Done</button>
+    </div>
+  </div>
+</div>
+```
+
+Slides from the right by default; add `sk-drawer-left` to the container for the left side.
 
 ### Toasts (notifications)
 
@@ -466,10 +524,88 @@ Big centered landing-page opener with a soft accent glow behind it.
 
 Link columns wrap automatically on small screens.
 
+### Stepper (wizard progress)
+
+```html
+<div class="sk-steps">
+  <div class="sk-step done"><div class="sk-step-dot">&check;</div><div class="sk-step-label">Cart</div></div>
+  <div class="sk-step active"><div class="sk-step-dot">2</div><div class="sk-step-label">Shipping</div></div>
+  <div class="sk-step"><div class="sk-step-dot">3</div><div class="sk-step-label">Payment</div></div>
+</div>
+```
+
+Mark completed steps `done` and the current one `active`; the connector lines color themselves.
+
+### Timeline
+
+```html
+<div class="sk-timeline">
+  <div class="sk-timeline-item sk-tl-success">
+    <div class="sk-timeline-time">2 hours ago</div>
+    <div class="sk-timeline-title">Deploy finished</div>
+    <p class="text-muted text-sm mb-0">v2.1 rolled out.</p>
+  </div>
+  <div class="sk-timeline-item">
+    <div class="sk-timeline-time">Yesterday</div>
+    <div class="sk-timeline-title">Project created</div>
+  </div>
+</div>
+```
+
+Dot colors: `sk-tl-primary`, `sk-tl-success`, `sk-tl-warning`, `sk-tl-danger`, `sk-tl-info` (default is a neutral dot).
+
+### Avatar groups & presence
+
+```html
+<div class="sk-avatar-group">
+  <span class="sk-avatar">AB</span>
+  <span class="sk-avatar">CD</span>
+  <span class="sk-avatar">+5</span>
+</div>
+
+<span class="sk-presence sk-online"><span class="sk-avatar">SK</span></span>
+```
+
+`sk-avatar-group` overlaps its avatars. `sk-presence` wraps one avatar and adds a status dot: `sk-online`, `sk-away`, `sk-busy`, `sk-offline`.
+
+### Callouts
+
+```html
+<div class="sk-callout sk-callout-warning">
+  <div class="sk-callout-title">Careful</div>
+  Body text — quieter than an alert, good for docs and notes.
+</div>
+```
+
+Edge colors: default (primary), `sk-callout-success`, `sk-callout-warning`, `sk-callout-danger`, `sk-callout-info`.
+
+### File input
+
+```html
+<input class="sk-file" type="file">
+```
+
 ### Range slider
 
 ```html
 <input class="sk-range" type="range" min="0" max="100" value="40">
+```
+
+### Scrollspy (auto-highlighting nav)
+
+Add `data-sk-scrollspy` to a sidebar or nav whose links point at `#section-ids` on the same page — the link for the section currently on screen gets `active` automatically as you scroll:
+
+```html
+<aside class="sk-sidebar" data-sk-scrollspy>
+  <a href="#intro">Intro</a>
+  <a href="#usage">Usage</a>
+</aside>
+```
+
+### Back to top
+
+```html
+<button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button>
 ```
 
 ### Copy to clipboard

@@ -1,11 +1,11 @@
 /* ==========================================================================
-   Skynet UI v1.1.0 — behavior script
+   Skynet UI v1.2.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
    Everything works through data attributes — no JS knowledge needed:
-     data-sk-open="modal-id"   → opens that modal
-     data-sk-close             → closes the modal it's inside
+     data-sk-open="id"         → opens that modal or drawer
+     data-sk-close             → closes the modal/drawer it's inside
      data-sk-tab="panel-id"    → tab button showing that panel
      data-sk-dropdown          → toggles the dropdown menu next to it
      data-sk-sidebar           → toggles the sidebar on mobile
@@ -15,12 +15,20 @@
      data-sk-copy="text"       → copies text to the clipboard (or use
                                  data-sk-copy-target="element-id")
      data-sk-dismiss           → removes the .sk-chip or .sk-alert it's inside
+     data-sk-segment           → on a .sk-btn-group: clicks move the .active
+     data-sk-sort              → on a <th>: click sorts the table by that column
+     data-sk-filter="id"       → on an <input>: typing filters that table/list
+     data-sk-scroll-top        → button smooth-scrolls back to the top
+     data-sk-scrollspy         → on a sidebar/nav of #links: highlights the
+                                 link whose section is currently on screen
 
    Global functions:
      skToast("Saved!", "success")   types: "info" (default), "success",
                                            "warning", "danger"
-     skOpenModal(id) / skCloseModal(id)
+     skOpenModal(id) / skCloseModal(id)   (drawers too)
      skToggleTheme()                flips light/dark and remembers the choice
+     skConfirm("Delete this?", {title, okText, cancelText, danger})
+                                    → Promise<boolean> confirm dialog
    ========================================================================== */
 (function () {
   "use strict";
@@ -123,7 +131,7 @@
   window.skToast = skToast;
 
   /* ----------------------------------------------------------------------
-     MODALS
+     MODALS + DRAWERS (same open/close mechanics)
      ---------------------------------------------------------------------- */
   function openModal(modal) {
     if (!modal) return;
@@ -134,13 +142,77 @@
   function closeModal(modal) {
     if (!modal) return;
     modal.classList.remove("sk-open");
-    if (!document.querySelector(".sk-modal.sk-open")) {
+    if (!document.querySelector(".sk-modal.sk-open, .sk-drawer.sk-open")) {
       document.body.classList.remove("sk-modal-open");
     }
   }
 
   window.skOpenModal = function (id) { openModal(document.getElementById(id)); };
   window.skCloseModal = function (id) { closeModal(document.getElementById(id)); };
+
+  /* ----------------------------------------------------------------------
+     CONFIRM DIALOG — skConfirm("Delete this?").then(ok => …)
+     Options: {title, okText, cancelText, danger}
+     ---------------------------------------------------------------------- */
+  function skConfirm(message, opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var modal = document.createElement("div");
+      modal.className = "sk-modal sk-open";
+      modal.setAttribute("role", "dialog");
+      modal.setAttribute("aria-modal", "true");
+
+      var box = document.createElement("div");
+      box.className = "sk-modal-box sk-modal-sm";
+
+      var header = document.createElement("div");
+      header.className = "sk-modal-header";
+      header.textContent = opts.title || "Are you sure?";
+
+      var body = document.createElement("div");
+      body.className = "sk-modal-body";
+      var p = document.createElement("p");
+      p.className = "text-secondary mb-0";
+      p.textContent = message;
+      body.appendChild(p);
+
+      var footer = document.createElement("div");
+      footer.className = "sk-modal-footer";
+      var cancelBtn = document.createElement("button");
+      cancelBtn.className = "sk-btn sk-btn-ghost";
+      cancelBtn.textContent = opts.cancelText || "Cancel";
+      var okBtn = document.createElement("button");
+      okBtn.className = "sk-btn " + (opts.danger ? "sk-btn-danger" : "sk-btn-primary");
+      okBtn.textContent = opts.okText || "OK";
+      footer.appendChild(cancelBtn);
+      footer.appendChild(okBtn);
+
+      box.appendChild(header);
+      box.appendChild(body);
+      box.appendChild(footer);
+      modal.appendChild(box);
+      document.body.appendChild(modal);
+      document.body.classList.add("sk-modal-open");
+      okBtn.focus();
+
+      function done(result) {
+        document.removeEventListener("keydown", onKey);
+        if (modal.parentNode) modal.parentNode.removeChild(modal);
+        if (!document.querySelector(".sk-modal.sk-open, .sk-drawer.sk-open")) {
+          document.body.classList.remove("sk-modal-open");
+        }
+        resolve(result);
+      }
+      function onKey(e) { if (e.key === "Escape") done(false); }
+
+      cancelBtn.addEventListener("click", function () { done(false); });
+      okBtn.addEventListener("click", function () { done(true); });
+      modal.addEventListener("click", function (e) { if (e.target === modal) done(false); });
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  window.skConfirm = skConfirm;
 
   /* ----------------------------------------------------------------------
      SIDEBAR (mobile slide-in) — creates its own backdrop
@@ -218,16 +290,17 @@
       return;
     }
 
-    /* Close modal (button inside a modal) */
+    /* Close modal/drawer (button inside one) */
     t = e.target.closest("[data-sk-close]");
     if (t) {
       e.preventDefault();
-      closeModal(t.closest(".sk-modal"));
+      closeModal(t.closest(".sk-modal, .sk-drawer"));
       return;
     }
 
-    /* Click on the dark area outside the modal box closes it */
-    if (e.target.classList && e.target.classList.contains("sk-modal")) {
+    /* Click on the dark area outside the modal/drawer box closes it */
+    if (e.target.classList &&
+        (e.target.classList.contains("sk-modal") || e.target.classList.contains("sk-drawer"))) {
       closeModal(e.target);
       return;
     }
@@ -312,6 +385,32 @@
       return;
     }
 
+    /* Segmented control: move .active inside a data-sk-segment button group */
+    t = e.target.closest("[data-sk-segment] .sk-btn");
+    if (t) {
+      e.preventDefault();
+      t.closest("[data-sk-segment]").querySelectorAll(".sk-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
+      t.classList.add("active");
+      return;
+    }
+
+    /* Sortable table header: click cycles ascending / descending */
+    t = e.target.closest("th[data-sk-sort]");
+    if (t) {
+      sortByColumn(t);
+      return;
+    }
+
+    /* Back to top */
+    t = e.target.closest("[data-sk-scroll-top]");
+    if (t) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     /* Clicking a sidebar link on mobile closes the sidebar */
     if (e.target.closest(".sk-sidebar a") && window.innerWidth < 768) {
       closeSidebar();
@@ -321,11 +420,95 @@
     if (!e.target.closest(".sk-dropdown")) closeAllDropdowns();
   });
 
-  /* Escape closes modals, dropdowns, and the mobile sidebar */
+  /* Escape closes modals, drawers, dropdowns, and the mobile sidebar */
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
-    document.querySelectorAll(".sk-modal.sk-open").forEach(closeModal);
+    document.querySelectorAll(".sk-modal.sk-open, .sk-drawer.sk-open").forEach(closeModal);
     closeAllDropdowns();
     closeSidebar();
   });
+
+  /* ----------------------------------------------------------------------
+     SORTABLE TABLES — <th data-sk-sort> (numeric columns detected)
+     ---------------------------------------------------------------------- */
+  function sortByColumn(th) {
+    var table = th.closest("table");
+    var tbody = table && table.tBodies[0];
+    if (!tbody) return;
+
+    var headers = Array.prototype.slice.call(th.parentNode.children);
+    var col = headers.indexOf(th);
+    var asc = !th.classList.contains("sk-sort-asc");
+    headers.forEach(function (h) { h.classList.remove("sk-sort-asc", "sk-sort-desc"); });
+    th.classList.add(asc ? "sk-sort-asc" : "sk-sort-desc");
+
+    function cellText(row) {
+      return row.cells[col] ? row.cells[col].textContent.trim() : "";
+    }
+    function asNumber(text) {
+      return parseFloat(text.replace(/[$,%\s]/g, ""));
+    }
+
+    var rows = Array.prototype.slice.call(tbody.rows);
+    var numeric = rows.length > 0 && rows.every(function (r) {
+      var text = cellText(r);
+      return text !== "" && !isNaN(asNumber(text));
+    });
+
+    rows.sort(function (a, b) {
+      var ta = cellText(a), tb = cellText(b);
+      var diff = numeric ? asNumber(ta) - asNumber(tb)
+                         : ta.localeCompare(tb, undefined, { sensitivity: "base" });
+      return asc ? diff : -diff;
+    });
+    rows.forEach(function (r) { tbody.appendChild(r); });
+  }
+
+  /* ----------------------------------------------------------------------
+     LIVE FILTER — <input data-sk-filter="target-id"> hides rows/items of the
+     target (table body rows, or direct children of a list/grid) that don't
+     contain the typed text.
+     ---------------------------------------------------------------------- */
+  document.addEventListener("input", function (e) {
+    var input = e.target.closest("[data-sk-filter]");
+    if (!input) return;
+    var target = document.getElementById(input.getAttribute("data-sk-filter"));
+    if (!target) return;
+    if (target.tagName === "TABLE" && !target.tBodies[0]) return;
+
+    var items = target.tagName === "TABLE" ? target.tBodies[0].rows : target.children;
+    var query = input.value.toLowerCase();
+    Array.prototype.forEach.call(items, function (item) {
+      item.style.display =
+        item.textContent.toLowerCase().indexOf(query) > -1 ? "" : "none";
+    });
+  });
+
+  /* ----------------------------------------------------------------------
+     SCROLLSPY — data-sk-scrollspy on a nav/sidebar of #anchor links keeps
+     the link for the section currently on screen marked .active
+     ---------------------------------------------------------------------- */
+  if ("IntersectionObserver" in window) {
+    document.querySelectorAll("[data-sk-scrollspy]").forEach(function (nav) {
+      var linkFor = {};
+      nav.querySelectorAll('a[href^="#"]').forEach(function (link) {
+        linkFor[link.getAttribute("href").slice(1)] = link;
+      });
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          nav.querySelectorAll("a.active").forEach(function (a) {
+            a.classList.remove("active");
+          });
+          linkFor[entry.target.id].classList.add("active");
+        });
+      }, { rootMargin: "-20% 0px -70% 0px" });
+
+      Object.keys(linkFor).forEach(function (id) {
+        var section = document.getElementById(id);
+        if (section) observer.observe(section);
+      });
+    });
+  }
 })();
