@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.0.0 — behavior script
+   Skynet UI v1.1.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -11,13 +11,65 @@
      data-sk-sidebar           → toggles the sidebar on mobile
      data-sk-burger            → toggles the navbar menu on mobile
      data-sk-toast="Message"   → shows a toast (data-sk-toast-type="success")
+     data-sk-theme-toggle      → switches light/dark theme (remembered)
+     data-sk-copy="text"       → copies text to the clipboard (or use
+                                 data-sk-copy-target="element-id")
+     data-sk-dismiss           → removes the .sk-chip or .sk-alert it's inside
 
-   One global function:
+   Global functions:
      skToast("Saved!", "success")   types: "info" (default), "success",
                                            "warning", "danger"
+     skOpenModal(id) / skCloseModal(id)
+     skToggleTheme()                flips light/dark and remembers the choice
    ========================================================================== */
 (function () {
   "use strict";
+
+  /* ----------------------------------------------------------------------
+     THEME — restores the saved choice on load; data-sk-theme-toggle flips it
+     ---------------------------------------------------------------------- */
+  var THEME_KEY = "sk-theme";
+
+  try {
+    var savedTheme = localStorage.getItem(THEME_KEY);
+    if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  } catch (err) { /* localStorage unavailable (e.g. file:// in some browsers) */ }
+
+  function skToggleTheme() {
+    var root = document.documentElement;
+    var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (err) { /* ignore */ }
+  }
+
+  window.skToggleTheme = skToggleTheme;
+
+  /* ----------------------------------------------------------------------
+     COPY TO CLIPBOARD
+     ---------------------------------------------------------------------- */
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(
+        function () { skToast("Copied to clipboard", "success"); },
+        function () { skToast("Couldn't copy", "danger"); }
+      );
+      return;
+    }
+    /* Fallback for http:// pages and older browsers */
+    var area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    try {
+      document.execCommand("copy");
+      skToast("Copied to clipboard", "success");
+    } catch (err) {
+      skToast("Couldn't copy", "danger");
+    }
+    document.body.removeChild(area);
+  }
 
   /* ----------------------------------------------------------------------
      TOASTS
@@ -223,6 +275,40 @@
     if (t) {
       e.preventDefault();
       skToast(t.getAttribute("data-sk-toast"), t.getAttribute("data-sk-toast-type") || "info");
+      return;
+    }
+
+    /* Theme toggle */
+    t = e.target.closest("[data-sk-theme-toggle]");
+    if (t) {
+      e.preventDefault();
+      skToggleTheme();
+      return;
+    }
+
+    /* Copy to clipboard: data-sk-copy="text" or data-sk-copy-target="element-id" */
+    t = e.target.closest("[data-sk-copy], [data-sk-copy-target]");
+    if (t) {
+      e.preventDefault();
+      var copySource = t.getAttribute("data-sk-copy");
+      if (!copySource) {
+        var copyEl = document.getElementById(t.getAttribute("data-sk-copy-target"));
+        if (copyEl) {
+          copySource = copyEl.value !== undefined && copyEl.value !== ""
+            ? copyEl.value
+            : copyEl.textContent.trim();
+        }
+      }
+      if (copySource) copyText(copySource);
+      return;
+    }
+
+    /* Dismiss: removes the chip or alert the button sits inside */
+    t = e.target.closest("[data-sk-dismiss]");
+    if (t) {
+      e.preventDefault();
+      var box = t.closest(".sk-chip, .sk-alert");
+      if (box && box.parentNode) box.parentNode.removeChild(box);
       return;
     }
 

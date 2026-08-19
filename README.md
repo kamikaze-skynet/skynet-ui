@@ -96,6 +96,12 @@ You can also override variables per-site without touching the framework file —
 
 A light theme is built in: add `data-theme="light"` to the `<html>` or `<body>` tag.
 
+Want a user-facing switch instead? Put `data-sk-theme-toggle` on any button and skynet-ui.js does the rest — it flips the theme and remembers the choice in `localStorage` across page loads:
+
+```html
+<button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+```
+
 ---
 
 ## 4. Components
@@ -326,6 +332,158 @@ Add `sk-right` to the menu to align it to the right edge (useful at the end of a
 ```
 
 Variants for both: `primary`, `success`, `warning`, `danger`, `info` (badges also have a plain default).
+
+### Breadcrumbs
+
+```html
+<nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+  <a href="/">Home</a>
+  <a href="/projects">Projects</a>
+  <span>Current page</span>
+</nav>
+```
+
+Links for the ancestors, a plain `<span>` for the current page. The `/` separators are added automatically.
+
+### Pagination
+
+```html
+<nav class="sk-pagination" aria-label="Pagination">
+  <a href="?p=1">&laquo;</a>
+  <a href="?p=1">1</a>
+  <span class="active">2</span>
+  <a href="?p=3">3</a>
+  <a href="?p=3">&raquo;</a>
+</nav>
+```
+
+Children can be `<a>`, `<button>`, or `<span>`. Mark the current page with `active`; disable an arrow with the `disabled` attribute (buttons) or `sk-disabled` class (links).
+
+### Accordion
+
+```html
+<details class="sk-accordion" open>
+  <summary>Section title</summary>
+  <div class="sk-accordion-body">Content — anything can go here.</div>
+</details>
+<details class="sk-accordion">
+  <summary>Another section</summary>
+  <div class="sk-accordion-body">More content.</div>
+</details>
+```
+
+Built on the native `<details>` element, so it needs no JavaScript at all. Add `open` to the one that should start expanded. Give several the same `name="faq"` attribute if you want opening one to close the others.
+
+### Tooltips
+
+```html
+<button class="sk-btn" data-sk-tip="Shown on hover">Hover me</button>
+<button class="sk-btn sk-tip-bottom" data-sk-tip="Shown below">Or me</button>
+```
+
+Pure CSS — put `data-sk-tip="text"` on anything. Appears above by default; `sk-tip-bottom` flips it below. Keep the text short, it doesn't wrap.
+
+### Chips (tags)
+
+```html
+<span class="sk-chip">design</span>
+<span class="sk-chip sk-chip-primary">
+  frontend <button class="sk-chip-x" data-sk-dismiss aria-label="Remove">&times;</button>
+</span>
+```
+
+Variants: `primary`, `success`, `warning`, `danger`, `info`. The optional `sk-chip-x` button with `data-sk-dismiss` removes the chip when clicked (`data-sk-dismiss` also works inside an `sk-alert` to make it dismissible).
+
+### List group
+
+```html
+<div class="sk-list">
+  <a href="/inbox" class="active">Inbox</a>
+  <a href="/sent">Sent</a>
+  <div>Plain non-interactive row</div>
+</div>
+```
+
+A bordered stack of rows — links and buttons get hover states, `active` marks the current one. Rows are flex containers, so `ml-auto` pushes a badge to the right edge.
+
+### Empty state
+
+```html
+<div class="sk-empty">
+  <div class="sk-empty-icon">&#128230;</div>
+  <div class="sk-empty-title">No projects yet</div>
+  <p>Create your first project to get started.</p>
+  <button class="sk-btn sk-btn-primary sk-btn-sm">New project</button>
+</div>
+```
+
+### Skeleton loaders
+
+```html
+<div class="sk-skeleton" style="width: 60%"></div>          <!-- generic block -->
+<div class="sk-skeleton sk-skeleton-text"></div>            <!-- thin text line; stacks -->
+<span class="sk-skeleton sk-skeleton-circle"></span>        <!-- avatar-sized circle -->
+<div class="sk-skeleton" style="height: 120px"></div>       <!-- image placeholder -->
+```
+
+Shimmering placeholders to show while content loads. Size them with inline widths/heights or utilities.
+
+### Hero
+
+```html
+<section class="sk-hero">
+  <h1 class="sk-hero-title">Ship faster</h1>
+  <p class="sk-hero-subtitle">One-line pitch goes here.</p>
+  <div class="sk-hero-actions">
+    <a class="sk-btn sk-btn-primary sk-btn-lg" href="/signup">Start free</a>
+    <a class="sk-btn sk-btn-outline sk-btn-lg" href="/docs">Read docs</a>
+  </div>
+</section>
+```
+
+Big centered landing-page opener with a soft accent glow behind it.
+
+### Footer
+
+```html
+<footer class="sk-footer">
+  <div class="sk-container">
+    <div class="sk-footer-grid">
+      <div>
+        <div class="sk-footer-title">Product</div>
+        <a href="/features">Features</a>
+        <a href="/pricing">Pricing</a>
+      </div>
+      <!-- more columns -->
+    </div>
+    <div class="sk-footer-bottom">
+      <span>&copy; 2026 My Site</span>
+      <span>Made with Skynet UI</span>
+    </div>
+  </div>
+</footer>
+```
+
+Link columns wrap automatically on small screens.
+
+### Range slider
+
+```html
+<input class="sk-range" type="range" min="0" max="100" value="40">
+```
+
+### Copy to clipboard
+
+```html
+<button class="sk-btn" data-sk-copy="npm install nothing">Copy command</button>
+
+<div class="sk-input-group">
+  <input class="sk-input" id="api-key" type="text" value="sk-123" readonly>
+  <button class="sk-btn" data-sk-copy-target="api-key">Copy</button>
+</div>
+```
+
+`data-sk-copy="text"` copies literal text; `data-sk-copy-target="element-id"` copies that element's value (inputs) or text content. A success toast confirms the copy.
 
 ### Small extras
 

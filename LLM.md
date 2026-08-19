@@ -1,4 +1,4 @@
-# Skynet UI — LLM reference (v1.0.0)
+# Skynet UI — LLM reference (v1.1.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
@@ -22,6 +22,7 @@ RULES FOR GENERATION:
 ## JS API (global, from skynet-ui.js)
 skToast(message, type?, durationMs?) — type: "info"(default)|"success"|"warning"|"danger"; duration default 3500, 0 = sticky
 skOpenModal(id) / skCloseModal(id)
+skToggleTheme() — flips light/dark and persists the choice in localStorage
 
 ## Data attributes (wire up behavior, no JS)
 data-sk-open="modal-id" — button opens that modal
@@ -31,6 +32,10 @@ data-sk-dropdown — on trigger button inside .sk-dropdown
 data-sk-sidebar — button toggles .sk-sidebar on mobile
 data-sk-burger — button toggles navbar links on mobile
 data-sk-toast="Msg" + optional data-sk-toast-type="success|warning|danger" — button shows toast
+data-sk-theme-toggle — button flips light/dark theme (persisted across page loads)
+data-sk-copy="text" — button copies text to clipboard; or data-sk-copy-target="element-id" copies that element's value/text. Success toast shown automatically
+data-sk-dismiss — button inside .sk-chip or .sk-alert removes it
+data-sk-tip="text" — CSS-only tooltip on hover/focus (above by default; add class sk-tip-bottom to flip below; text must be short, no wrapping)
 
 ## Components
 
@@ -170,6 +175,72 @@ div.sk-dropdown > trigger[data-sk-dropdown] + div.sk-dropdown-menu (add sk-right
     <button>Sign out</button>
   </div>
 </div>
+```
+
+### Breadcrumbs
+nav.sk-breadcrumbs > <a> per ancestor + <span> for the current page. Separators added by CSS.
+```html
+<nav class="sk-breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><a href="/projects">Projects</a><span>Current</span></nav>
+```
+
+### Pagination
+nav.sk-pagination > <a>/<button>/<span> children. Current page: class active. Disabled arrow: [disabled] (button) or class sk-disabled (link).
+```html
+<nav class="sk-pagination" aria-label="Pagination"><a href="?p=1">&laquo;</a><a href="?p=1">1</a><span class="active">2</span><a href="?p=3">3</a><a href="?p=3">&raquo;</a></nav>
+```
+
+### Accordion (native <details>, zero JS)
+details.sk-accordion > summary + div.sk-accordion-body. Add open attr to start expanded. Same name attr on several = exclusive open.
+```html
+<details class="sk-accordion" open><summary>Title</summary><div class="sk-accordion-body">Content</div></details>
+```
+
+### Chip (tag)
+span.sk-chip + optional variant sk-chip-primary|success|warning|danger|info. Removable: append button.sk-chip-x[data-sk-dismiss].
+```html
+<span class="sk-chip sk-chip-primary">frontend <button class="sk-chip-x" data-sk-dismiss aria-label="Remove">&times;</button></span>
+```
+
+### List group
+div.sk-list > <a>/<button>/<div> rows (flex; ml-auto pushes badges right). Current row: class active.
+```html
+<div class="sk-list"><a href="/inbox" class="active">Inbox <span class="sk-badge ml-auto">12</span></a><a href="/sent">Sent</a></div>
+```
+
+### Empty state
+div.sk-empty > optional sk-empty-icon (emoji/char), sk-empty-title, <p>, action button.
+```html
+<div class="sk-empty"><div class="sk-empty-icon">&#128230;</div><div class="sk-empty-title">No projects yet</div><p>Create one to get started.</p><button class="sk-btn sk-btn-primary sk-btn-sm">New project</button></div>
+```
+
+### Skeleton loader
+sk-skeleton (block; size with inline width/height) | sk-skeleton-text modifier (thin line, stacks with spacing) | sk-skeleton-circle modifier (avatar-sized).
+```html
+<div class="sk-skeleton sk-skeleton-text" style="width: 60%"></div>
+```
+
+### Hero (landing-page opener)
+section.sk-hero > sk-hero-title (h1), sk-hero-subtitle (p), sk-hero-actions (button row).
+```html
+<section class="sk-hero"><h1 class="sk-hero-title">Ship faster</h1><p class="sk-hero-subtitle">Pitch.</p><div class="sk-hero-actions"><a class="sk-btn sk-btn-primary sk-btn-lg" href="/signup">Start</a></div></section>
+```
+
+### Footer
+footer.sk-footer > sk-container > sk-footer-grid (columns of sk-footer-title + links) + sk-footer-bottom (copyright bar).
+```html
+<footer class="sk-footer"><div class="sk-container"><div class="sk-footer-grid"><div><div class="sk-footer-title">Product</div><a href="/pricing">Pricing</a></div></div><div class="sk-footer-bottom"><span>&copy; 2026</span></div></div></footer>
+```
+
+### Range slider
+```html
+<input class="sk-range" type="range" min="0" max="100" value="40">
+```
+
+### Tooltip / theme toggle / copy (attribute-only, no component markup)
+```html
+<button class="sk-btn" data-sk-tip="Tooltip text">Hover</button>
+<button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+<button class="sk-btn" data-sk-copy="text to copy">Copy</button>
 ```
 
 ### Misc
