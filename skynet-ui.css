@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.0.0
+   Skynet UI v1.2.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -1091,6 +1091,736 @@ kbd {
   flex: 1;
   border-top: 1px solid var(--sk-border);
 }
+
+/* --------------------------------------------------------------------------
+   18. BREADCRUMBS
+   Use: <nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <a href="/projects">Projects</a>
+          <span>Skynet</span>          ← current page, not a link
+        </nav>
+   -------------------------------------------------------------------------- */
+.sk-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--sk-text-2);
+}
+.sk-breadcrumbs a { color: var(--sk-muted); }
+.sk-breadcrumbs a:hover { color: var(--sk-primary); text-decoration: none; }
+.sk-breadcrumbs > * + *::before {
+  content: "/";
+  color: var(--sk-faint);
+  margin-right: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   19. PAGINATION
+   Use: <nav class="sk-pagination" aria-label="Pagination">
+          <a href="?p=1">&laquo;</a>
+          <a href="?p=1">1</a>
+          <span class="active">2</span>
+          <a href="?p=3">3</a>
+          <a href="?p=3">&raquo;</a>
+        </nav>
+   Works with <a>, <button>, or <span>. Disabled: [disabled] or .sk-disabled.
+   -------------------------------------------------------------------------- */
+.sk-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.sk-pagination > * {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--sk-transition), border-color var(--sk-transition), color var(--sk-transition);
+}
+.sk-pagination > a:hover,
+.sk-pagination > button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-pagination > .active {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+  cursor: default;
+}
+.sk-pagination > [disabled],
+.sk-pagination > .sk-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   20. ACCORDION — zero JS, uses the native <details> element
+   Use: <details class="sk-accordion" open>
+          <summary>Question or section title</summary>
+          <div class="sk-accordion-body">Content…</div>
+        </details>
+   Stack several in a row; add `open` to the one expanded by default.
+   -------------------------------------------------------------------------- */
+.sk-accordion {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+.sk-accordion summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background var(--sk-transition);
+}
+.sk-accordion summary::-webkit-details-marker { display: none; }
+.sk-accordion summary:hover { background: var(--sk-surface-2); }
+.sk-accordion summary::after {
+  content: "+";
+  color: var(--sk-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform var(--sk-transition);
+}
+.sk-accordion[open] summary::after { transform: rotate(45deg); }
+.sk-accordion-body {
+  padding: 0.25rem 1.25rem 1.1rem;
+  color: var(--sk-text-2);
+  font-size: 0.9375rem;
+}
+
+/* --------------------------------------------------------------------------
+   21. TOOLTIPS — pure CSS, shown on hover/focus
+   Use: <button class="sk-btn" data-sk-tip="Tooltip text">Hover me</button>
+   Appears above by default; add class sk-tip-bottom to flip below.
+   Keep the text short — it doesn't wrap.
+   -------------------------------------------------------------------------- */
+[data-sk-tip] { position: relative; }
+[data-sk-tip]::after {
+  content: attr(data-sk-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  background: var(--sk-text);
+  color: var(--sk-bg);
+  font-size: 0.775rem;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--sk-radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 90;
+  transition: opacity var(--sk-transition), transform var(--sk-transition);
+}
+[data-sk-tip]:hover::after,
+[data-sk-tip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.sk-tip-bottom::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+.sk-tip-bottom:hover::after,
+.sk-tip-bottom:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   22. SKELETON LOADERS — shimmering placeholders while content loads
+   Use: <div class="sk-skeleton" style="width: 60%"></div>
+        <div class="sk-skeleton sk-skeleton-text"></div>   ← thinner, stacks
+        <span class="sk-skeleton sk-skeleton-circle"></span> ← avatar-sized
+   -------------------------------------------------------------------------- */
+.sk-skeleton {
+  display: block;
+  height: 1.1rem;
+  border-radius: var(--sk-radius-sm);
+  background: linear-gradient(90deg,
+    var(--sk-surface-2) 25%,
+    var(--sk-border-2) 50%,
+    var(--sk-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+.sk-skeleton-text { height: 0.85rem; }
+.sk-skeleton-text + .sk-skeleton-text { margin-top: 0.6rem; }
+.sk-skeleton-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@keyframes sk-shimmer { to { background-position: -200% 0; } }
+
+/* --------------------------------------------------------------------------
+   23. CHIPS — compact tags, optionally removable
+   Use: <span class="sk-chip">design</span>
+        <span class="sk-chip sk-chip-primary">
+          frontend <button class="sk-chip-x" data-sk-dismiss aria-label="Remove">&times;</button>
+        </span>
+   data-sk-dismiss (from skynet-ui.js) removes the chip on click.
+   -------------------------------------------------------------------------- */
+.sk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--sk-text-2);
+  line-height: 1.4;
+}
+.sk-chip-primary { background: var(--sk-primary-soft); border-color: transparent; color: #a5b4fc; }
+.sk-chip-success { background: var(--sk-success-soft); border-color: transparent; color: var(--sk-success-text); }
+.sk-chip-warning { background: var(--sk-warning-soft); border-color: transparent; color: var(--sk-warning-text); }
+.sk-chip-danger  { background: var(--sk-danger-soft);  border-color: transparent; color: var(--sk-danger-text); }
+.sk-chip-info    { background: var(--sk-info-soft);    border-color: transparent; color: var(--sk-info-text); }
+.sk-chip-x {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: -0.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.sk-chip-x:hover { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   24. LIST GROUP — bordered stack of rows (links, buttons, or plain divs)
+   Use: <div class="sk-list">
+          <a href="/inbox" class="active">Inbox</a>
+          <a href="/sent">Sent</a>
+          <div>Plain non-interactive row</div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-list {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  overflow: hidden;
+}
+.sk-list > * {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border: none;
+  border-bottom: 1px solid var(--sk-border);
+  background: none;
+  color: var(--sk-text-2);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  text-align: left;
+}
+.sk-list > *:last-child { border-bottom: none; }
+.sk-list > a, .sk-list > button { cursor: pointer; transition: background var(--sk-transition), color var(--sk-transition); }
+.sk-list > a:hover, .sk-list > button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-list > .active {
+  background: var(--sk-primary-soft);
+  color: var(--sk-text);
+  box-shadow: inset 3px 0 0 var(--sk-primary);
+}
+
+/* --------------------------------------------------------------------------
+   25. EMPTY STATE — friendly placeholder when there's no data yet
+   Use: <div class="sk-empty">
+          <div class="sk-empty-icon">&#128230;</div>
+          <div class="sk-empty-title">No projects yet</div>
+          <p>Create your first project to get started.</p>
+          <button class="sk-btn sk-btn-primary sk-btn-sm">New project</button>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--sk-border-2);
+  border-radius: var(--sk-radius-lg);
+  color: var(--sk-muted);
+  font-size: 0.9375rem;
+}
+.sk-empty-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+  opacity: 0.8;
+}
+.sk-empty-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--sk-text);
+  margin-bottom: 0.35rem;
+}
+.sk-empty p { max-width: 26rem; margin-left: auto; margin-right: auto; }
+.sk-empty .sk-btn { margin-top: 0.75rem; }
+
+/* --------------------------------------------------------------------------
+   26. HERO — big centered landing-page opener
+   Use: <section class="sk-hero">
+          <h1 class="sk-hero-title">Ship faster</h1>
+          <p class="sk-hero-subtitle">One-line pitch goes here.</p>
+          <div class="sk-hero-actions">
+            <a class="sk-btn sk-btn-primary sk-btn-lg" href="/signup">Start free</a>
+            <a class="sk-btn sk-btn-outline sk-btn-lg" href="/docs">Read docs</a>
+          </div>
+        </section>
+   -------------------------------------------------------------------------- */
+.sk-hero {
+  text-align: center;
+  padding: 4.5rem 1.5rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--sk-primary-soft), transparent);
+}
+.sk-hero-title {
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.sk-hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--sk-text-2);
+  max-width: 38rem;
+  margin: 0 auto;
+}
+.sk-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   27. FOOTER — site footer with link columns and a bottom bar
+   Use: <footer class="sk-footer">
+          <div class="sk-container">
+            <div class="sk-footer-grid">
+              <div>
+                <div class="sk-footer-title">Product</div>
+                <a href="/features">Features</a>
+                <a href="/pricing">Pricing</a>
+              </div>
+              …more columns…
+            </div>
+            <div class="sk-footer-bottom">
+              <span>&copy; 2026 My Site</span>
+              <span>Made with Skynet UI</span>
+            </div>
+          </div>
+        </footer>
+   -------------------------------------------------------------------------- */
+.sk-footer {
+  background: var(--sk-surface);
+  border-top: 1px solid var(--sk-border);
+  padding: 3rem 0 2rem;
+  margin-top: 4rem;
+  font-size: 0.9375rem;
+  color: var(--sk-text-2);
+}
+.sk-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem 1.5rem;
+}
+.sk-footer-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sk-muted);
+  margin-bottom: 0.75rem;
+}
+.sk-footer-grid a {
+  display: block;
+  padding: 0.2rem 0;
+  color: var(--sk-text-2);
+}
+.sk-footer-grid a:hover { color: var(--sk-primary); text-decoration: none; }
+.sk-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  border-top: 1px solid var(--sk-border);
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--sk-muted);
+}
+
+/* --------------------------------------------------------------------------
+   28. RANGE SLIDER
+   Use: <input type="range" class="sk-range" min="0" max="100" value="40">
+   -------------------------------------------------------------------------- */
+.sk-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--sk-border-2);
+  border-radius: 9999px;
+  outline-offset: 4px;
+  cursor: pointer;
+}
+.sk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--sk-primary);
+  border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2);
+  transition: transform var(--sk-transition);
+}
+.sk-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--sk-primary);
+  border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2);
+}
+.sk-range::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+/* --------------------------------------------------------------------------
+   29. STEPPER — wizard / checkout progress
+   Use: <div class="sk-steps">
+          <div class="sk-step done"><div class="sk-step-dot">&check;</div><div class="sk-step-label">Cart</div></div>
+          <div class="sk-step active"><div class="sk-step-dot">2</div><div class="sk-step-label">Shipping</div></div>
+          <div class="sk-step"><div class="sk-step-dot">3</div><div class="sk-step-label">Payment</div></div>
+        </div>
+   States: done (completed), active (current), none (upcoming).
+   -------------------------------------------------------------------------- */
+.sk-steps { display: flex; }
+.sk-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  position: relative;
+  min-width: 0;
+}
+.sk-step-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  color: var(--sk-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.sk-step-label {
+  font-size: 0.8125rem;
+  color: var(--sk-muted);
+  padding: 0 0.25rem;
+}
+/* connector line to the previous step */
+.sk-step::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--sk-border-2);
+}
+.sk-step:first-child::before { display: none; }
+.sk-step.active .sk-step-dot { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
+.sk-step.active .sk-step-label { color: var(--sk-text); font-weight: 600; }
+.sk-step.done .sk-step-dot { background: var(--sk-primary-soft); border-color: var(--sk-primary); color: #a5b4fc; }
+.sk-step.done::before, .sk-step.active::before { background: var(--sk-primary); }
+
+/* --------------------------------------------------------------------------
+   30. TIMELINE — vertical activity feed
+   Use: <div class="sk-timeline">
+          <div class="sk-timeline-item sk-tl-success">
+            <div class="sk-timeline-time">2 hours ago</div>
+            <div class="sk-timeline-title">Deploy finished</div>
+            <p class="text-muted text-sm mb-0">v2.1 rolled out to production.</p>
+          </div>
+          …
+        </div>
+   Dot colors: sk-tl-primary | sk-tl-success | sk-tl-warning | sk-tl-danger | sk-tl-info
+   -------------------------------------------------------------------------- */
+.sk-timeline {
+  position: relative;
+  padding-left: 1.75rem;
+}
+.sk-timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--sk-border);
+}
+.sk-timeline-item { position: relative; padding-bottom: 1.5rem; }
+.sk-timeline-item:last-child { padding-bottom: 0; }
+.sk-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -1.75rem;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sk-border-2);
+  box-shadow: 0 0 0 3px var(--sk-bg);
+}
+.sk-tl-primary::before { background: var(--sk-primary); }
+.sk-tl-success::before { background: var(--sk-success); }
+.sk-tl-warning::before { background: var(--sk-warning); }
+.sk-tl-danger::before  { background: var(--sk-danger); }
+.sk-tl-info::before    { background: var(--sk-info); }
+.sk-timeline-time { font-size: 0.75rem; color: var(--sk-faint); }
+.sk-timeline-title { font-weight: 600; color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   31. BUTTON GROUP + SEGMENTED CONTROL + LOADING BUTTON
+   Group:     <div class="sk-btn-group"> <button class="sk-btn">…</button> … </div>
+   Segmented: add data-sk-segment to the group — clicking a button moves the
+              .active highlight automatically (skynet-ui.js).
+   Loading:   add .sk-btn-loading to any .sk-btn — shows a spinner, blocks clicks.
+   -------------------------------------------------------------------------- */
+.sk-btn-group { display: inline-flex; }
+.sk-btn-group .sk-btn { border-radius: 0; }
+.sk-btn-group .sk-btn + .sk-btn { margin-left: -1px; }
+.sk-btn-group .sk-btn:first-child { border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm); }
+.sk-btn-group .sk-btn:last-child { border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0; }
+.sk-btn-group .sk-btn.active {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.sk-btn-loading { pointer-events: none; opacity: 0.75; }
+.sk-btn-loading::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sk-spin 0.7s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   32. AVATAR GROUP + PRESENCE DOT
+   Overlap:  <div class="sk-avatar-group">
+               <span class="sk-avatar">AB</span><span class="sk-avatar">CD</span>
+               <span class="sk-avatar">+3</span>
+             </div>
+   Presence: <span class="sk-presence sk-online"><span class="sk-avatar">SK</span></span>
+             States: sk-online | sk-away | sk-busy | sk-offline
+   -------------------------------------------------------------------------- */
+.sk-avatar-group { display: inline-flex; }
+.sk-avatar-group .sk-avatar,
+.sk-avatar-group .sk-presence { box-shadow: 0 0 0 2px var(--sk-surface); }
+.sk-avatar-group > * + * { margin-left: -10px; }
+
+.sk-presence { position: relative; display: inline-flex; border-radius: 50%; }
+.sk-presence::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--sk-faint);
+  border: 2px solid var(--sk-surface);
+}
+.sk-online::after  { background: var(--sk-success); }
+.sk-away::after    { background: var(--sk-warning); }
+.sk-busy::after    { background: var(--sk-danger); }
+.sk-offline::after { background: var(--sk-faint); }
+
+/* --------------------------------------------------------------------------
+   33. CALLOUT — highlighted note with a colored edge (docs-style)
+   Use: <div class="sk-callout sk-callout-warning">
+          <div class="sk-callout-title">Heads up</div>
+          Anything after the title is the body.
+        </div>
+   Variants: sk-callout-success | sk-callout-warning | sk-callout-danger | sk-callout-info
+   (default edge is the primary color)
+   -------------------------------------------------------------------------- */
+.sk-callout {
+  padding: 1rem 1.25rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-left: 4px solid var(--sk-primary);
+  border-radius: var(--sk-radius);
+  font-size: 0.9375rem;
+  color: var(--sk-text-2);
+}
+.sk-callout-title { font-weight: 600; color: var(--sk-text); margin-bottom: 0.25rem; }
+.sk-callout-success { border-left-color: var(--sk-success); }
+.sk-callout-warning { border-left-color: var(--sk-warning); }
+.sk-callout-danger  { border-left-color: var(--sk-danger); }
+.sk-callout-info    { border-left-color: var(--sk-info); }
+
+/* --------------------------------------------------------------------------
+   34. FILE INPUT
+   Use: <input class="sk-file" type="file">
+   -------------------------------------------------------------------------- */
+.sk-file {
+  display: block;
+  width: 100%;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--sk-muted);
+  cursor: pointer;
+}
+.sk-file::file-selector-button {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  margin-right: 0.75rem;
+  color: var(--sk-text-2);
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-file::file-selector-button:hover { background: var(--sk-border); color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   35. DRAWER — slide-in panel (offcanvas)
+   Use: <button class="sk-btn" data-sk-open="my-drawer">Open drawer</button>
+
+        <div class="sk-drawer" id="my-drawer" role="dialog" aria-modal="true">
+          <div class="sk-drawer-box">
+            <div class="sk-drawer-header">
+              Title
+              <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button>
+            </div>
+            <div class="sk-drawer-body">…anything…</div>
+            <div class="sk-drawer-footer">
+              <button class="sk-btn sk-btn-primary" data-sk-close>Done</button>
+            </div>
+          </div>
+        </div>
+   Same wiring as modals: data-sk-open / data-sk-close / backdrop click / Esc.
+   Slides from the right; add sk-drawer-left to the container for the left side.
+   -------------------------------------------------------------------------- */
+.sk-drawer {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.62);
+  z-index: 290;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.sk-drawer.sk-open { opacity: 1; visibility: visible; }
+.sk-drawer-box {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 92vw);
+  background: var(--sk-surface);
+  border-left: 1px solid var(--sk-border);
+  box-shadow: var(--sk-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+.sk-drawer.sk-open .sk-drawer-box { transform: none; }
+.sk-drawer-left .sk-drawer-box {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid var(--sk-border);
+  transform: translateX(-100%);
+}
+.sk-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.sk-drawer-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+.sk-drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--sk-border);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   36. SORTABLE TABLE HEADERS  (behavior in skynet-ui.js)
+   Use: <th data-sk-sort>Name</th> — click cycles ascending/descending.
+   Numeric columns are detected and sorted numerically.
+   -------------------------------------------------------------------------- */
+th[data-sk-sort] { cursor: pointer; user-select: none; white-space: nowrap; }
+th[data-sk-sort]::after {
+  content: "\2195";           /* ↕ */
+  margin-left: 0.4rem;
+  font-size: 0.75em;
+  opacity: 0.4;
+}
+th[data-sk-sort].sk-sort-asc::after  { content: "\2191"; opacity: 1; color: var(--sk-primary); }
+th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(--sk-primary); }
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {

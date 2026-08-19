@@ -1,4 +1,4 @@
-# Skynet UI — LLM reference (v1.0.0)
+# Skynet UI — LLM reference (v1.2.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
@@ -21,23 +21,40 @@ RULES FOR GENERATION:
 
 ## JS API (global, from skynet-ui.js)
 skToast(message, type?, durationMs?) — type: "info"(default)|"success"|"warning"|"danger"; duration default 3500, 0 = sticky
-skOpenModal(id) / skCloseModal(id)
+skOpenModal(id) / skCloseModal(id) — also open/close drawers
+skToggleTheme() — flips light/dark and persists the choice in localStorage
+skConfirm(message, opts?) → Promise<boolean> — builds a confirm modal; opts: {title, okText, cancelText, danger}
 
 ## Data attributes (wire up behavior, no JS)
-data-sk-open="modal-id" — button opens that modal
-data-sk-close — element inside a modal closes it (backdrop click + Esc also close)
+data-sk-open="id" — button opens that modal OR drawer
+data-sk-close — element inside a modal/drawer closes it (backdrop click + Esc also close)
 data-sk-tabs — on tab container; data-sk-tab="panel-id" — on each tab button (panel = element with that id)
 data-sk-dropdown — on trigger button inside .sk-dropdown
 data-sk-sidebar — button toggles .sk-sidebar on mobile
 data-sk-burger — button toggles navbar links on mobile
 data-sk-toast="Msg" + optional data-sk-toast-type="success|warning|danger" — button shows toast
+data-sk-theme-toggle — button flips light/dark theme (persisted across page loads)
+data-sk-copy="text" — button copies text to clipboard; or data-sk-copy-target="element-id" copies that element's value/text. Success toast shown automatically
+data-sk-dismiss — button inside .sk-chip or .sk-alert removes it
+data-sk-tip="text" — CSS-only tooltip on hover/focus (above by default; add class sk-tip-bottom to flip below; text must be short, no wrapping)
+data-sk-segment — on a .sk-btn-group: clicking a button moves the .active highlight (segmented control)
+data-sk-sort — on a <th>: click sorts tbody rows by that column, toggles asc/desc; numeric columns (incl. "99.9%", "$1,200") auto-detected
+data-sk-filter="target-id" — on an <input>: typing hides non-matching rows (table) or direct children (list/grid) of the target
+data-sk-scroll-top — button smooth-scrolls the window to the top
+data-sk-scrollspy — on a nav/sidebar of href="#id" links: link for the section on screen gets .active automatically
 
 ## Components
 
 ### Button
-Classes: sk-btn (base, required) + variant: sk-btn-primary | sk-btn-success | sk-btn-danger | sk-btn-outline | sk-btn-ghost. Sizes: sk-btn-sm | sk-btn-lg | sk-btn-block (full width) | sk-btn-icon (round). Works on <button> and <a>.
+Classes: sk-btn (base, required) + variant: sk-btn-primary | sk-btn-success | sk-btn-danger | sk-btn-outline | sk-btn-ghost. Sizes: sk-btn-sm | sk-btn-lg | sk-btn-block (full width) | sk-btn-icon (round). Loading state: add sk-btn-loading (spinner + blocks clicks). Works on <button> and <a>.
 ```html
 <button class="sk-btn sk-btn-primary">Save</button>
+```
+
+### Button group / segmented control
+div.sk-btn-group joins buttons. Add data-sk-segment for a segmented control (clicks move .active automatically).
+```html
+<div class="sk-btn-group" data-sk-segment><button class="sk-btn active">Day</button><button class="sk-btn">Week</button></div>
 ```
 
 ### Card
@@ -170,6 +187,120 @@ div.sk-dropdown > trigger[data-sk-dropdown] + div.sk-dropdown-menu (add sk-right
     <button>Sign out</button>
   </div>
 </div>
+```
+
+### Drawer (slide-in panel; same wiring as modal, place at end of body)
+div.sk-drawer#id (add sk-drawer-left for left side) > div.sk-drawer-box > sk-drawer-header (+ button.sk-modal-x[data-sk-close]), sk-drawer-body, sk-drawer-footer.
+```html
+<button class="sk-btn" data-sk-open="d1">Open</button>
+<div class="sk-drawer" id="d1" role="dialog" aria-modal="true"><div class="sk-drawer-box">
+  <div class="sk-drawer-header">Title <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button></div>
+  <div class="sk-drawer-body">Content</div>
+  <div class="sk-drawer-footer"><button class="sk-btn sk-btn-primary" data-sk-close>Done</button></div>
+</div></div>
+```
+
+### Stepper (wizard progress)
+div.sk-steps > div.sk-step (state: done | active | none) > div.sk-step-dot (number or &check;) + div.sk-step-label.
+```html
+<div class="sk-steps"><div class="sk-step done"><div class="sk-step-dot">&check;</div><div class="sk-step-label">Cart</div></div><div class="sk-step active"><div class="sk-step-dot">2</div><div class="sk-step-label">Pay</div></div></div>
+```
+
+### Timeline
+div.sk-timeline > div.sk-timeline-item (dot color modifier: sk-tl-primary|success|warning|danger|info) > optional sk-timeline-time, sk-timeline-title, any content.
+```html
+<div class="sk-timeline"><div class="sk-timeline-item sk-tl-success"><div class="sk-timeline-time">2h ago</div><div class="sk-timeline-title">Deployed</div></div></div>
+```
+
+### Avatar group / presence dot
+div.sk-avatar-group overlaps child avatars (last one can be "+N"). span.sk-presence.sk-online|sk-away|sk-busy|sk-offline wraps ONE avatar, adds status dot.
+```html
+<div class="sk-avatar-group"><span class="sk-avatar">AB</span><span class="sk-avatar">+5</span></div>
+<span class="sk-presence sk-online"><span class="sk-avatar">SK</span></span>
+```
+
+### Callout (docs-style note; quieter than alert)
+div.sk-callout (+ sk-callout-success|warning|danger|info; default edge = primary) > optional div.sk-callout-title + body.
+```html
+<div class="sk-callout sk-callout-warning"><div class="sk-callout-title">Careful</div>Body text.</div>
+```
+
+### File input
+```html
+<input class="sk-file" type="file">
+```
+
+### Sortable/filterable table (add-ons to Table above)
+th[data-sk-sort] → click-sortable column. input[data-sk-filter="table-or-list-id"] → live row filter.
+```html
+<input class="sk-input mb-3" type="search" data-sk-filter="t1" placeholder="Filter…">
+<div class="sk-table-wrap"><table class="sk-table" id="t1"><thead><tr><th data-sk-sort>Name</th></tr></thead><tbody>…</tbody></table></div>
+```
+
+### Breadcrumbs
+nav.sk-breadcrumbs > <a> per ancestor + <span> for the current page. Separators added by CSS.
+```html
+<nav class="sk-breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><a href="/projects">Projects</a><span>Current</span></nav>
+```
+
+### Pagination
+nav.sk-pagination > <a>/<button>/<span> children. Current page: class active. Disabled arrow: [disabled] (button) or class sk-disabled (link).
+```html
+<nav class="sk-pagination" aria-label="Pagination"><a href="?p=1">&laquo;</a><a href="?p=1">1</a><span class="active">2</span><a href="?p=3">3</a><a href="?p=3">&raquo;</a></nav>
+```
+
+### Accordion (native <details>, zero JS)
+details.sk-accordion > summary + div.sk-accordion-body. Add open attr to start expanded. Same name attr on several = exclusive open.
+```html
+<details class="sk-accordion" open><summary>Title</summary><div class="sk-accordion-body">Content</div></details>
+```
+
+### Chip (tag)
+span.sk-chip + optional variant sk-chip-primary|success|warning|danger|info. Removable: append button.sk-chip-x[data-sk-dismiss].
+```html
+<span class="sk-chip sk-chip-primary">frontend <button class="sk-chip-x" data-sk-dismiss aria-label="Remove">&times;</button></span>
+```
+
+### List group
+div.sk-list > <a>/<button>/<div> rows (flex; ml-auto pushes badges right). Current row: class active.
+```html
+<div class="sk-list"><a href="/inbox" class="active">Inbox <span class="sk-badge ml-auto">12</span></a><a href="/sent">Sent</a></div>
+```
+
+### Empty state
+div.sk-empty > optional sk-empty-icon (emoji/char), sk-empty-title, <p>, action button.
+```html
+<div class="sk-empty"><div class="sk-empty-icon">&#128230;</div><div class="sk-empty-title">No projects yet</div><p>Create one to get started.</p><button class="sk-btn sk-btn-primary sk-btn-sm">New project</button></div>
+```
+
+### Skeleton loader
+sk-skeleton (block; size with inline width/height) | sk-skeleton-text modifier (thin line, stacks with spacing) | sk-skeleton-circle modifier (avatar-sized).
+```html
+<div class="sk-skeleton sk-skeleton-text" style="width: 60%"></div>
+```
+
+### Hero (landing-page opener)
+section.sk-hero > sk-hero-title (h1), sk-hero-subtitle (p), sk-hero-actions (button row).
+```html
+<section class="sk-hero"><h1 class="sk-hero-title">Ship faster</h1><p class="sk-hero-subtitle">Pitch.</p><div class="sk-hero-actions"><a class="sk-btn sk-btn-primary sk-btn-lg" href="/signup">Start</a></div></section>
+```
+
+### Footer
+footer.sk-footer > sk-container > sk-footer-grid (columns of sk-footer-title + links) + sk-footer-bottom (copyright bar).
+```html
+<footer class="sk-footer"><div class="sk-container"><div class="sk-footer-grid"><div><div class="sk-footer-title">Product</div><a href="/pricing">Pricing</a></div></div><div class="sk-footer-bottom"><span>&copy; 2026</span></div></div></footer>
+```
+
+### Range slider
+```html
+<input class="sk-range" type="range" min="0" max="100" value="40">
+```
+
+### Tooltip / theme toggle / copy (attribute-only, no component markup)
+```html
+<button class="sk-btn" data-sk-tip="Tooltip text">Hover</button>
+<button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+<button class="sk-btn" data-sk-copy="text to copy">Copy</button>
 ```
 
 ### Misc
