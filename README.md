@@ -71,12 +71,14 @@ Pin a version for anything real: latest URLs can change how your site looks when
 
 The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare Pages applies automatically.
 
-One-time setup on Cloudflare Pages (works with a **private** GitHub repo):
+Deploys run from GitHub Actions (`.github/workflows/deploy.yml`): every push to `main` uploads `site/` to the `skynetui` Cloudflare Pages project with wrangler — no dashboard Git integration needed, and the repo can be private.
 
-1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**, pick this repo.
-2. Build settings: framework preset **None**, build command **(empty)**, build output directory **`site`**.
-3. After the first deploy, **Custom domains → add `skynetui.com`** (and `www.skynetui.com` if you want) — Cloudflare handles DNS + HTTPS if the domain is on Cloudflare.
-4. Done. Every push to `main` redeploys automatically; the GitHub repo can stay private the whole time.
+One-time setup:
+
+1. Create an API token at **dash.cloudflare.com/profile/api-tokens** with the **"Cloudflare Pages — Edit"** permission.
+2. In the GitHub repo → **Settings → Secrets and variables → Actions**, add two repository secrets: `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (shown in the right sidebar of the Cloudflare dashboard's Workers & Pages page).
+3. Push to `main` (or run the workflow manually from the Actions tab) — the first run creates the `skynetui` Pages project and deploys.
+4. In the Cloudflare dashboard → **Workers & Pages → skynetui → Custom domains → add `skynetui.com`** — one click if the domain's DNS is on Cloudflare, HTTPS automatic.
 
 Cutting a release: `scripts/release.sh 1.6.0` copies the current files into `site/` and `site/v1.6.0/`, then update the version badge + CDN snippet in `site/index.html` and commit. Published `site/vX.Y.Z/` folders are immutable — never overwrite one.
 
