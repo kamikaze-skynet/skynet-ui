@@ -51,6 +51,37 @@ That's the entire installation. Every page that includes those two tags gets the
 
 ---
 
+## 1b. Or skip the download — use the CDN
+
+Skynet UI is served from **skynetui.com**, so any page can use it with two tags and no files copied at all:
+
+```html
+<!-- pinned version (recommended for production — immutable, cached forever) -->
+<link rel="stylesheet" href="https://skynetui.com/v1.5.0/skynet-ui.css">
+<script src="https://skynetui.com/v1.5.0/skynet-ui.js" defer></script>
+
+<!-- or always-latest (updates automatically within the hour) -->
+<link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
+<script src="https://skynetui.com/skynet-ui.js" defer></script>
+```
+
+Pin a version for anything real: latest URLs can change how your site looks when a new release ships. The machine-readable reference for AI tools lives at `https://skynetui.com/llms.txt`.
+
+### How the hosting works (maintainer notes)
+
+The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare Pages applies automatically.
+
+One-time setup on Cloudflare Pages (works with a **private** GitHub repo):
+
+1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**, pick this repo.
+2. Build settings: framework preset **None**, build command **(empty)**, build output directory **`site`**.
+3. After the first deploy, **Custom domains → add `skynetui.com`** (and `www.skynetui.com` if you want) — Cloudflare handles DNS + HTTPS if the domain is on Cloudflare.
+4. Done. Every push to `main` redeploys automatically; the GitHub repo can stay private the whole time.
+
+Cutting a release: `scripts/release.sh 1.6.0` copies the current files into `site/` and `site/v1.6.0/`, then update the version badge + CDN snippet in `site/index.html` and commit. Published `site/vX.Y.Z/` folders are immutable — never overwrite one.
+
+---
+
 ## 2. The 60-second mental model
 
 Skynet UI gives you two kinds of class names:
