@@ -1,14 +1,15 @@
-# Skynet UI — LLM reference (v1.5.0)
+# Skynet UI — LLM reference (v2.0.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
 RULES FOR GENERATION:
-- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v1.5.0/skynet-ui.css` and `https://skynetui.com/v1.5.0/skynet-ui.js` (pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v2.0.0/skynet-ui.css` and `https://skynetui.com/v2.0.0/skynet-ui.js` (pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
 - Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
 - Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
 - Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
 - Mobile-first: `.sk-grid` is 1 column on phones; `sk-cols-*` add columns at ≥640px/≥1024px. Navbar collapses behind a `data-sk-burger` button; sidebar slides in via a `data-sk-sidebar` button.
-- Spacing scale: number × 0.25rem (`4` = 1rem). Available steps: 0,1,2,3,4,6,8 (plus 12,16 for mt/mb/py).
+- Spacing scale: number × 0.25rem (`4` = 1rem), same as Tailwind. Steps 0–8 everywhere, plus 5/10/12/16/20/24 on common axes (see Tailwind-compat additions below).
+- Utilities include a Tailwind-compat layer (grid-cols-*, space-y-*, w-1/2, sm:/md:/lg: variants for a listed set, line-clamp, sr-only, …) — see "Tailwind-compat additions" and the conversion guide at the end of this file.
 - Do not invent class names not listed here.
 
 ## CSS variables (in :root — override to theme)
@@ -371,6 +372,45 @@ Text color: text-main text-secondary text-muted text-primary text-success text-w
 Background: bg-page bg-surface bg-surface-2 bg-primary bg-success bg-warning bg-danger
 Border/shape: border border-2 border-t border-b rounded rounded-sm rounded-lg rounded-full shadow shadow-lg
 Other: overflow-hidden overflow-auto cursor-pointer opacity-50 opacity-75
+
+### Tailwind-compat additions (v2.0)
+Position: static fixed top-0 right-0 bottom-0 left-0 inset-0 z-0 z-10 z-20 z-30 z-40 z-50
+Display: inline
+Flex: flex-row-reverse flex-col-reverse flex-nowrap flex-none grow-0 items-baseline items-stretch justify-around justify-evenly self-start/center/end/stretch order-first order-last gap-5 gap-10 gap-12 gap-x-2/4/6 gap-y-2/4/6
+Grid: grid-cols-1..6 grid-cols-12 col-span-1..6 col-span-full place-items-center
+Spacing: m/p-5,10,12,16; mt/mb-5,10,20,24; pt-16/20/24 pb-20/24 px-5/8/10 py-10/16/20/24 mx-6 my-6 my-12 ml/mr-6,8 pl/pr-6,8
+Space-between children: space-y-1/2/3/4/6/8 space-x-1/2/3/4/6/8
+Sizing: w-1/2 w-1/3 w-2/3 w-1/4 w-3/4 w-fit w-screen w-4..w-64 (4,6,8,10,12,16,24,32,48,64) min-w-0 h-auto h-screen h-4..h-64 (same steps) max-h-full max-h-screen max-w-full max-w-none max-w-4xl/5xl/6xl/7xl
+Type: text-5xl text-6xl italic not-italic underline line-through font-light font-extrabold tracking-tight/wide/wider leading-none list-none list-disc list-decimal whitespace-nowrap whitespace-pre-wrap break-words break-all text-justify align-top/middle/bottom lowercase normal-case line-clamp-1/2/3 text-faint
+Bg/border: bg-transparent bg-info border-0 border-l border-r border-dashed border-dotted border-primary/success/warning/danger/info divide-y divide-x rounded-none rounded-xl rounded-2xl rounded-t rounded-b
+Effects: shadow-sm shadow-none opacity-0 opacity-25 opacity-100 transition duration-150/300/500
+Interactivity: select-none pointer-events-none cursor-default cursor-not-allowed resize-none appearance-none
+Media: object-cover object-contain aspect-square aspect-video
+Overflow: overflow-y-auto overflow-x-auto overflow-x-hidden overflow-y-hidden
+A11y: sr-only
+Responsive (mobile-first, write like Tailwind — class="grid grid-cols-1 md:grid-cols-3"):
+  sm: (≥640px) / md: (≥768px) / lg: (≥1024px) variants exist for: hidden block flex grid inline-flex flex-row flex-col grid-cols-2/3/4 (md+lg also 5/6, col-span-2) w-auto w-full w-1/2 (md+lg also w-1/3) text-left text-center items-center justify-between (sm+md)
+  NO other responsive variants exist — for anything else use sk-grid sk-cols-2/3/4 (auto-responsive) or restructure.
+
+## Converting Tailwind CSS markup to Skynet UI
+Skynet UI ships a Tailwind-compat utility layer (above): most structural Tailwind classes work unchanged. Apply these rules IN ORDER:
+1. COMPONENTS FIRST — replace Tailwind component recipes with Skynet components instead of rebuilding them from utilities:
+   - Button (`px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 font-medium`) → `sk-btn sk-btn-primary` (variants: sk-btn-success/danger/outline/ghost; sizes sk-btn-sm/lg)
+   - Card/panel (`bg-white dark:bg-gray-800 rounded-lg shadow p-6`) → `sk-card` > `sk-card-body`
+   - Input (`border border-gray-300 rounded px-3 py-2 focus:ring…`) → `sk-input` (also sk-select, sk-textarea, sk-label, sk-field wrapper)
+   - Badge/pill (`text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800`) → `sk-badge sk-badge-success`
+   - Navbars, sidebars, modals, dropdowns, tabs, toasts, tables, accordions, tooltips, avatars, alerts → use the Skynet components documented in this file, never utility rebuilds
+2. COLORS ARE SEMANTIC, never palette-literal, so all 8 themes keep working:
+   - bg-white / bg-gray-50 (light) and bg-gray-800/900, bg-slate-*/zinc-* (dark) → `bg-surface` (panels) or `bg-page` (page background); hovered rows / inset wells → `bg-surface-2`
+   - text-gray-900 / text-white → `text-main` (or omit — it's the default); text-gray-600/700 or text-gray-300 → `text-secondary`; text-gray-400/500 → `text-muted`
+   - border-gray-* (any shade) → `border` (theme supplies the color)
+   - Brand accents (indigo/blue/violet-600 etc.) → `text-primary` / `bg-primary` / sk-btn-primary; green/emerald → success; yellow/amber/orange → warning; red/rose → danger; sky/cyan → info
+3. DELETE every `dark:` variant — theming is automatic via data-theme.
+4. DELETE `hover:` / `focus:` / `focus-visible:` variants — Skynet components carry their own states (a needed bare hover effect on a card → `sk-card-hover`).
+5. RESPONSIVE: keep sm:/md:/lg: prefixes only for the variants listed above; map `xl:`→`lg:`. Grids are often simpler as `sk-grid sk-cols-2/3/4` (responsive by default, no prefixes needed).
+6. ARBITRARY VALUES (`w-[347px]`, `bg-[#1da1f2]`, `text-[13px]`) → nearest utility, or `style=""` when exactness matters.
+7. UNSUPPORTED (ring-*, backdrop-*, bg-gradient-* except the hero's built-in glow, transform/scale/rotate, animate-*, group-*, peer-*) → drop them; use `style=""` only if visually essential.
+8. Spacing scale matches Tailwind (n × 0.25rem). Available steps: 0–8 everywhere, plus 10/12/16/20/24 on the common axes listed above — snap odd steps to the nearest available.
 
 ## Page skeleton
 ```html

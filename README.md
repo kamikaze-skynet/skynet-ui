@@ -57,8 +57,8 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 ```html
 <!-- pinned version (recommended for production — immutable, cached forever) -->
-<link rel="stylesheet" href="https://skynetui.com/v1.5.0/skynet-ui.css">
-<script src="https://skynetui.com/v1.5.0/skynet-ui.js" defer></script>
+<link rel="stylesheet" href="https://skynetui.com/v2.0.0/skynet-ui.css">
+<script src="https://skynetui.com/v2.0.0/skynet-ui.js" defer></script>
 
 <!-- or always-latest (updates automatically within the hour) -->
 <link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
@@ -848,7 +848,7 @@ Available: `flex`, `inline-flex`, `flex-col`, `flex-wrap`, `items-start/center/e
 
 ### Spacing
 
-Pattern: `{property}{side}-{size}`. Properties: `m` margin, `p` padding. Sides: none (all), `t` top, `b` bottom, `l` left, `r` right, `x` horizontal, `y` vertical. Sizes: `0, 1, 2, 3, 4, 6, 8` (and `12, 16` for `mt`/`mb`/`py`), where each step is 0.25rem — so `4` = 1rem = 16px.
+Pattern: `{property}{side}-{size}`. Properties: `m` margin, `p` padding. Sides: none (all), `t` top, `b` bottom, `l` left, `r` right, `x` horizontal, `y` vertical. Sizes: `0, 1, 2, 3, 4, 6, 8` everywhere (plus `5, 10, 12, 16, 20, 24` on the common axes), where each step is 0.25rem — so `4` = 1rem = 16px. Same scale as Tailwind.
 
 Examples: `p-4` (padding 1rem), `mt-6` (margin-top 1.5rem), `mb-2`, `px-4`, `py-8`, `mx-auto` (center horizontally).
 
@@ -865,6 +865,10 @@ Examples: `p-4` (padding 1rem), `mt-6` (margin-top 1.5rem), `mb-2`, `px-4`, `py-
 - `hide-mobile` — hidden below 768px
 - `hide-desktop` — hidden at 768px and up (e.g. the mobile sidebar button)
 - `hidden` — always hidden
+
+### Tailwind compatibility (v2.0)
+
+A large utility layer uses Tailwind's class names, so markup written for Tailwind mostly works as-is and LLMs can convert Tailwind pages nearly mechanically: `grid grid-cols-1 md:grid-cols-3`, `space-y-4`, `w-1/2`, `inset-0 z-50`, `line-clamp-2`, `aspect-video`, `divide-y`, `sr-only`, and responsive `sm:`/`md:`/`lg:` variants for the high-traffic set. Colors intentionally stay **semantic** (`bg-surface`, `text-muted`, `text-primary`) instead of Tailwind's raw palette — that's what lets all 8 themes restyle the same markup. The full list and a step-by-step Tailwind → Skynet conversion guide live in `LLM.md` (served at `skynetui.com/llms.txt`).
 
 ### Misc utilities
 

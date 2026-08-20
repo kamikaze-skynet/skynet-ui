@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.5.0 — behavior script
+   Skynet UI v2.0.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
