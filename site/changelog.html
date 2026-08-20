@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Changelog — Skynet UI</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Every Skynet UI release from v1.0 to now.">
+  <meta property="og:title" content="Skynet UI changelog">
+  <meta property="og:description" content="Every Skynet UI release from v1.0 to now.">
+  <meta property="og:image" content="https://skynetui.com/og.png">
+  <meta property="og:url" content="https://skynetui.com/changelog">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="skynet-ui.css">
 </head>
 <body>
@@ -14,6 +21,7 @@
       <li><a href="/">Components</a></li>
       <li><a href="/examples.html">Examples</a></li>
       <li><a href="/themer.html">Theme builder</a></li>
+      <li><a href="/play.html">Playground</a></li>
       <li><a href="/changelog.html" class="active">Changelog</a></li>
     </ul>
   </nav>
@@ -24,6 +32,17 @@
 
     <div class="sk-timeline mt-6">
       <div class="sk-timeline-item sk-tl-primary">
+        <div class="sk-timeline-time">v3.1.0</div>
+        <div class="sk-timeline-title">Markdown, charts, theme builder v2, CI, and the scaffolder</div>
+        <div class="sk-prose text-sm"><ul>
+          <li><code>skMarkdown</code> zero-dep markdown renderer + <code>skHighlight</code> syntax highlighting + <code>skChat</code> append/stream/typing API</li>
+          <li>Pure-CSS charts: bar rows, sparklines, conic donut, legend</li>
+          <li>RTL support (<code>dir="rtl"</code>) and <code>skLocale()</code> string overrides</li>
+          <li>Theme builder v2: presets, every variable, WCAG contrast checks, import/export/share URLs; new <a href="/play.html">playground</a></li>
+          <li>MCP v2 (search_reference, get_theme_css, resources), CI smoke tests, npm provenance, <code>npm create skynet-ui</code>, favicon + social cards</li>
+        </ul></div>
+      </div>
+      <div class="sk-timeline-item">
         <div class="sk-timeline-time">v3.0.0 — “The AI App Kit”</div>
         <div class="sk-timeline-title">Chat kit, prose, MCP server, and 15+ new components</div>
         <div class="sk-prose text-sm"><ul>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground — Skynet UI</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Paste Skynet UI markup — from an LLM or your editor — and render it live in any theme.">
+  <meta property="og:title" content="Skynet UI playground">
+  <meta property="og:description" content="Paste markup, render it live in any of 9 themes.">
+  <meta property="og:image" content="https://skynetui.com/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Skynet UI</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="/">Components</a></li>
+      <li><a href="/examples.html">Examples</a></li>
+      <li><a href="/themer.html">Theme builder</a></li>
+      <li><a href="/play.html" class="active">Playground</a></li>
+      <li><a href="/changelog.html">Changelog</a></li>
+    </ul>
+  </nav>
+
+  <div class="sk-container py-8">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="mb-1">Playground</h1>
+        <p class="text-muted mb-0">Paste Skynet UI markup — for example, straight from an LLM — and render it live.</p>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        <select class="sk-select" id="play-theme" aria-label="Preview theme" style="width: auto">
+          <option value="dark">Dark</option>
+          <option value="midnight">Midnight</option>
+          <option value="forest">Forest</option>
+          <option value="dusk">Dusk</option>
+          <option value="contrast">Contrast</option>
+          <option value="light">Light</option>
+          <option value="paper">Paper</option>
+          <option value="sky">Sky</option>
+          <option value="rose">Rose</option>
+        </select>
+        <button class="sk-btn sk-btn-primary" id="btn-run">Render &rarr;</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6" style="min-height: 480px">
+      <textarea class="sk-textarea font-mono text-sm h-full" id="play-src" style="min-height: 480px" aria-label="Markup to render" spellcheck="false"></textarea>
+      <iframe id="play-frame" class="w-full border rounded-lg" style="min-height: 480px; background: #0b0f17" sandbox="allow-scripts" title="Preview"></iframe>
+    </div>
+    <p class="text-faint text-sm mt-2">The preview iframe is sandboxed. Body markup only — the stylesheet, script, and theme are added for you.</p>
+  </div>
+
+  <script src="skynet-ui.js" defer></script>
+  <script defer>
+  addEventListener("DOMContentLoaded", function () {
+    var SAMPLE = [
+      '<div class="sk-container py-8">',
+      '  <span class="sk-badge sk-badge-primary mb-3">playground</span>',
+      '  <h1>Paste anything here</h1>',
+      '  <p class="text-muted max-w-2xl">This pane renders whatever Skynet UI markup you drop in the editor - components, utilities, charts, chat bubbles.</p>',
+      '  <div class="flex gap-3 flex-wrap mt-4 mb-6">',
+      '    <button class="sk-btn sk-btn-primary" onclick="skToast(\'It works!\', \'success\')">Try a toast</button>',
+      '    <button class="sk-btn sk-btn-outline" data-sk-tip="Tooltips too">Hover me</button>',
+      '  </div>',
+      '  <div class="sk-grid sk-cols-2">',
+      '    <div class="sk-card"><div class="sk-card-body">',
+      '      <div class="sk-stat-label">Requests</div>',
+      '      <div class="sk-stat-value">4.2M</div>',
+      '      <span class="sk-delta sk-delta-up">12%</span>',
+      '    </div></div>',
+      '    <div class="sk-card"><div class="sk-card-body">',
+      '      <div class="sk-bars">',
+      '        <div class="sk-bar-row"><span class="sk-bar-label">API</span><span class="sk-bar-track"><span class="sk-bar" style="width:72%"></span></span><span class="sk-bar-value">72%</span></div>',
+      '        <div class="sk-bar-row"><span class="sk-bar-label">Jobs</span><span class="sk-bar-track"><span class="sk-bar sk-success" style="width:91%"></span></span><span class="sk-bar-value">91%</span></div>',
+      '      </div>',
+      '    </div></div>',
+      '  </div>',
+      '</div>'
+    ].join('\n');
+
+    var src = document.getElementById('play-src');
+    src.value = SAMPLE;
+
+    function render() {
+      var theme = document.getElementById('play-theme').value;
+      var doc = '<!DOCTYPE html><html lang="en" data-theme="' + theme + '"><head>' +
+        '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+        '<link rel="stylesheet" href="' + location.origin + '/skynet-ui.css"></head><body>' +
+        src.value +
+        '<scr' + 'ipt src="' + location.origin + '/skynet-ui.js" defer><\/scr' + 'ipt></body></html>';
+      document.getElementById('play-frame').srcdoc = doc;
+    }
+
+    document.getElementById('btn-run').addEventListener('click', render);
+    document.getElementById('play-theme').addEventListener('change', render);
+    src.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); render(); }
+    });
+    render();
+  });
+  </script>
+</body>
+</html>

@@ -4,13 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skynet UI — Component Showcase</title>
+  <link rel="icon" href="site/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="skynet-ui.css">
 </head>
 <body>
 
   <!-- ============ ANNOUNCEMENT BANNER ============ -->
   <div class="sk-banner" id="v3-banner" data-sk-banner>
-    <span>&#127881; <strong>v3.0</strong> — chat kit, prose, combobox, date picker, MCP server &amp; more. Dismiss me and I stay dismissed.</span>
+    <span>&#127881; <strong>v3.1</strong> — markdown renderer, syntax highlighting, CSS charts, RTL, theme builder v2 &amp; more. Dismiss me and I stay dismissed.</span>
     <button class="sk-banner-x" data-sk-dismiss aria-label="Dismiss">&times;</button>
   </div>
 
@@ -78,6 +79,7 @@
       <a href="#groups">Groups &amp; avatars</a>
       <a href="#callouts">Callouts</a>
       <a href="#ai">AI kit: chat &amp; prose</a>
+      <a href="#charts">Charts</a>
       <a href="#pickers">Pickers &amp; inputs</a>
       <a href="#advanced">Tags, tree &amp; context menu</a>
       <a href="#extras">Tour, banner &amp; lightbox</a>
@@ -96,7 +98,7 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v3.0.0 &middot; no build step</span>
+        <span class="sk-badge sk-badge-primary mb-3">v3.1.0 &middot; no build step</span>
         <h1 class="mt-2">Build modern dark UIs with two files</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a tiny CSS + JS framework: utility classes for layout and spacing,
@@ -113,7 +115,7 @@
       <div class="sk-grid sk-cols-4 mb-12">
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Components</div>
-          <div class="sk-stat-value">70+</div>
+          <div class="sk-stat-value">80+</div>
         </div></div>
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Dependencies</div>
@@ -640,6 +642,40 @@
         </div>
       </section>
 
+      <!-- ============ CHARTS ============ -->
+      <section id="charts" class="mb-12">
+        <h2>Charts</h2>
+        <p class="text-muted">Pure CSS &mdash; no canvas, no chart library. Bars, sparkline columns, and a conic-gradient donut, all themed.</p>
+        <div class="sk-grid sk-cols-3">
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-stat-label mb-3">Requests by service</div>
+            <div class="sk-bars">
+              <div class="sk-bar-row"><span class="sk-bar-label">api</span><span class="sk-bar-track"><span class="sk-bar" style="width: 72%"></span></span><span class="sk-bar-value">72%</span></div>
+              <div class="sk-bar-row"><span class="sk-bar-label">cdn</span><span class="sk-bar-track"><span class="sk-bar sk-success" style="width: 91%"></span></span><span class="sk-bar-value">91%</span></div>
+              <div class="sk-bar-row"><span class="sk-bar-label">jobs</span><span class="sk-bar-track"><span class="sk-bar sk-warning" style="width: 38%"></span></span><span class="sk-bar-value">38%</span></div>
+              <div class="sk-bar-row"><span class="sk-bar-label">cron</span><span class="sk-bar-track"><span class="sk-bar sk-danger" style="width: 12%"></span></span><span class="sk-bar-value">12%</span></div>
+            </div>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-stat-label mb-3">Traffic (14 days)</div>
+            <div class="sk-spark" aria-hidden="true">
+              <i style="height:30%"></i><i style="height:45%"></i><i style="height:40%"></i><i style="height:60%"></i>
+              <i style="height:55%"></i><i style="height:75%"></i><i style="height:70%"></i><i style="height:85%"></i>
+              <i style="height:65%"></i><i style="height:90%"></i><i style="height:80%"></i><i style="height:100%"></i>
+              <i style="height:88%"></i><i style="height:95%"></i>
+            </div>
+            <div class="sk-legend mt-3">
+              <span><i class="sk-legend-dot"></i> requests</span>
+              <span><i class="sk-legend-dot sk-success"></i> cache hits</span>
+            </div>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body flex items-center gap-6">
+            <div class="sk-donut" style="--p: 68"><div><div class="sk-donut-label">68%</div><div class="sk-donut-sub">disk used</div></div></div>
+            <div class="text-sm text-muted">Set <code>--p</code> for the percentage; <code>--sk-donut-hole</code> matches the background it sits on.</div>
+          </div></div>
+        </div>
+      </section>
+
       <!-- ============ AI KIT: CHAT + PROSE ============ -->
       <section id="ai" class="mb-12">
         <h2>AI kit: chat &amp; prose</h2>
@@ -655,9 +691,10 @@
             <div class="sk-msg sk-msg-assistant"><span class="sk-typing"><i></i><i></i><i></i></span></div>
           </div>
           <div class="sk-promptbar">
-            <textarea class="sk-textarea" data-sk-autogrow rows="1" placeholder="Message&hellip; (demo)" aria-label="Message"></textarea>
-            <button class="sk-btn sk-btn-primary" data-sk-toast="This demo doesn't send — see /examples/chat.html for the working one" data-sk-toast-type="info">Send</button>
+            <textarea class="sk-textarea" id="demo-prompt" data-sk-autogrow rows="1" placeholder="Type markdown &mdash; try **bold**, a [link](https://skynetui.com), or a ``` fence&hellip;" aria-label="Message"></textarea>
+            <button class="sk-btn sk-btn-primary" id="demo-send">Send</button>
           </div>
+          <p class="text-muted text-sm mt-3 mb-0">This one is live: it uses <code>skChat.append()</code> + <code>skMarkdown()</code> &mdash; your message echoes as user, then a markdown-rendered assistant reply streams in with code highlighting. Zero extra libraries.</p>
         </div></div>
       </section>
 
@@ -903,7 +940,7 @@
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v3.0.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v3.1.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
@@ -1007,5 +1044,29 @@
   </div>
 
   <script src="skynet-ui.js" defer></script>
+  <script defer>
+    addEventListener("DOMContentLoaded", function () {
+      var chat = document.querySelector("#ai .sk-chat");
+      var input = document.getElementById("demo-prompt");
+      function send() {
+        var text = input.value.trim();
+        if (!text || !chat) return;
+        input.value = "";
+        skChat.append(chat, "user", text);
+        skChat.typing(chat, true);
+        setTimeout(function () {
+          skChat.typing(chat, false);
+          skChat.append(chat, "assistant",
+            "You said:\n\n" + text + "\n\nRendered with **skMarkdown** — here is some `inline code` and a highlighted block:\n\n" +
+            "\u0060\u0060\u0060js\nconst ui = \"skynet\"; // zero deps\n\u0060\u0060\u0060");
+        }, 700);
+      }
+      var btn = document.getElementById("demo-send");
+      if (btn) btn.addEventListener("click", send);
+      if (input) input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+      });
+    });
+  </script>
 </body>
 </html>

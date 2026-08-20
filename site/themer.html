@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Theme builder — Skynet UI</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Build a custom Skynet UI theme visually: presets, full variable control, WCAG contrast checks, shareable URLs, and one-click CSS export.">
+  <meta property="og:title" content="Skynet UI theme builder">
+  <meta property="og:description" content="Design a theme visually and export one CSS block.">
+  <meta property="og:image" content="https://skynetui.com/og.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="skynet-ui.css">
 </head>
 <body>
@@ -14,94 +20,392 @@
       <li><a href="/">Components</a></li>
       <li><a href="/examples.html">Examples</a></li>
       <li><a href="/themer.html" class="active">Theme builder</a></li>
+      <li><a href="/play.html">Playground</a></li>
       <li><a href="/changelog.html">Changelog</a></li>
     </ul>
+    <div class="sk-navbar-end">
+      <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle site theme">&#9681;</button>
+    </div>
   </nav>
 
   <div class="sk-container py-8">
-    <h1>Theme builder</h1>
-    <p class="text-muted max-w-2xl">Pick colors, watch the live preview, copy the CSS. Your theme is one <code>[data-theme]</code> block — paste it after the stylesheet and set <code>data-theme="custom"</code> on <code>&lt;html&gt;</code>.</p>
-
-    <div class="sk-grid sk-cols-2 mt-6">
-      <div class="sk-card"><div class="sk-card-body">
-        <h3 class="sk-card-title mb-4">Colors</h3>
-        <div class="sk-grid sk-cols-2 gap-sm">
-          <div class="sk-field"><label class="sk-label" for="c-bg">Page background</label><input type="color" class="sk-input" id="c-bg" value="#0b0f17"></div>
-          <div class="sk-field"><label class="sk-label" for="c-surface">Surface (cards)</label><input type="color" class="sk-input" id="c-surface" value="#111826"></div>
-          <div class="sk-field"><label class="sk-label" for="c-surface2">Surface 2 (wells)</label><input type="color" class="sk-input" id="c-surface2" value="#172033"></div>
-          <div class="sk-field"><label class="sk-label" for="c-border">Border</label><input type="color" class="sk-input" id="c-border" value="#1e2836"></div>
-          <div class="sk-field"><label class="sk-label" for="c-text">Text</label><input type="color" class="sk-input" id="c-text" value="#e6eaf2"></div>
-          <div class="sk-field"><label class="sk-label" for="c-primary">Accent</label><input type="color" class="sk-input" id="c-primary" value="#6366f1"></div>
-        </div>
-        <div class="sk-field">
-          <label class="sk-label" for="c-family">Family (for native widgets + theme toggle)</label>
-          <select class="sk-select" id="c-family"><option value="dark">Dark</option><option value="light">Light</option></select>
-        </div>
-        <button class="sk-btn sk-btn-primary" data-sk-copy-target="css-out">Copy theme CSS</button>
-      </div></div>
-
+    <div class="flex items-center justify-between flex-wrap gap-3">
       <div>
-        <div class="sk-card" id="preview"><div class="sk-card-body">
-          <h3 class="sk-card-title">Live preview</h3>
-          <p class="sk-card-subtitle">Every component follows your palette</p>
-          <div class="flex gap-2 flex-wrap mb-4 mt-3">
-            <button class="sk-btn sk-btn-primary">Primary</button>
-            <button class="sk-btn">Default</button>
-            <button class="sk-btn sk-btn-outline">Outline</button>
-            <span class="sk-badge sk-badge-primary">Badge</span>
+        <h1 class="mb-1">Theme builder</h1>
+        <p class="text-muted mb-0">Start from a preset, tune every variable, check contrast, share by URL, export one CSS block.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button class="sk-btn" id="btn-random" data-sk-tip="Random tasteful palette">&#127922; Randomize</button>
+        <button class="sk-btn" data-sk-open="import-modal">Import CSS</button>
+        <button class="sk-btn" id="btn-share">Share URL</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <!-- ===================== CONTROLS ===================== -->
+      <div>
+        <div class="sk-card"><div class="sk-card-body">
+          <div class="sk-field">
+            <label class="sk-label" for="preset">Start from a preset</label>
+            <select class="sk-select" id="preset">
+              <option value="dark">Dark (default)</option>
+              <option value="midnight">Midnight — OLED + cyan</option>
+              <option value="forest">Forest — green + emerald</option>
+              <option value="dusk">Dusk — violet + fuchsia</option>
+              <option value="contrast">Contrast — max legibility</option>
+              <option value="light">Light</option>
+              <option value="paper">Paper — warm + amber</option>
+              <option value="sky">Sky — cool + azure</option>
+              <option value="rose">Rose — blush + rose</option>
+            </select>
           </div>
-          <div class="sk-field mb-3"><input class="sk-input" placeholder="An input…" aria-label="Preview input"></div>
-          <div class="sk-progress mb-4"><div class="sk-progress-bar" style="width: 60%"></div></div>
-          <div class="sk-alert sk-alert-info mb-0">An informational alert.</div>
+
+          <div class="sk-field">
+            <label class="sk-label" for="family">Family <span class="text-faint">(native widgets + dark/light toggle)</span></label>
+            <select class="sk-select" id="family">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+
+          <h3 class="sk-card-title mt-6 mb-3">Core colors</h3>
+          <div class="grid grid-cols-2 gap-x-4">
+            <div class="sk-field"><label class="sk-label" for="v-bg">Page background</label><input type="color" class="sk-input" id="v-bg" data-var="--sk-bg"></div>
+            <div class="sk-field"><label class="sk-label" for="v-surface">Surface (cards)</label><input type="color" class="sk-input" id="v-surface" data-var="--sk-surface"></div>
+            <div class="sk-field"><label class="sk-label" for="v-text">Text</label><input type="color" class="sk-input" id="v-text" data-var="--sk-text"></div>
+            <div class="sk-field"><label class="sk-label" for="v-primary">Accent</label><input type="color" class="sk-input" id="v-primary" data-var="--sk-primary"></div>
+          </div>
+
+          <label class="sk-check mb-4"><input type="checkbox" id="auto-derive" checked> Auto-derive the supporting shades (borders, muted text, hover accent&hellip;)</label>
+
+          <details class="sk-accordion" id="advanced-acc">
+            <summary>Advanced — every variable</summary>
+            <div class="sk-accordion-body">
+              <div class="grid grid-cols-2 gap-x-4">
+                <div class="sk-field"><label class="sk-label" for="v-surface2">Surface 2 (wells)</label><input type="color" class="sk-input adv" id="v-surface2" data-var="--sk-surface-2"></div>
+                <div class="sk-field"><label class="sk-label" for="v-border">Border</label><input type="color" class="sk-input adv" id="v-border" data-var="--sk-border"></div>
+                <div class="sk-field"><label class="sk-label" for="v-border2">Border strong</label><input type="color" class="sk-input adv" id="v-border2" data-var="--sk-border-2"></div>
+                <div class="sk-field"><label class="sk-label" for="v-text2">Text secondary</label><input type="color" class="sk-input adv" id="v-text2" data-var="--sk-text-2"></div>
+                <div class="sk-field"><label class="sk-label" for="v-muted">Text muted</label><input type="color" class="sk-input adv" id="v-muted" data-var="--sk-muted"></div>
+                <div class="sk-field"><label class="sk-label" for="v-faint">Text faint</label><input type="color" class="sk-input adv" id="v-faint" data-var="--sk-faint"></div>
+                <div class="sk-field"><label class="sk-label" for="v-primaryh">Accent hover</label><input type="color" class="sk-input adv" id="v-primaryh" data-var="--sk-primary-hover"></div>
+                <div class="sk-field"><label class="sk-label" for="v-primaryt">Accent tint (on soft)</label><input type="color" class="sk-input adv" id="v-primaryt" data-var="--sk-primary-text"></div>
+                <div class="sk-field"><label class="sk-label" for="v-success">Success</label><input type="color" class="sk-input adv" id="v-success" data-var="--sk-success"></div>
+                <div class="sk-field"><label class="sk-label" for="v-warning">Warning</label><input type="color" class="sk-input adv" id="v-warning" data-var="--sk-warning"></div>
+                <div class="sk-field"><label class="sk-label" for="v-danger">Danger</label><input type="color" class="sk-input adv" id="v-danger" data-var="--sk-danger"></div>
+                <div class="sk-field"><label class="sk-label" for="v-info">Info</label><input type="color" class="sk-input adv" id="v-info" data-var="--sk-info"></div>
+              </div>
+            </div>
+          </details>
+
+          <h3 class="sk-card-title mt-6 mb-3">Shape</h3>
+          <div class="sk-field">
+            <label class="sk-label" for="v-radius">Corner radius — <span id="radius-out" class="font-mono">10px</span></label>
+            <input type="range" class="sk-range" id="v-radius" min="0" max="24" value="10">
+          </div>
+
+          <h3 class="sk-card-title mt-6 mb-3">Contrast (WCAG)</h3>
+          <div class="flex flex-col gap-2" id="contrast-report"></div>
         </div></div>
-        <pre id="css-out" class="mt-4 text-sm" style="max-height: 260px; overflow: auto"></pre>
+      </div>
+
+      <!-- ===================== PREVIEW + EXPORT ===================== -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="mb-0">Live preview</h3>
+          <label class="sk-toggle"><input type="checkbox" id="apply-page"><span></span> Apply to this whole page</label>
+        </div>
+        <div id="preview" data-theme="custom" class="rounded-lg overflow-hidden border" style="background: var(--sk-bg)">
+          <div class="p-6">
+            <div class="sk-card"><div class="sk-card-body">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="sk-card-title mb-0">Dashboard</h3>
+                <span class="sk-badge sk-badge-primary">Live</span>
+              </div>
+              <div class="flex gap-2 flex-wrap mb-4">
+                <button class="sk-btn sk-btn-primary">Primary</button>
+                <button class="sk-btn">Default</button>
+                <button class="sk-btn sk-btn-outline">Outline</button>
+                <button class="sk-btn sk-btn-success sk-btn-sm">Save</button>
+                <button class="sk-btn sk-btn-danger sk-btn-sm">Delete</button>
+              </div>
+              <div class="sk-field mb-3"><input class="sk-input" placeholder="An input field&hellip;" aria-label="Preview input"></div>
+              <div class="flex gap-2 flex-wrap mb-4">
+                <span class="sk-chip sk-chip-primary">chip</span>
+                <span class="sk-chip sk-chip-success">passing</span>
+                <span class="sk-badge sk-badge-warning">warning</span>
+                <span class="sk-badge sk-badge-danger">danger</span>
+              </div>
+              <div class="sk-bars mb-4">
+                <div class="sk-bar-row"><span class="sk-bar-label">API</span><span class="sk-bar-track"><span class="sk-bar" style="width: 72%"></span></span><span class="sk-bar-value">72%</span></div>
+                <div class="sk-bar-row"><span class="sk-bar-label">Cache</span><span class="sk-bar-track"><span class="sk-bar sk-success" style="width: 91%"></span></span><span class="sk-bar-value">91%</span></div>
+              </div>
+              <div class="sk-alert sk-alert-info mb-4">Alerts, toasts and every other component follow the palette.</div>
+              <div class="sk-tabs" data-sk-tabs>
+                <button class="sk-tab active" data-sk-tab="tp-1">Overview</button>
+                <button class="sk-tab" data-sk-tab="tp-2">Usage</button>
+              </div>
+              <div class="sk-tab-panel active" id="tp-1"><p class="text-secondary text-sm mb-0">Secondary text on the surface color.</p></div>
+              <div class="sk-tab-panel" id="tp-2"><p class="text-secondary text-sm mb-0">The other panel.</p></div>
+            </div></div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 flex-wrap mt-4">
+          <button class="sk-btn sk-btn-primary" data-sk-copy-target="css-out">Copy CSS</button>
+          <button class="sk-btn" id="btn-download">Download .css</button>
+          <button class="sk-btn" id="btn-copy-style" data-sk-tip="Copies a full &lt;style&gt; tag">Copy &lt;style&gt; snippet</button>
+        </div>
+        <pre id="css-out" class="mt-3 text-sm" style="max-height: 300px; overflow: auto"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div class="sk-modal" id="import-modal" role="dialog" aria-modal="true">
+    <div class="sk-modal-box">
+      <div class="sk-modal-header">Import a theme block <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button></div>
+      <div class="sk-modal-body">
+        <p class="text-muted text-sm">Paste any <code>[data-theme="&hellip;"]</code> or <code>:root</code> block — recognized variables load into the controls.</p>
+        <textarea class="sk-textarea" id="import-text" rows="8" placeholder='[data-theme="custom"] { --sk-bg: #0b0f17; &hellip; }'></textarea>
+      </div>
+      <div class="sk-modal-footer">
+        <button class="sk-btn sk-btn-ghost" data-sk-close>Cancel</button>
+        <button class="sk-btn sk-btn-primary" id="btn-import" data-sk-close>Import</button>
       </div>
     </div>
   </div>
 
   <script src="skynet-ui.js" defer></script>
   <script defer>
-    addEventListener("DOMContentLoaded", function () {
-      var preview = document.getElementById("preview");
-      var out = document.getElementById("css-out");
-      var ids = ["c-bg", "c-surface", "c-surface2", "c-border", "c-text", "c-primary", "c-family"];
+  addEventListener("DOMContentLoaded", function () {
+    "use strict";
 
-      function hexToRgb(hex) {
-        return [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
+    /* Built-in preset values (kept in sync with skynet-ui.css) */
+    var PRESETS = {
+      dark:     { family:"dark",  bg:"#0b0f17", surface:"#111826", text:"#e6eaf2", primary:"#6366f1" },
+      midnight: { family:"dark",  bg:"#000000", surface:"#0a0d12", text:"#e8edf5", primary:"#22d3ee" },
+      forest:   { family:"dark",  bg:"#0a120d", surface:"#101a13", text:"#e7f0ea", primary:"#34d399" },
+      dusk:     { family:"dark",  bg:"#120c1d", surface:"#1a1229", text:"#efe9f7", primary:"#e879f9" },
+      contrast: { family:"dark",  bg:"#000000", surface:"#000000", text:"#ffffff", primary:"#ffd400" },
+      light:    { family:"light", bg:"#f4f6fa", surface:"#ffffff", text:"#16202e", primary:"#6366f1" },
+      paper:    { family:"light", bg:"#f5efe3", surface:"#fdfaf2", text:"#2c251a", primary:"#b45309" },
+      sky:      { family:"light", bg:"#eef4fb", surface:"#ffffff", text:"#0f2136", primary:"#0284c7" },
+      rose:     { family:"light", bg:"#faf1f3", surface:"#fffbfc", text:"#331b22", primary:"#e11d48" },
+    };
+    var STATUS_DEFAULT = { success:"#16a34a", warning:"#d97706", danger:"#dc2626", info:"#0ea5e9" };
+
+    var $ = function (id) { return document.getElementById(id); };
+    var styleEl = document.createElement("style");
+    document.head.appendChild(styleEl);
+
+    /* ---------- color math ---------- */
+    function rgb(hex) { return [1,3,5].map(function (i) { return parseInt(hex.slice(i, i+2), 16); }); }
+    function hex(rgbArr) { return "#" + rgbArr.map(function (v) { return Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0"); }).join(""); }
+    function shade(h, pct) {
+      return hex(rgb(h).map(function (v) { return pct > 0 ? v + (255 - v) * pct : v * (1 + pct); }));
+    }
+    function mix(a, b, t) {
+      var ra = rgb(a), rb = rgb(b);
+      return hex([0,1,2].map(function (i) { return ra[i] + (rb[i] - ra[i]) * t; }));
+    }
+    function luminance(h) {
+      var v = rgb(h).map(function (c) {
+        c /= 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    }
+    function ratio(a, b) {
+      var la = luminance(a), lb = luminance(b);
+      var hi = Math.max(la, lb), lo = Math.min(la, lb);
+      return (hi + 0.05) / (lo + 0.05);
+    }
+    function hslToHex(h, s, l) {
+      s /= 100; l /= 100;
+      var k = function (n) { return (n + h / 30) % 12; };
+      var a = s * Math.min(l, 1 - l);
+      var f = function (n) { return l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); };
+      return hex([f(0) * 255, f(8) * 255, f(4) * 255]);
+    }
+
+    /* ---------- state → variables ---------- */
+    function currentVars() {
+      var dark = $("family").value === "dark";
+      var bg = $("v-bg").value, surface = $("v-surface").value;
+      var text = $("v-text").value, primary = $("v-primary").value;
+      var auto = $("auto-derive").checked;
+      var pr = rgb(primary).join(", ");
+      var radius = +$("v-radius").value;
+
+      var v = {
+        "color-scheme": $("family").value,
+        "--sk-bg": bg,
+        "--sk-surface": surface,
+        "--sk-surface-2": auto ? mix(surface, dark ? "#ffffff" : "#000000", 0.06) : $("v-surface2").value,
+        "--sk-border":    auto ? mix(surface, dark ? "#ffffff" : "#000000", 0.10) : $("v-border").value,
+        "--sk-border-2":  auto ? mix(surface, dark ? "#ffffff" : "#000000", 0.18) : $("v-border2").value,
+        "--sk-text": text,
+        "--sk-text-2": auto ? mix(text, bg, 0.22) : $("v-text2").value,
+        "--sk-muted":  auto ? mix(text, bg, 0.42) : $("v-muted").value,
+        "--sk-faint":  auto ? mix(text, bg, 0.62) : $("v-faint").value,
+        "--sk-primary": primary,
+        "--sk-primary-hover": auto ? shade(primary, -0.15) : $("v-primaryh").value,
+        "--sk-primary-soft": "rgba(" + pr + ", 0.14)",
+        "--sk-primary-text": auto ? shade(primary, dark ? 0.35 : -0.3) : $("v-primaryt").value,
+        "--sk-success": $("v-success").value,
+        "--sk-warning": $("v-warning").value,
+        "--sk-danger":  $("v-danger").value,
+        "--sk-info":    $("v-info").value,
+        "--sk-success-text": shade($("v-success").value, dark ? 0.4 : -0.25),
+        "--sk-warning-text": shade($("v-warning").value, dark ? 0.4 : -0.25),
+        "--sk-danger-text":  shade($("v-danger").value,  dark ? 0.4 : -0.25),
+        "--sk-info-text":    shade($("v-info").value,    dark ? 0.4 : -0.25),
+        "--sk-radius": radius + "px",
+        "--sk-radius-sm": Math.max(0, Math.round(radius * 0.7)) + "px",
+        "--sk-radius-lg": Math.round(radius * 1.6) + "px",
+      };
+      return v;
+    }
+
+    function cssBlock(v) {
+      var out = '[data-theme="custom"] {\n';
+      Object.keys(v).forEach(function (k) { out += "  " + k + ": " + v[k] + ";\n"; });
+      return out + "}";
+    }
+
+    /* ---------- contrast report ---------- */
+    function badge(pass, label, r) {
+      return '<div class="flex items-center justify-between text-sm">' +
+        "<span>" + label + ' <span class="text-faint font-mono">' + r.toFixed(2) + ":1</span></span>" +
+        '<span class="sk-badge ' + (pass ? "sk-badge-success" : "sk-badge-danger") + '">' + (pass ? "AA pass" : "fails AA") + "</span></div>";
+    }
+
+    function contrastReport(v) {
+      var rows = [
+        ["Text on background", ratio(v["--sk-text"], v["--sk-bg"]), 4.5],
+        ["Text on surface", ratio(v["--sk-text"], v["--sk-surface"]), 4.5],
+        ["Muted text on surface", ratio(v["--sk-muted"], v["--sk-surface"]), 4.5],
+        ["White on accent (buttons)", ratio("#ffffff", v["--sk-primary"]), 4.5],
+        ["Accent on background", ratio(v["--sk-primary"], v["--sk-bg"]), 3],
+      ];
+      $("contrast-report").innerHTML = rows.map(function (row) {
+        return badge(row[1] >= row[2], row[0], row[1]);
+      }).join("");
+    }
+
+    /* ---------- render everything ---------- */
+    function update(pushHash) {
+      var v = currentVars();
+      styleEl.textContent = cssBlock(v);
+      $("css-out").textContent = cssBlock(v);
+      $("radius-out").textContent = $("v-radius").value + "px";
+      contrastReport(v);
+      /* keep advanced controls mirrored while auto-derive is on */
+      if ($("auto-derive").checked) {
+        var map = { "v-surface2":"--sk-surface-2","v-border":"--sk-border","v-border2":"--sk-border-2","v-text2":"--sk-text-2","v-muted":"--sk-muted","v-faint":"--sk-faint","v-primaryh":"--sk-primary-hover","v-primaryt":"--sk-primary-text" };
+        Object.keys(map).forEach(function (id) { $(id).value = v[map[id]]; });
       }
-      function shade(hex, pct) { /* pct < 0 darkens, > 0 lightens */
-        var rgb = hexToRgb(hex).map(function (v) {
-          return Math.max(0, Math.min(255, Math.round(pct > 0 ? v + (255 - v) * pct : v * (1 + pct))));
-        });
-        return "#" + rgb.map(function (v) { return v.toString(16).padStart(2, "0"); }).join("");
+      if (pushHash !== false) {
+        var state = ["family","preset","v-bg","v-surface","v-text","v-primary","v-radius","v-success","v-warning","v-danger","v-info"]
+          .map(function (id) { return $(id).value.replace("#", ""); }).join(".");
+        history.replaceState(null, "", "#t=" + state + ($("auto-derive").checked ? "" : ".m"));
       }
-      function update() {
-        var v = {};
-        ids.forEach(function (id) { v[id] = document.getElementById(id).value; });
-        var dark = v["c-family"] === "dark";
-        var rgb = hexToRgb(v["c-primary"]).join(", ");
-        var vars = {
-          "color-scheme": v["c-family"],
-          "--sk-bg": v["c-bg"], "--sk-surface": v["c-surface"], "--sk-surface-2": v["c-surface2"],
-          "--sk-border": v["c-border"], "--sk-border-2": shade(v["c-border"], dark ? 0.18 : -0.15),
-          "--sk-text": v["c-text"], "--sk-text-2": shade(v["c-text"], dark ? -0.18 : 0.25),
-          "--sk-muted": shade(v["c-text"], dark ? -0.35 : 0.45), "--sk-faint": shade(v["c-text"], dark ? -0.55 : 0.6),
-          "--sk-primary": v["c-primary"], "--sk-primary-hover": shade(v["c-primary"], -0.15),
-          "--sk-primary-soft": "rgba(" + rgb + ", 0.14)",
-          "--sk-primary-text": shade(v["c-primary"], dark ? 0.35 : -0.3)
-        };
-        var css = '[data-theme="custom"] {\n';
-        Object.keys(vars).forEach(function (k) {
-          css += "  " + k + ": " + vars[k] + ";\n";
-          if (k !== "color-scheme") preview.style.setProperty(k, vars[k]);
-        });
-        css += "}";
-        preview.style.background = vars["--sk-surface"];
-        out.textContent = css;
-      }
-      ids.forEach(function (id) { document.getElementById(id).addEventListener("input", update); });
+    }
+
+    function loadPreset(name) {
+      var pz = PRESETS[name] || PRESETS.dark;
+      $("family").value = pz.family;
+      $("v-bg").value = pz.bg;
+      $("v-surface").value = pz.surface;
+      $("v-text").value = pz.text;
+      $("v-primary").value = pz.primary;
+      Object.keys(STATUS_DEFAULT).forEach(function (k) { $("v-" + k).value = STATUS_DEFAULT[k]; });
+      $("auto-derive").checked = true;
+      update();
+    }
+
+    /* ---------- events ---------- */
+    document.querySelectorAll("#preset, #family, input[type=color], #v-radius, #auto-derive").forEach(function (el) {
+      el.addEventListener("input", function () {
+        if (el.id === "preset") loadPreset(el.value);
+        else {
+          if (el.classList.contains("adv")) $("auto-derive").checked = false;
+          update();
+        }
+      });
+    });
+
+    $("btn-random").addEventListener("click", function () {
+      var hue = Math.floor(Math.random() * 360);
+      var dark = Math.random() < 0.6;
+      $("family").value = dark ? "dark" : "light";
+      $("v-bg").value = dark ? hslToHex(hue, 30, 6) : hslToHex(hue, 35, 96);
+      $("v-surface").value = dark ? hslToHex(hue, 26, 10) : "#ffffff";
+      $("v-text").value = dark ? hslToHex(hue, 20, 92) : hslToHex(hue, 30, 12);
+      $("v-primary").value = hslToHex((hue + 180 + Math.floor(Math.random() * 60) - 30) % 360, 75, dark ? 60 : 45);
+      $("auto-derive").checked = true;
       update();
     });
+
+    $("btn-download").addEventListener("click", function () {
+      var blob = new Blob([$("css-out").textContent + "\n"], { type: "text/css" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "skynet-theme-custom.css";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    });
+
+    $("btn-copy-style").addEventListener("click", function () {
+      var text = "<style>\n" + $("css-out").textContent + "\n</style>";
+      navigator.clipboard && navigator.clipboard.writeText(text).then(function () { skToast("Style snippet copied", "success"); });
+    });
+
+    $("btn-share").addEventListener("click", function () {
+      update();
+      navigator.clipboard && navigator.clipboard.writeText(location.href).then(function () { skToast("Share URL copied", "success"); });
+    });
+
+    $("btn-import").addEventListener("click", function () {
+      var text = $("import-text").value;
+      var found = 0;
+      var map = { "--sk-bg":"v-bg","--sk-surface":"v-surface","--sk-text":"v-text","--sk-primary":"v-primary","--sk-surface-2":"v-surface2","--sk-border":"v-border","--sk-border-2":"v-border2","--sk-text-2":"v-text2","--sk-muted":"v-muted","--sk-faint":"v-faint","--sk-primary-hover":"v-primaryh","--sk-primary-text":"v-primaryt","--sk-success":"v-success","--sk-warning":"v-warning","--sk-danger":"v-danger","--sk-info":"v-info" };
+      Object.keys(map).forEach(function (varName) {
+        var m = new RegExp(varName.replace(/[-]/g, "\\-") + "\\s*:\\s*(#[0-9a-fA-F]{6})").exec(text);
+        if (m) { $(map[varName]).value = m[1]; found++; }
+      });
+      var fam = /color-scheme\s*:\s*(dark|light)/.exec(text);
+      if (fam) $("family").value = fam[1];
+      var rad = /--sk-radius\s*:\s*(\d+)px/.exec(text);
+      if (rad) $("v-radius").value = rad[1];
+      if (found) { $("auto-derive").checked = false; $("advanced-acc").open = true; }
+      skToast(found ? found + " variables imported" : "No variables recognized", found ? "success" : "warning");
+      update();
+    });
+
+    $("apply-page").addEventListener("change", function () {
+      document.documentElement.setAttribute("data-theme", this.checked ? "custom" : "");
+      if (!this.checked) document.documentElement.removeAttribute("data-theme");
+    });
+
+    /* ---------- boot: hash → state, else default preset ---------- */
+    var hash = /#t=([^&]+)/.exec(location.hash);
+    if (hash) {
+      var parts = hash[1].split(".");
+      try {
+        $("family").value = parts[0];
+        $("preset").value = parts[1] in PRESETS ? parts[1] : "dark";
+        ["v-bg","v-surface","v-text","v-primary"].forEach(function (id, i) { $(id).value = "#" + parts[i + 2]; });
+        $("v-radius").value = parts[6];
+        ["v-success","v-warning","v-danger","v-info"].forEach(function (id, i) { $(id).value = "#" + parts[i + 7]; });
+        $("auto-derive").checked = parts.indexOf("m") === -1;
+        update(false);
+      } catch (e) { loadPreset("dark"); }
+    } else {
+      loadPreset("dark");
+    }
+  });
   </script>
 </body>
 </html>

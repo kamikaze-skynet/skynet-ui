@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v3.0.0 — behavior script
+   Skynet UI v3.1.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -69,9 +69,46 @@
      skTour()                       starts the on-page tour (data-sk-tour stops)
      skTypewriter(el, text, msPerChar?) → Promise; types text into el
      skSelectedRows("table-id")     → array of selected <tr>s
+     skMarkdown(text) → HTML       safe-subset markdown renderer (pair with
+                                    .sk-prose); fenced code is highlighted
+     skHighlight(code, lang) → HTML syntax highlighting (js, html, css,
+                                    python, json); auto-runs on
+                                    .sk-prose pre code[class*="language-"]
+     skChat.append(chat, role, content, opts?)  role: "user"|"assistant"|
+                                    "system"; assistant content renders as
+                                    markdown unless opts.markdown === false
+     skChat.stream(chat, role, text, opts?) → Promise  typewriter, then
+                                    markdown render on completion
+     skChat.typing(chat, show)      toggle a typing-dots bubble
+     skLocale({copied: "…", …})     override the built-in UI strings (i18n)
    ========================================================================== */
 (function () {
   "use strict";
+
+  /* ----------------------------------------------------------------------
+     LOCALE — all user-visible strings the script generates. Override any
+     of them with skLocale({key: "translation", …}) before/after load.
+     ---------------------------------------------------------------------- */
+  var L = {
+    copied: "Copied to clipboard",
+    copyFail: "Couldn't copy",
+    confirmTitle: "Are you sure?",
+    promptTitle: "Input needed",
+    cancel: "Cancel",
+    ok: "OK",
+    back: "Back",
+    next: "Next",
+    done: "Done",
+    stepOf: "Step {a} of {b}",
+    prevMonth: "Previous month",
+    nextMonth: "Next month",
+    selectAll: "Select all rows",
+    selectRow: "Select row",
+    remove: "Remove",
+  };
+  window.skLocale = function (overrides) {
+    for (var k in overrides) if (Object.prototype.hasOwnProperty.call(overrides, k)) L[k] = overrides[k];
+  };
 
   /* ----------------------------------------------------------------------
      THEMES — built-ins: dark (default), midnight, forest, dusk (dark
@@ -121,8 +158,8 @@
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(
-        function () { skToast("Copied to clipboard", "success"); },
-        function () { skToast("Couldn't copy", "danger"); }
+        function () { skToast(L.copied, "success"); },
+        function () { skToast(L.copyFail, "danger"); }
       );
       return;
     }
@@ -135,9 +172,9 @@
     area.select();
     try {
       document.execCommand("copy");
-      skToast("Copied to clipboard", "success");
+      skToast(L.copied, "success");
     } catch (err) {
-      skToast("Couldn't copy", "danger");
+      skToast(L.copyFail, "danger");
     }
     document.body.removeChild(area);
   }
@@ -247,7 +284,7 @@
 
       var header = document.createElement("div");
       header.className = "sk-modal-header";
-      header.textContent = opts.title || "Are you sure?";
+      header.textContent = opts.title || L.confirmTitle;
 
       var body = document.createElement("div");
       body.className = "sk-modal-body";
@@ -260,10 +297,10 @@
       footer.className = "sk-modal-footer";
       var cancelBtn = document.createElement("button");
       cancelBtn.className = "sk-btn sk-btn-ghost";
-      cancelBtn.textContent = opts.cancelText || "Cancel";
+      cancelBtn.textContent = opts.cancelText || L.cancel;
       var okBtn = document.createElement("button");
       okBtn.className = "sk-btn " + (opts.danger ? "sk-btn-danger" : "sk-btn-primary");
-      okBtn.textContent = opts.okText || "OK";
+      okBtn.textContent = opts.okText || L.ok;
       footer.appendChild(cancelBtn);
       footer.appendChild(okBtn);
 
@@ -312,7 +349,7 @@
 
       var header = document.createElement("div");
       header.className = "sk-modal-header";
-      header.textContent = opts.title || "Input needed";
+      header.textContent = opts.title || L.promptTitle;
 
       var body = document.createElement("div");
       body.className = "sk-modal-body";
@@ -331,10 +368,10 @@
       footer.className = "sk-modal-footer";
       var cancelBtn = document.createElement("button");
       cancelBtn.className = "sk-btn sk-btn-ghost";
-      cancelBtn.textContent = opts.cancelText || "Cancel";
+      cancelBtn.textContent = opts.cancelText || L.cancel;
       var okBtn = document.createElement("button");
       okBtn.className = "sk-btn sk-btn-primary";
-      okBtn.textContent = opts.okText || "OK";
+      okBtn.textContent = opts.okText || L.ok;
       footer.appendChild(cancelBtn);
       footer.appendChild(okBtn);
 
@@ -1056,7 +1093,7 @@
     var x = document.createElement("button");
     x.className = "sk-chip-x";
     x.setAttribute("data-sk-dismiss", "");
-    x.setAttribute("aria-label", "Remove " + text);
+    x.setAttribute("aria-label", L.remove + " " + text);
     x.type = "button";
     x.innerHTML = "&times;";
     chip.appendChild(label);
@@ -1321,7 +1358,7 @@
       head.className = "sk-datepicker-head";
       var prev = document.createElement("button");
       prev.type = "button"; prev.className = "sk-datepicker-nav";
-      prev.setAttribute("aria-label", "Previous month");
+      prev.setAttribute("aria-label", L.prevMonth);
       prev.innerHTML = "&larr;";
       prev.addEventListener("click", function () {
         view.m--; if (view.m < 0) { view.m = 11; view.y--; } render();
@@ -1331,7 +1368,7 @@
       title.textContent = MONTHS[view.m] + " " + view.y;
       var next = document.createElement("button");
       next.type = "button"; next.className = "sk-datepicker-nav";
-      next.setAttribute("aria-label", "Next month");
+      next.setAttribute("aria-label", L.nextMonth);
       next.innerHTML = "&rarr;";
       next.addEventListener("click", function () {
         view.m++; if (view.m > 11) { view.m = 0; view.y++; } render();
@@ -1484,19 +1521,19 @@
     card.innerHTML = "";
     var step = document.createElement("div");
     step.className = "sk-tour-step";
-    step.textContent = "Step " + (i + 1) + " of " + stops.length;
+    step.textContent = L.stepOf.replace("{a}", i + 1).replace("{b}", stops.length);
     var text = document.createElement("div");
     text.textContent = target.getAttribute("data-sk-tour-text") || "";
     var actions = document.createElement("div");
     actions.className = "sk-tour-actions";
     var back = document.createElement("button");
     back.className = "sk-btn sk-btn-ghost sk-btn-sm";
-    back.textContent = "Back";
+    back.textContent = L.back;
     back.disabled = i === 0;
     back.addEventListener("click", function () { showTourStep(i - 1); });
     var fwd = document.createElement("button");
     fwd.className = "sk-btn sk-btn-primary sk-btn-sm";
-    fwd.textContent = i === stops.length - 1 ? "Done" : "Next";
+    fwd.textContent = i === stops.length - 1 ? L.done : L.next;
     fwd.addEventListener("click", function () {
       if (i === stops.length - 1) endTour();
       else showTourStep(i + 1);
@@ -1573,7 +1610,7 @@
       th.className = "sk-select-cell";
       var all = document.createElement("input");
       all.type = "checkbox";
-      all.setAttribute("aria-label", "Select all rows");
+      all.setAttribute("aria-label", L.selectAll);
       all.addEventListener("change", function () {
         Array.prototype.forEach.call(table.tBodies[0].rows, function (row) {
           if (row.style.display !== "none") setRowSelected(row, all.checked);
@@ -1588,7 +1625,7 @@
       td.className = "sk-select-cell";
       var cb = document.createElement("input");
       cb.type = "checkbox";
-      cb.setAttribute("aria-label", "Select row");
+      cb.setAttribute("aria-label", L.selectRow);
       cb.addEventListener("change", function () {
         setRowSelected(row, cb.checked);
         updateBulkbar(table);
@@ -1632,6 +1669,252 @@
   }
 
     /* ----------------------------------------------------------------------
+     SYNTAX HIGHLIGHTING - skHighlight(code, lang) returns safe HTML. Runs
+     automatically on .sk-prose pre code[class*="language-"] blocks and on
+     code emitted by skMarkdown. Languages: js, html, css, python, json.
+     ---------------------------------------------------------------------- */
+  function escHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  var HL = {
+    js: [
+      [/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, "com"],
+      [/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g, "str"],
+      [/\b(?:const|let|var|function|return|if|else|for|while|class|new|import|export|from|async|await|try|catch|finally|throw|typeof|instanceof|this|null|undefined|true|false|switch|case|break|continue|default|of|in|do|extends|super|yield|delete|void|static)\b/g, "kw"],
+      [/\b\d[\d_]*(?:\.\d+)?\b/g, "num"],
+    ],
+    python: [
+      [/#[^\n]*/g, "com"],
+      [/'''[\s\S]*?'''|"""[\s\S]*?"""|'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g, "str"],
+      [/\b(?:def|class|return|if|elif|else|for|while|import|from|as|with|try|except|finally|raise|pass|break|continue|lambda|yield|global|nonlocal|assert|del|not|and|or|in|is|None|True|False|self|async|await|print)\b/g, "kw"],
+      [/\b\d[\d_]*(?:\.\d+)?\b/g, "num"],
+    ],
+    css: [
+      [/\/\*[\s\S]*?\*\//g, "com"],
+      [/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g, "str"],
+      [/@[\w-]+|!important\b/g, "kw"],
+      [/#[0-9a-fA-F]{3,8}\b|\b\d[\d.]*(?:px|rem|em|vh|vw|%|s|ms|fr|ch)?\b/g, "num"],
+    ],
+    html: [
+      [/<!--[\s\S]*?-->/g, "com"],
+      [/"[^"]*"|'[^']*'/g, "str"],
+      [/<\/?[a-zA-Z][\w-]*|\/?>|=/g, "kw"],
+    ],
+    json: [
+      [/"(?:[^"\\]|\\.)*"(?=\s*:)/g, "kw"],
+      [/"(?:[^"\\]|\\.)*"/g, "str"],
+      [/\b-?\d[\d.eE+-]*\b|\b(?:true|false|null)\b/g, "num"],
+    ],
+  };
+  HL.javascript = HL.js; HL.ts = HL.js; HL.typescript = HL.js;
+  HL.py = HL.python; HL.xml = HL.html; HL.jsonc = HL.json;
+
+  function skHighlight(code, lang) {
+    var rules = HL[(lang || "").toLowerCase()];
+    if (!rules) return escHtml(code);
+    var tokens = [];
+    rules.forEach(function (rule) {
+      var re = rule[0], cls = rule[1], m;
+      re.lastIndex = 0;
+      while ((m = re.exec(code)) !== null) {
+        if (m[0] === "") { re.lastIndex++; continue; }
+        var start = m.index, end = m.index + m[0].length;
+        var clash = tokens.some(function (t) { return start < t.end && end > t.start; });
+        if (!clash) tokens.push({ start: start, end: end, cls: cls });
+      }
+    });
+    tokens.sort(function (a, b) { return a.start - b.start; });
+    var out = "", pos = 0;
+    tokens.forEach(function (t) {
+      out += escHtml(code.slice(pos, t.start));
+      out += '<span class="sk-tok-' + t.cls + '">' + escHtml(code.slice(t.start, t.end)) + "</span>";
+      pos = t.end;
+    });
+    out += escHtml(code.slice(pos));
+    return out;
+  }
+  window.skHighlight = skHighlight;
+
+  function highlightWithin(root) {
+    root.querySelectorAll('pre code[class*="language-"]').forEach(function (el) {
+      var lang = (el.className.match(/language-([\w-]+)/) || [])[1];
+      if (lang && HL[lang.toLowerCase()] && !el._skHl) {
+        el._skHl = true;
+        el.innerHTML = skHighlight(el.textContent, lang);
+      }
+    });
+  }
+  highlightWithin(document);
+
+  /* ----------------------------------------------------------------------
+     MARKDOWN - skMarkdown(text) returns HTML for a safe subset: headings,
+     bold, italic, strikethrough, links, inline + fenced code (highlighted),
+     lists, blockquotes, tables, hr, paragraphs. Everything is escaped;
+     link URLs are restricted to http(s)/mailto/#/relative.
+     ---------------------------------------------------------------------- */
+  function inlineMd(text) {
+    var html = escHtml(text);
+    var stash = [];
+    html = html.replace(/`([^`\n]+)`/g, function (_, code) {
+      stash.push("<code>" + code + "</code>");
+      return "" + (stash.length - 1) + "";
+    });
+    html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    html = html.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+    html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, label, url) {
+      if (!/^(https?:\/\/|mailto:|#|\/)/.test(url)) return label;
+      var ext = /^https?:\/\//.test(url) ? '" target="_blank" rel="noopener noreferrer' : "";
+      return '<a href="' + url + ext + '">' + label + "</a>";
+    });
+    return html.replace(/(\d+)/g, function (_, i) { return stash[+i]; });
+  }
+
+  function skMarkdown(text) {
+    var lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+    var html = [], i = 0;
+
+    function listBlock(ordered) {
+      var re = ordered ? /^\s*\d+[.)]\s+(.*)$/ : /^\s*[-*+]\s+(.*)$/;
+      html.push(ordered ? "<ol>" : "<ul>");
+      while (i < lines.length && re.test(lines[i])) {
+        html.push("<li>" + inlineMd(lines[i].match(re)[1]) + "</li>");
+        i++;
+      }
+      html.push(ordered ? "</ol>" : "</ul>");
+    }
+
+    while (i < lines.length) {
+      var line = lines[i];
+
+      if (/^\s*$/.test(line)) { i++; continue; }
+
+      var fence = line.match(/^```(\w*)\s*$/);
+      if (fence) {
+        var lang = fence[1], buf = [];
+        i++;
+        while (i < lines.length && !/^```\s*$/.test(lines[i])) { buf.push(lines[i]); i++; }
+        i++;
+        var codeHtml = lang ? skHighlight(buf.join("\n"), lang) : escHtml(buf.join("\n"));
+        html.push('<pre><code class="language-' + (lang || "text") + '">' + codeHtml + "</code></pre>");
+        continue;
+      }
+
+      var heading = line.match(/^(#{1,4})\s+(.*)$/);
+      if (heading) {
+        var level = heading[1].length;
+        html.push("<h" + level + ">" + inlineMd(heading[2]) + "</h" + level + ">");
+        i++; continue;
+      }
+
+      if (/^(?:-{3,}|\*{3,})\s*$/.test(line)) { html.push("<hr>"); i++; continue; }
+
+      if (/^\s*>\s?/.test(line)) {
+        var quote = [];
+        while (i < lines.length && /^\s*>\s?/.test(lines[i])) {
+          quote.push(lines[i].replace(/^\s*>\s?/, ""));
+          i++;
+        }
+        html.push("<blockquote><p>" + inlineMd(quote.join(" ")) + "</p></blockquote>");
+        continue;
+      }
+
+      if (/^\s*[-*+]\s+/.test(line)) { listBlock(false); continue; }
+      if (/^\s*\d+[.)]\s+/.test(line)) { listBlock(true); continue; }
+
+      if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        var cells = function (row) {
+          return row.trim().replace(/^\||\|$/g, "").split("|").map(function (c) { return inlineMd(c.trim()); });
+        };
+        html.push("<table><thead><tr>");
+        cells(line).forEach(function (c) { html.push("<th>" + c + "</th>"); });
+        html.push("</tr></thead><tbody>");
+        i += 2;
+        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) {
+          html.push("<tr>");
+          cells(lines[i]).forEach(function (c) { html.push("<td>" + c + "</td>"); });
+          html.push("</tr>");
+          i++;
+        }
+        html.push("</tbody></table>");
+        continue;
+      }
+
+      var para = [line];
+      i++;
+      while (i < lines.length && !/^\s*$/.test(lines[i]) &&
+             !/^(#{1,4}\s|```|\s*[-*+]\s|\s*\d+[.)]\s|\s*>|\s*\|.*\|\s*$|-{3,}\s*$)/.test(lines[i])) {
+        para.push(lines[i]);
+        i++;
+      }
+      html.push("<p>" + inlineMd(para.join(" ")) + "</p>");
+    }
+    return html.join("\n");
+  }
+  window.skMarkdown = skMarkdown;
+
+  /* ----------------------------------------------------------------------
+     CHAT API - skChat.append / stream / typing on a .sk-chat container
+     ---------------------------------------------------------------------- */
+  function chatEl(chat) {
+    return typeof chat === "string" ? document.getElementById(chat) : chat;
+  }
+
+  function chatScroll(el) {
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: motionOff ? "auto" : "smooth" });
+  }
+
+  window.skChat = {
+    append: function (chat, role, content, opts) {
+      chat = chatEl(chat); opts = opts || {};
+      if (!chat) return null;
+      var msg = document.createElement("div");
+      msg.className = "sk-msg sk-msg-" + role;
+      if (role === "assistant" && opts.markdown !== false) {
+        msg.classList.add("sk-prose");
+        msg.innerHTML = skMarkdown(content);
+      } else {
+        msg.textContent = content;
+      }
+      chat.appendChild(msg);
+      chatScroll(msg);
+      return msg;
+    },
+    stream: function (chat, role, text, opts) {
+      chat = chatEl(chat); opts = opts || {};
+      var msg = window.skChat.append(chat, role, "", { markdown: false });
+      if (!msg) return Promise.resolve(null);
+      return skTypewriter(msg, text, opts.speed).then(function () {
+        if (role === "assistant" && opts.markdown !== false) {
+          msg.classList.add("sk-prose");
+          msg.innerHTML = skMarkdown(text);
+        }
+        chatScroll(msg);
+        return msg;
+      });
+    },
+    typing: function (chat, show) {
+      chat = chatEl(chat);
+      if (!chat) return;
+      if (show) {
+        if (chat._skTyping) return;
+        var t = document.createElement("div");
+        t.className = "sk-msg sk-msg-assistant";
+        t.innerHTML = '<span class="sk-typing"><i></i><i></i><i></i></span>';
+        chat.appendChild(t);
+        chat._skTyping = t;
+        chatScroll(t);
+      } else if (chat._skTyping) {
+        if (chat._skTyping.parentNode) chat._skTyping.parentNode.removeChild(chat._skTyping);
+        chat._skTyping = null;
+      }
+    },
+  };
+
+  /* ----------------------------------------------------------------------
      SCROLLSPY — data-sk-scrollspy on a nav/sidebar of #anchor links keeps
      the link for the section currently on screen marked .active
      ---------------------------------------------------------------------- */

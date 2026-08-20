@@ -57,8 +57,8 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 ```html
 <!-- pinned version (recommended for production — immutable, cached forever) -->
-<link rel="stylesheet" href="https://skynetui.com/v3.0.0/skynet-ui.css">
-<script src="https://skynetui.com/v3.0.0/skynet-ui.js" defer></script>
+<link rel="stylesheet" href="https://skynetui.com/v3.1.0/skynet-ui.css">
+<script src="https://skynetui.com/v3.1.0/skynet-ui.js" defer></script>
 
 <!-- or always-latest (updates automatically within the hour) -->
 <link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
@@ -70,7 +70,8 @@ Pin a version for anything real: latest URLs can change how your site looks when
 ## 1c. Or use npm (for bundler projects)
 
 ```sh
-npm install skynet-ui
+npm install skynet-ui        # the framework
+npm create skynet-ui         # or scaffold a ready page (landing/dashboard/chat/auth)
 ```
 
 ```js
@@ -856,6 +857,16 @@ Right-clicking any element with `data-sk-context` opens that menu at the cursor 
 ```
 
 `data-sk-copy="text"` copies literal text; `data-sk-copy-target="element-id"` copies that element's value (inputs) or text content. A success toast confirms the copy.
+
+### The v3.1 additions
+
+- **`skMarkdown(text)`** — zero-dependency safe markdown renderer for LLM output (pair with `sk-prose`); fenced code is auto-highlighted by **`skHighlight`** (js/html/css/python/json)
+- **`skChat` API** — `append` / `stream` / `typing` for real chat apps in a few lines
+- **Pure-CSS charts** — `sk-bars`, `sk-spark`, `sk-donut`, `sk-legend`
+- **RTL support** (`dir="rtl"`) and **`skLocale()`** for translating built-in strings
+- **Theme builder v2** at skynetui.com/themer: presets, every variable, WCAG contrast checks, import/export, shareable URLs
+- **Playground** at skynetui.com/play; CI smoke tests on every PR; npm publishes with provenance
+- **`npm create skynet-ui`** — scaffold a themed landing/dashboard/chat/auth page in seconds
 
 ### The v3.0 "AI App Kit" additions
 

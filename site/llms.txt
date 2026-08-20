@@ -1,17 +1,18 @@
-# Skynet UI — LLM reference (v3.0.0)
+# Skynet UI — LLM reference (v3.1.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
 RULES FOR GENERATION:
-- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v3.0.0/skynet-ui.css` and `https://skynetui.com/v3.0.0/skynet-ui.js` (minified: `skynet-ui.min.css`/`.min.js`; SRI hashes at `/v3.0.0/sri.txt`; pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v3.1.0/skynet-ui.css` and `https://skynetui.com/v3.1.0/skynet-ui.js` (minified: `skynet-ui.min.css`/`.min.js`; SRI hashes at `/v3.1.0/sri.txt`; pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
 - Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia), `"contrast"` (max-legibility black/white/yellow); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). `"auto"` follows the OS. Density: `data-density="compact"` on <html> or a container tightens paddings. Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
 - Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
 - Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
 - Mobile-first: `.sk-grid` is 1 column on phones; `sk-cols-*` add columns at ≥640px/≥1024px. Navbar collapses behind a `data-sk-burger` button; sidebar slides in via a `data-sk-sidebar` button.
 - Spacing scale: number × 0.25rem (`4` = 1rem), same as Tailwind. Steps 0–8 everywhere, plus 5/10/12/16/20/24 on common axes (see Tailwind-compat additions below).
 - Utilities include a Tailwind-compat layer (grid-cols-*, space-y-*, w-1/2, sm:/md:/lg: variants for a listed set, line-clamp, sr-only, …) — see "Tailwind-compat additions" and the conversion guide at the end of this file.
+- RTL: set dir="rtl" on <html> — the directional components flip. i18n: override built-in strings with skLocale({cancel: "…", …}).
 - Do not invent class names not listed here.
-- AI agents can also consume this framework via MCP: streamable-HTTP server at https://skynetui.com/mcp (tools: get_reference, get_example). Example pages: https://skynetui.com/examples/{dashboard|chat|auth}.html
+- AI agents can also consume this framework via MCP: streamable-HTTP server at https://skynetui.com/mcp (tools: get_reference, search_reference, get_theme_css, get_example; resources too). Example pages: https://skynetui.com/examples/{dashboard|chat|auth}.html
 
 ## CSS variables (in :root — override to theme)
 --sk-bg #0b0f17 page bg | --sk-surface #111826 cards/nav | --sk-surface-2 #172033 hover/inputs-on-cards | --sk-border #1e2836 subtle border | --sk-border-2 #2a3547 stronger border
@@ -31,6 +32,12 @@ skPrompt(message, opts?) → Promise<string|null> — input dialog (null on canc
 skTour() — starts an on-page tour of elements marked data-sk-tour (spotlight + explainer card, Back/Next, Esc ends)
 skTypewriter(el, text, msPerChar?) → Promise — types text into el (instant under reduced motion)
 skSelectedRows(tableOrId) → array of selected <tr> elements of a data-sk-select table
+skMarkdown(text) → HTML string — safe-subset markdown (headings, bold/italic/strike, links http(s)/mailto/#/relative only, inline + fenced code with highlighting, ul/ol, blockquote, tables, hr). Pair with class sk-prose. All input escaped.
+skHighlight(code, lang) → HTML string — syntax highlighting for js|html|css|python|json; auto-applies to .sk-prose pre code.language-* blocks
+skChat.append(chatElOrId, role, content, opts?) — role "user"|"assistant"|"system"; assistant renders as markdown unless opts.markdown === false; returns the message element
+skChat.stream(chatElOrId, role, text, opts?) → Promise — typewriter effect, then markdown render on completion (opts.speed = ms/char)
+skChat.typing(chatElOrId, show) — toggle a typing-dots bubble
+skLocale({key: "text"}) — override built-in strings; keys: copied copyFail confirmTitle promptTitle cancel ok back next done stepOf prevMonth nextMonth selectAll selectRow remove
 
 ## Data attributes (wire up behavior, no JS)
 data-sk-open="id" — button opens that modal, drawer, OR command palette
@@ -389,6 +396,19 @@ sk-grid sk-cols-3 of sk-card plans; add class sk-featured to the highlighted pla
 
 ### Comparison table recipe
 Standard sk-table in sk-table-wrap; first column = feature names (font-medium text-main), one column per product; ✓ as <span class="text-success">&check;</span>, ✗ as <span class="text-faint">&mdash;</span>.
+
+### Charts (pure CSS, themed; set sizes with inline styles)
+Bars: div.sk-bars > div.sk-bar-row (grid: label | track | value) each containing span.sk-bar-label + span.sk-bar-track > span.sk-bar[style="width: N%"] + span.sk-bar-value. Color the bar with sk-success|sk-warning|sk-danger|sk-info.
+Sparkline: div.sk-spark[aria-hidden=true] > one <i style="height: N%"> per point.
+Donut: div.sk-donut[style="--p: 68"] > div > div.sk-donut-label + div.sk-donut-sub. Vars: --sk-donut-size (120px), --sk-donut-hole (set to the background it sits on, default surface).
+Legend: div.sk-legend > span > i.sk-legend-dot (+ color variant) + text.
+```html
+<div class="sk-bars"><div class="sk-bar-row"><span class="sk-bar-label">API</span><span class="sk-bar-track"><span class="sk-bar" style="width: 72%"></span></span><span class="sk-bar-value">72%</span></div></div>
+<div class="sk-donut" style="--p: 68"><div><div class="sk-donut-label">68%</div><div class="sk-donut-sub">used</div></div></div>
+```
+
+### Rendering LLM/markdown output (zero dependencies)
+el.innerHTML = skMarkdown(modelText) into an element with class sk-prose. Fenced code is auto-highlighted. In chat, prefer skChat.append(chat, "assistant", modelText). For streaming APIs, accumulate the text and call skChat.stream, or update el.innerHTML = skMarkdown(buffer) as chunks arrive.
 
 ### Breadcrumbs
 nav.sk-breadcrumbs > <a> per ancestor + <span> for the current page. Separators added by CSS.

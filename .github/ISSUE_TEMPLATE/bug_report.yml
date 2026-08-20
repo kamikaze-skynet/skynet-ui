@@ -1,0 +1,30 @@
+name: Bug report
+description: Something renders or behaves wrong
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "e.g. 3.1.0 (see the CSS file header or the site footer)"
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Theme where it happens
+      options: [dark, light, midnight, paper, forest, dusk, sky, rose, contrast, all/custom]
+  - type: textarea
+    id: repro
+    attributes:
+      label: Markup that reproduces it
+      description: Paste the smallest HTML snippet that shows the problem (the playground at skynetui.com/play is handy).
+      render: html
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected vs what happened
+    validations:
+      required: true

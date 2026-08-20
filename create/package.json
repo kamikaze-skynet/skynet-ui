@@ -1,0 +1,11 @@
+{
+  "name": "create-skynet-ui",
+  "version": "3.1.0",
+  "description": "Scaffold a Skynet UI page in seconds: npm create skynet-ui — landing, dashboard, chat, or auth template in any of 9 themes, zero build steps.",
+  "license": "MIT",
+  "homepage": "https://skynetui.com",
+  "repository": { "type": "git", "url": "git+https://github.com/kamikaze-skynet/skynet-ui.git" },
+  "keywords": ["create", "scaffold", "skynet-ui", "css", "ui", "no-build", "llm"],
+  "bin": { "create-skynet-ui": "./create.js" },
+  "files": ["create.js"]
+}
