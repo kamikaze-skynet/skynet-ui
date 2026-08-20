@@ -1,10 +1,10 @@
-# Skynet UI — LLM reference (v1.4.0)
+# Skynet UI — LLM reference (v1.5.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
 RULES FOR GENERATION:
 - Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>`. Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
-- Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>`: `"light"`, `"midnight"` (OLED black + cyan), `"paper"` (warm cream + amber). Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
+- Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
 - Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
 - Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
 - Mobile-first: `.sk-grid` is 1 column on phones; `sk-cols-*` add columns at ≥640px/≥1024px. Navbar collapses behind a `data-sk-burger` button; sidebar slides in via a `data-sk-sidebar` button.
@@ -23,7 +23,7 @@ RULES FOR GENERATION:
 skToast(message, type?, durationMsOrOpts?) — type: "info"(default)|"success"|"warning"|"danger"; 3rd arg: duration ms (default 3500, 0 = sticky) OR {duration, actionText, onAction} for an action button ("Undo")
 skOpenModal(id) / skCloseModal(id) — also open/close drawers and command palettes
 skToggleTheme() — flips dark family ↔ light family; persisted in localStorage
-skSetTheme(name) — switches to "dark"|"light"|"midnight"|"paper" (or a custom theme); persisted
+skSetTheme(name) — switches to "dark"|"midnight"|"forest"|"dusk"|"light"|"paper"|"sky"|"rose" (or a custom theme); persisted
 skConfirm(message, opts?) → Promise<boolean> — builds a confirm modal; opts: {title, okText, cancelText, danger}
 skPrompt(message, opts?) → Promise<string|null> — input dialog (null on cancel/Esc); opts: {title, okText, cancelText, placeholder, value}
 
@@ -38,7 +38,7 @@ data-sk-sidebar — button toggles .sk-sidebar on mobile
 data-sk-burger — button toggles navbar links on mobile
 data-sk-toast="Msg" + optional data-sk-toast-type="success|warning|danger" — button shows toast
 data-sk-theme-toggle — button flips dark ↔ light theme family (persisted across page loads)
-data-sk-theme="name" — button switches to that theme: dark|light|midnight|paper (persisted)
+data-sk-theme="name" — button switches to that theme: dark|midnight|forest|dusk|light|paper|sky|rose (persisted)
 data-sk-validate — on a <form>: blocks invalid submits; bad fields get .sk-invalid + a styled .sk-error line from the browser's validationMessage (uses required/type/minlength etc.); errors clear on edit
 data-sk-autogrow — on a <textarea>: height grows with content
 data-sk-count — on an input/textarea with maxlength: live "37 / 200" counter appears under the field (warns near the limit)
