@@ -1,0 +1,7 @@
+# Subresource Integrity hashes for Skynet UI v3.0.0
+# Usage: <link rel="stylesheet" href="https://skynetui.com/v3.0.0/skynet-ui.min.css"
+#          integrity="sha384-…" crossorigin="anonymous">
+skynet-ui.css  sha384-fn5t35UFncJoD6veUETeU1Gx516vDDzQ5SmCOTll2keErB0l5scWZ1Pqz5z7Xdmb
+skynet-ui.js  sha384-BqXRB4wNzGQzpPvU+cVi9E8nN+tvaD8Mjjephfcw9FvzjE/nK3Kr+6IwiPDjx31D
+skynet-ui.min.css  sha384-vhayEjtnQtMW6TbQvNs5q4OSH9XMks0ovmOIATnBDj8jo6Etf2ujaTAJV0oz6YA1
+skynet-ui.min.js  sha384-9CXnojMIme78aVLHQh8ux64eqTKsVrmd5NdQIYjJ019NrXZ4ZuN2EodluN+2W0E8

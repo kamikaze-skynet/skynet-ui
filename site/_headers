@@ -17,6 +17,10 @@
   Cache-Control: public, max-age=3600
 /skynet-ui.js
   Cache-Control: public, max-age=3600
+/skynet-ui.min.css
+  Cache-Control: public, max-age=3600
+/skynet-ui.min.js
+  Cache-Control: public, max-age=3600
 /llms.txt
   Cache-Control: public, max-age=3600
 

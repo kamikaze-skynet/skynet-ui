@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ops Dashboard — Skynet UI example</title>
+  <link rel="stylesheet" href="../skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="#" class="sk-navbar-brand"><span class="sk-navbar-logo">O</span> OpsBoard</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="#" class="active">Overview</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Alerts</a></li>
+    </ul>
+    <div class="sk-navbar-end">
+      <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+      <span class="sk-presence sk-online"><span class="sk-avatar sk-avatar-sm">OP</span></span>
+    </div>
+  </nav>
+
+  <div class="sk-container py-8">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <div>
+        <h1 class="mb-0">Production overview</h1>
+        <nav class="sk-breadcrumbs" aria-label="Breadcrumb"><a href="#">Home</a><span>Overview</span></nav>
+      </div>
+      <div class="sk-btn-group" data-sk-segment>
+        <button class="sk-btn">24h</button>
+        <button class="sk-btn active">7d</button>
+        <button class="sk-btn">30d</button>
+      </div>
+    </div>
+
+    <div class="sk-grid sk-cols-4 mb-8">
+      <div class="sk-card"><div class="sk-card-body">
+        <div class="sk-stat-label">Requests</div>
+        <div class="sk-stat-value">4.2M</div>
+        <span class="sk-delta sk-delta-up">12%</span>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <div class="sk-stat-label">p95 latency</div>
+        <div class="sk-stat-value">231ms</div>
+        <span class="sk-delta sk-delta-down">8%</span>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <div class="sk-stat-label">Error rate</div>
+        <div class="sk-stat-value">0.04%</div>
+        <span class="sk-delta sk-delta-up">0.01%</span>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <div class="sk-stat-label">Uptime</div>
+        <div class="sk-stat-value">99.98%</div>
+        <div class="sk-progress mt-2"><div class="sk-progress-bar" style="width: 99.98%"></div></div>
+      </div></div>
+    </div>
+
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+      <h2 class="mb-0">Services</h2>
+      <div class="flex gap-2">
+        <input class="sk-input" type="search" placeholder="Filter&hellip;" data-sk-filter="svc" aria-label="Filter services">
+        <button class="sk-btn sk-btn-outline" data-sk-export="svc">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="sk-bulkbar" id="svc-bulk">
+      <strong><span class="sk-selected-count">0</span> selected</strong>
+      <button class="sk-btn sk-btn-sm" onclick="skToast('Restarted ' + skSelectedRows('svc').length + ' services', 'success')">Restart</button>
+      <button class="sk-btn sk-btn-danger sk-btn-sm" onclick="skConfirm('Stop the selected services?', {danger: true, okText: 'Stop'}).then(function(ok){ if (ok) skToast('Stopped', 'danger'); })">Stop</button>
+    </div>
+
+    <div class="sk-table-wrap">
+      <table class="sk-table sk-table-hover" id="svc" data-sk-select data-sk-bulkbar="svc-bulk" data-sk-paginate="5">
+        <thead><tr><th data-sk-sort>Service</th><th data-sk-sort>Region</th><th data-sk-sort>Uptime</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="font-medium text-main">api-gateway</td><td>eu-west-1</td><td>99.98%</td><td><span class="sk-badge sk-badge-success">Healthy</span></td></tr>
+          <tr><td class="font-medium text-main">worker-pool</td><td>eu-west-1</td><td>99.71%</td><td><span class="sk-badge sk-badge-warning">Degraded</span></td></tr>
+          <tr><td class="font-medium text-main">auth-service</td><td>us-east-1</td><td>99.95%</td><td><span class="sk-badge sk-badge-success">Healthy</span></td></tr>
+          <tr><td class="font-medium text-main">static-cdn</td><td>global</td><td>100%</td><td><span class="sk-badge sk-badge-success">Healthy</span></td></tr>
+          <tr><td class="font-medium text-main">billing-cron</td><td>eu-central-1</td><td>98.40%</td><td><span class="sk-badge sk-badge-warning">Degraded</span></td></tr>
+          <tr><td class="font-medium text-main">ml-inference</td><td>us-west-2</td><td>99.99%</td><td><span class="sk-badge sk-badge-success">Healthy</span></td></tr>
+          <tr><td class="font-medium text-main">legacy-cron</td><td>us-east-2</td><td>91.02%</td><td><span class="sk-badge sk-badge-danger">Down</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sk-grid sk-cols-2 mt-8">
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="sk-card-title">Recent activity</h3>
+        <div class="sk-timeline mt-4">
+          <div class="sk-timeline-item sk-tl-success"><div class="sk-timeline-time">4m ago</div><div class="sk-timeline-title">Deploy finished</div></div>
+          <div class="sk-timeline-item sk-tl-warning"><div class="sk-timeline-time">1h ago</div><div class="sk-timeline-title">Latency spike in eu-west-1</div></div>
+          <div class="sk-timeline-item"><div class="sk-timeline-time">Yesterday</div><div class="sk-timeline-title">Weekly backup completed</div></div>
+        </div>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="sk-card-title">On call</h3>
+        <div class="flex items-center gap-3 mt-4">
+          <div class="sk-avatar-group">
+            <span class="sk-avatar">AB</span><span class="sk-avatar">CD</span><span class="sk-avatar">+2</span>
+          </div>
+          <span class="text-muted text-sm">Platform team &middot; rotates in 3h</span>
+        </div>
+        <div class="sk-callout sk-callout-warning mt-4">
+          <div class="sk-callout-title">Heads up</div>
+          billing-cron has been degraded for 2 hours — <a href="#">view runbook</a>.
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <script src="../skynet-ui.js" defer></script>
+</body>
+</html>

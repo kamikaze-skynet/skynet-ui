@@ -57,15 +57,15 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 ```html
 <!-- pinned version (recommended for production — immutable, cached forever) -->
-<link rel="stylesheet" href="https://skynetui.com/v2.1.0/skynet-ui.css">
-<script src="https://skynetui.com/v2.1.0/skynet-ui.js" defer></script>
+<link rel="stylesheet" href="https://skynetui.com/v3.0.0/skynet-ui.css">
+<script src="https://skynetui.com/v3.0.0/skynet-ui.js" defer></script>
 
 <!-- or always-latest (updates automatically within the hour) -->
 <link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
 <script src="https://skynetui.com/skynet-ui.js" defer></script>
 ```
 
-Pin a version for anything real: latest URLs can change how your site looks when a new release ships. The machine-readable reference for AI tools lives at `https://skynetui.com/llms.txt`.
+Pin a version for anything real: latest URLs can change how your site looks when a new release ships. Minified builds (`skynet-ui.min.css` / `skynet-ui.min.js`) and SRI integrity hashes (`sri.txt`) sit next to every pinned version. The machine-readable reference for AI tools lives at `https://skynetui.com/llms.txt`, and AI agents can connect to the MCP server at `https://skynetui.com/mcp` (`claude mcp add --transport http skynet-ui https://skynetui.com/mcp`).
 
 ### How the hosting works (maintainer notes)
 
@@ -127,7 +127,7 @@ You can also override variables per-site without touching the framework file —
 </style>
 ```
 
-Eight themes are built in — set `data-theme` on the `<html>` or `<body>` tag:
+Nine themes are built in — set `data-theme` on the `<html>` or `<body>` tag (plus `"auto"`, which follows the OS preference):
 
 | Theme | `data-theme` | Family | Look |
 |---|---|---|---|
@@ -139,6 +139,7 @@ Eight themes are built in — set `data-theme` on the `<html>` or `<body>` tag:
 | Paper | `"paper"` | light | warm cream, amber accent |
 | Sky | `"sky"` | light | cool blue-tinted, azure accent |
 | Rose | `"rose"` | light | warm blush, rose accent |
+| Contrast | `"contrast"` | dark | max-legibility black/white, yellow accent |
 
 The family matters for `data-sk-theme-toggle` / `skToggleTheme()`: toggling from any dark-family theme lands on light, and vice versa.
 
@@ -840,6 +841,20 @@ Right-clicking any element with `data-sk-context` opens that menu at the cursor 
 ```
 
 `data-sk-copy="text"` copies literal text; `data-sk-copy-target="element-id"` copies that element's value (inputs) or text content. A success toast confirms the copy.
+
+### The v3.0 "AI App Kit" additions
+
+v3.0 adds a large wave documented in full in `LLM.md` (served at skynetui.com/llms.txt); highlights:
+
+- **`.sk-prose`** — beautiful defaults for rendered markdown / LLM output (headings, lists, blockquotes, code, tables)
+- **Chat kit** — `sk-chat` with `sk-msg-user`/`sk-msg-assistant`/`sk-msg-system` bubbles, `sk-typing` dots, `sk-promptbar`, and `skTypewriter()` / `data-sk-typewriter` streaming text
+- **Combobox** (`data-sk-combobox`) — searchable select with keyboard navigation
+- **Date picker** (`data-sk-datepicker`) — calendar dropdown writing `YYYY-MM-DD`
+- **Dual range slider** (`data-sk-range-dual`), **number stepper** (`data-sk-stepper`), **star rating** (`sk-rating`, pure CSS)
+- **Announcement banner** (`sk-banner`, dismissal remembered), **lightbox** (`data-sk-lightbox`), **onboarding tour** (`skTour()` + `data-sk-tour`)
+- **Table extras** — row selection with bulk-action bar (`data-sk-select` + `data-sk-bulkbar`), CSV export (`data-sk-export`), sticky headers (`sk-sticky-head`), stat deltas (`sk-delta-up/down`)
+- **A11y & modes** — focus-trapped overlays, ARIA wiring, a 9th `contrast` theme, `data-theme="auto"` (follows the OS), `data-density="compact"`, print styles
+- **MCP server** at `skynetui.com/mcp` and complete example pages under `skynetui.com/examples/`
 
 ### Small extras
 

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog — Skynet UI</title>
+  <link rel="stylesheet" href="skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Skynet UI</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="/">Components</a></li>
+      <li><a href="/examples.html">Examples</a></li>
+      <li><a href="/themer.html">Theme builder</a></li>
+      <li><a href="/changelog.html" class="active">Changelog</a></li>
+    </ul>
+  </nav>
+
+  <div class="sk-container py-8" style="max-width: 800px">
+    <h1>Changelog</h1>
+    <p class="text-muted">Pinned versions stay available forever at <code>/vX.Y.Z/</code>.</p>
+
+    <div class="sk-timeline mt-6">
+      <div class="sk-timeline-item sk-tl-primary">
+        <div class="sk-timeline-time">v3.0.0 — “The AI App Kit”</div>
+        <div class="sk-timeline-title">Chat kit, prose, MCP server, and 15+ new components</div>
+        <div class="sk-prose text-sm"><ul>
+          <li><code>sk-prose</code> typography for rendered markdown / LLM output; chat kit (bubbles, typing dots, prompt bar) + <code>skTypewriter</code></li>
+          <li>Combobox, date picker, dual-handle range, number stepper, star rating, banner, lightbox, onboarding tour (<code>skTour</code>)</li>
+          <li>Tables: row selection + bulk bar, CSV export, sticky headers, stat deltas</li>
+          <li>A11y: focus trap in overlays, ARIA wiring, <code>contrast</code> theme (9th), <code>data-theme="auto"</code>, compact density, print styles</li>
+          <li>MCP server at <code>/mcp</code>; minified files + SRI hashes per release; examples gallery, theme builder, this changelog</li>
+        </ul></div>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v2.1.0</div>
+        <div class="sk-timeline-title">Tag input, tree view, context menus, table pagination</div>
+        <p class="text-muted text-sm mb-0">Plus the mobile dropdown-overflow fix and cache-busted deploys with visible build stamps.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v2.0.0</div>
+        <div class="sk-timeline-title">Tailwind-compat utility layer + LLM-first landing</div>
+        <p class="text-muted text-sm mb-0">~170 Tailwind-named utilities with sm:/md:/lg: variants, the Tailwind conversion guide in llms.txt, and skynetui.com built around LLM prompts.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.5.0</div>
+        <div class="sk-timeline-title">Four new themes</div>
+        <p class="text-muted text-sm mb-0">Forest and dusk (dark family), sky and rose (light family) — eight built-ins.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.4.0</div>
+        <div class="sk-timeline-title">Midnight & paper themes, form validation, skPrompt</div>
+        <p class="text-muted text-sm mb-0">Theme picker with persistence, autogrow textareas, character counters, scroll reveal, carousel autoplay.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.3.0</div>
+        <div class="sk-timeline-title">Command palette, popovers, carousel, toast actions</div>
+        <p class="text-muted text-sm mb-0">Ctrl+K palette with keyboard nav; themed native date inputs via color-scheme.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.2.0</div>
+        <div class="sk-timeline-title">Drawers, stepper, timeline, sortable/filterable tables</div>
+        <p class="text-muted text-sm mb-0">Plus skConfirm, segmented controls, scrollspy, and avatar groups.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.1.0</div>
+        <div class="sk-timeline-title">11 new components + theme toggle</div>
+        <p class="text-muted text-sm mb-0">Breadcrumbs, pagination, accordion, tooltips, skeletons, chips, hero, footer, and more.</p>
+      </div>
+      <div class="sk-timeline-item">
+        <div class="sk-timeline-time">v1.0.0</div>
+        <div class="sk-timeline-title">Initial release</div>
+        <p class="text-muted text-sm mb-0">The original two-file dark-first kit: 17 component families, utilities, light theme.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="skynet-ui.js" defer></script>
+</body>
+</html>
