@@ -94,13 +94,34 @@ You can also override variables per-site without touching the framework file —
 </style>
 ```
 
-A light theme is built in: add `data-theme="light"` to the `<html>` or `<body>` tag.
+Four themes are built in — set `data-theme` on the `<html>` or `<body>` tag:
 
-Want a user-facing switch instead? Put `data-sk-theme-toggle` on any button and skynet-ui.js does the rest — it flips the theme and remembers the choice in `localStorage` across page loads:
+| Theme | `data-theme` | Look |
+|---|---|---|
+| Dark | *(none)* or `"dark"` | the default — deep navy, indigo accent |
+| Light | `"light"` | clean white/gray, indigo accent |
+| Midnight | `"midnight"` | pure-black OLED, cyan accent |
+| Paper | `"paper"` | warm cream, amber accent |
+
+Want user-facing switching? Two options, both remembered in `localStorage` across page loads:
 
 ```html
+<!-- quick flip between the dark and light families -->
 <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+
+<!-- or a full picker — any button with data-sk-theme="name" -->
+<div class="sk-dropdown">
+  <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-dropdown>&#9681; Theme &#9662;</button>
+  <div class="sk-dropdown-menu sk-right">
+    <button data-sk-theme="dark">Dark</button>
+    <button data-sk-theme="light">Light</button>
+    <button data-sk-theme="midnight">Midnight</button>
+    <button data-sk-theme="paper">Paper</button>
+  </div>
+</div>
 ```
+
+From your own JS: `skSetTheme("midnight")`. Making your own theme is just another `[data-theme="yours"] { … }` block overriding the `:root` variables — copy the `midnight` block as a starting point (include `color-scheme` and `--sk-primary-text` so native widgets and accent tints follow along).
 
 ---
 
@@ -218,6 +239,25 @@ Desktop: fixed 250px sidebar next to the content. Mobile: the sidebar slides in 
 
 `sk-field` just adds bottom margin so fields stack neatly. For a validation error, add `sk-invalid` to the input and an `<div class="sk-error">message</div>` under it.
 
+Or let the framework do the validating: put `data-sk-validate` on the `<form>` and invalid submits are blocked, with each bad field getting `sk-invalid` plus the browser's own message as a styled `sk-error` line (based on standard attributes like `required`, `type="email"`, `minlength`). Errors clear as the user edits the field.
+
+```html
+<form data-sk-validate action="/contact" method="post">
+  <div class="sk-field">
+    <label class="sk-label" for="email">Email</label>
+    <input class="sk-input" id="email" type="email" required>
+  </div>
+  <button class="sk-btn sk-btn-primary" type="submit">Send</button>
+</form>
+```
+
+Two more field helpers:
+
+```html
+<textarea class="sk-textarea" data-sk-autogrow></textarea>          <!-- grows with its content -->
+<textarea class="sk-textarea" maxlength="200" data-sk-count></textarea>  <!-- live "37 / 200" counter -->
+```
+
 Input with attached button:
 
 ```html
@@ -325,6 +365,14 @@ For a quick confirmation you don't need any markup — `skConfirm` builds the di
 skConfirm("Delete this project?", { danger: true, okText: "Delete" })
   .then(ok => { if (ok) deleteProject(); });
 // options (all optional): title, okText, cancelText, danger
+```
+
+`skPrompt` is the same idea for text input — it resolves the typed string, or `null` on Cancel/Esc:
+
+```js
+skPrompt("Rename the project to?", { value: "old-name", okText: "Rename" })
+  .then(name => { if (name) rename(name); });
+// options (all optional): title, okText, cancelText, placeholder, value
 ```
 
 ### Drawers (slide-in panels)
@@ -456,6 +504,16 @@ Scroll-snap based: swiping and momentum come from the browser, so the track work
 ```
 
 One slide per view by default. On the carousel: `sk-carousel-peek` shows the edge of the next slide; `sk-carousel-cols-2` / `sk-carousel-cols-3` show 2/3 per view from 768px up.
+
+Auto-advance with `data-sk-autoplay="4000"` (milliseconds per slide) — it wraps back to the start, pauses while hovered, focused, or touched, and stays off entirely for users with reduced motion enabled.
+
+### Scroll reveal
+
+Add `data-sk-reveal` to anything and it fades in the first time it's scrolled into view. Content stays visible if JavaScript doesn't load, and the effect is skipped for reduced-motion users.
+
+```html
+<div class="sk-card" data-sk-reveal>…</div>
+```
 
 ### Badges and alerts
 
