@@ -1,0 +1,2176 @@
+/* ==========================================================================
+   Skynet UI v1.5.0
+   A tiny dark-first UI framework. Pure CSS — no build step.
+   Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
+   Theme everything by editing the variables in :root below.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. THEME VARIABLES — edit these to re-skin every site in one place
+   -------------------------------------------------------------------------- */
+:root {
+  /* Native widgets (date pickers, scrollbars, select lists) follow the theme */
+  color-scheme: dark;
+
+  /* Backgrounds (darkest → lightest) */
+  --sk-bg:          #0b0f17;   /* page background */
+  --sk-surface:     #111826;   /* cards, navbar, sidebar */
+  --sk-surface-2:   #172033;   /* hovered rows, inputs on cards */
+  --sk-border:      #1e2836;   /* subtle borders */
+  --sk-border-2:    #2a3547;   /* stronger borders (inputs, outline buttons) */
+
+  /* Text */
+  --sk-text:        #e6eaf2;   /* main text */
+  --sk-text-2:      #aeb7c7;   /* secondary text */
+  --sk-muted:       #8b95a7;   /* muted / hints */
+  --sk-faint:       #5b6474;   /* placeholders */
+
+  /* Accent + status colors */
+  --sk-primary:        #6366f1;
+  --sk-primary-hover:  #4f52e0;
+  --sk-primary-soft:   rgba(99, 102, 241, 0.15);
+  --sk-primary-text:   #a5b4fc;   /* readable accent tint on soft backgrounds */
+  --sk-success:        #16a34a;
+  --sk-success-soft:   rgba(22, 163, 74, 0.15);
+  --sk-success-text:   #4ade80;
+  --sk-warning:        #d97706;
+  --sk-warning-soft:   rgba(217, 119, 6, 0.15);
+  --sk-warning-text:   #fbbf24;
+  --sk-danger:         #dc2626;
+  --sk-danger-hover:   #b91c1c;
+  --sk-danger-soft:    rgba(220, 38, 38, 0.15);
+  --sk-danger-text:    #f87171;
+  --sk-info:           #0ea5e9;
+  --sk-info-soft:      rgba(14, 165, 233, 0.15);
+  --sk-info-text:      #38bdf8;
+
+  /* Shape + effects */
+  --sk-radius:      10px;
+  --sk-radius-sm:   7px;
+  --sk-radius-lg:   16px;
+  --sk-shadow:      0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  --sk-shadow-lg:   0 8px 40px rgba(0,0,0,.5);
+  --sk-transition:  0.18s ease;
+
+  /* Typography */
+  --sk-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sk-font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
+
+  /* Layout */
+  --sk-container: 1140px;
+  --sk-navbar-height: 60px;
+  --sk-sidebar-width: 250px;
+}
+
+/* --------------------------------------------------------------------------
+   BUILT-IN THEMES — set data-theme="light|midnight|paper|forest|dusk|sky|rose"
+   on <html> or <body>
+   (no attribute, or data-theme="dark", = the default dark theme above).
+   Buttons with data-sk-theme="name" switch and remember the theme via
+   skynet-ui.js; skToggleTheme() flips between the dark and light families.
+   -------------------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+  --sk-bg:        #f4f6fa;
+  --sk-surface:   #ffffff;
+  --sk-surface-2: #eef1f6;
+  --sk-border:    #e2e7ef;
+  --sk-border-2:  #cdd5e1;
+  --sk-text:      #16202e;
+  --sk-text-2:    #3d4a5d;
+  --sk-muted:     #64748b;
+  --sk-faint:     #94a3b8;
+  --sk-primary-text: #4649c9;
+  --sk-shadow:    0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.08);
+  --sk-shadow-lg: 0 8px 40px rgba(16,24,40,.16);
+}
+
+/* Midnight — pure-black OLED dark with a cyan accent */
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --sk-bg:        #000000;
+  --sk-surface:   #0a0d12;
+  --sk-surface-2: #131720;
+  --sk-border:    #1b202b;
+  --sk-border-2:  #29303e;
+  --sk-text:      #e8edf5;
+  --sk-text-2:    #a9b3c4;
+  --sk-muted:     #8490a3;
+  --sk-faint:     #566175;
+  --sk-primary:        #22d3ee;
+  --sk-primary-hover:  #06b6d4;
+  --sk-primary-soft:   rgba(34, 211, 238, 0.12);
+  --sk-primary-text:   #67e8f9;
+  --sk-shadow:    0 1px 2px rgba(0,0,0,.5), 0 4px 16px rgba(0,0,0,.4);
+  --sk-shadow-lg: 0 8px 40px rgba(0,0,0,.7);
+}
+
+/* Paper — warm cream light with an amber accent */
+[data-theme="paper"] {
+  color-scheme: light;
+  --sk-bg:        #f5efe3;
+  --sk-surface:   #fdfaf2;
+  --sk-surface-2: #efe7d6;
+  --sk-border:    #e4dac5;
+  --sk-border-2:  #cfc2a6;
+  --sk-text:      #2c251a;
+  --sk-text-2:    #5a4d38;
+  --sk-muted:     #7e7259;
+  --sk-faint:     #a4977c;
+  --sk-primary:        #b45309;
+  --sk-primary-hover:  #92400e;
+  --sk-primary-soft:   rgba(180, 83, 9, 0.13);
+  --sk-primary-text:   #92400e;
+  --sk-shadow:    0 1px 2px rgba(87,66,26,.08), 0 4px 16px rgba(87,66,26,.1);
+  --sk-shadow-lg: 0 8px 40px rgba(87,66,26,.2);
+}
+
+/* Forest — deep green dark with an emerald accent */
+[data-theme="forest"] {
+  color-scheme: dark;
+  --sk-bg:        #0a120d;
+  --sk-surface:   #101a13;
+  --sk-surface-2: #17251b;
+  --sk-border:    #1f3025;
+  --sk-border-2:  #2c4233;
+  --sk-text:      #e7f0ea;
+  --sk-text-2:    #adc2b4;
+  --sk-muted:     #869c8e;
+  --sk-faint:     #57695e;
+  --sk-primary:        #34d399;
+  --sk-primary-hover:  #10b981;
+  --sk-primary-soft:   rgba(52, 211, 153, 0.13);
+  --sk-primary-text:   #6ee7b7;
+  --sk-shadow:    0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.3);
+  --sk-shadow-lg: 0 8px 40px rgba(0,0,0,.55);
+}
+
+/* Dusk — deep violet dark with a fuchsia accent */
+[data-theme="dusk"] {
+  color-scheme: dark;
+  --sk-bg:        #120c1d;
+  --sk-surface:   #1a1229;
+  --sk-surface-2: #241938;
+  --sk-border:    #2e2145;
+  --sk-border-2:  #3f2f5c;
+  --sk-text:      #efe9f7;
+  --sk-text-2:    #c0b3d6;
+  --sk-muted:     #9a8cb3;
+  --sk-faint:     #6a5d84;
+  --sk-primary:        #e879f9;
+  --sk-primary-hover:  #d946ef;
+  --sk-primary-soft:   rgba(232, 121, 249, 0.14);
+  --sk-primary-text:   #f0abfc;
+  --sk-shadow:    0 1px 2px rgba(9,4,20,.4), 0 4px 16px rgba(9,4,20,.35);
+  --sk-shadow-lg: 0 8px 40px rgba(9,4,20,.6);
+}
+
+/* Sky — cool blue-tinted light with an azure accent */
+[data-theme="sky"] {
+  color-scheme: light;
+  --sk-bg:        #eef4fb;
+  --sk-surface:   #ffffff;
+  --sk-surface-2: #e3edf8;
+  --sk-border:    #d4e2f2;
+  --sk-border-2:  #b6cce6;
+  --sk-text:      #0f2136;
+  --sk-text-2:    #33506d;
+  --sk-muted:     #5b7794;
+  --sk-faint:     #8fa9c4;
+  --sk-primary:        #0284c7;
+  --sk-primary-hover:  #0369a1;
+  --sk-primary-soft:   rgba(2, 132, 199, 0.12);
+  --sk-primary-text:   #075985;
+  --sk-shadow:    0 1px 2px rgba(15,48,84,.06), 0 4px 16px rgba(15,48,84,.09);
+  --sk-shadow-lg: 0 8px 40px rgba(15,48,84,.18);
+}
+
+/* Rose — warm blush light with a rose accent */
+[data-theme="rose"] {
+  color-scheme: light;
+  --sk-bg:        #faf1f3;
+  --sk-surface:   #fffbfc;
+  --sk-surface-2: #f5e6ea;
+  --sk-border:    #eed9de;
+  --sk-border-2:  #ddbcc5;
+  --sk-text:      #331b22;
+  --sk-text-2:    #5d3c47;
+  --sk-muted:     #87616c;
+  --sk-faint:     #b18e98;
+  --sk-primary:        #e11d48;
+  --sk-primary-hover:  #be123c;
+  --sk-primary-soft:   rgba(225, 29, 72, 0.11);
+  --sk-primary-text:   #9f1239;
+  --sk-shadow:    0 1px 2px rgba(84,26,42,.06), 0 4px 16px rgba(84,26,42,.09);
+  --sk-shadow-lg: 0 8px 40px rgba(84,26,42,.18);
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET + BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--sk-bg);
+  color: var(--sk-text);
+  font-family: var(--sk-font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, video, svg { max-width: 100%; height: auto; display: block; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 0.5em;
+  line-height: 1.25;
+  font-weight: 650;
+  color: var(--sk-text);
+}
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.15rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.875rem; }
+
+p { margin: 0 0 1em; }
+
+a { color: var(--sk-primary); text-decoration: none; transition: color var(--sk-transition); }
+a:hover { color: var(--sk-primary-hover); text-decoration: underline; }
+
+hr { border: none; border-top: 1px solid var(--sk-border); margin: 1.5rem 0; }
+
+code, pre {
+  font-family: var(--sk-font-mono);
+  font-size: 0.875em;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-sm);
+}
+code { padding: 0.15em 0.4em; }
+pre { padding: 1rem; overflow-x: auto; }
+pre code { background: none; border: none; padding: 0; }
+
+::selection { background: var(--sk-primary); color: #fff; }
+
+:focus-visible {
+  outline: 2px solid var(--sk-primary);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT — container, grid, flex helpers
+   -------------------------------------------------------------------------- */
+.sk-container {
+  width: 100%;
+  max-width: var(--sk-container);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.sk-container-fluid { width: 100%; padding-left: 1rem; padding-right: 1rem; }
+
+/* Grid: mobile-first. .sk-grid is 1 column on phones.
+   Add .sk-cols-2/3/4 to become multi-column from 640px up. */
+.sk-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+.sk-grid.gap-0 { gap: 0; }
+.sk-grid.gap-sm { gap: 0.5rem; }
+.sk-grid.gap-lg { gap: 1.5rem; }
+
+@media (min-width: 640px) {
+  .sk-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .sk-cols-3 { grid-template-columns: repeat(2, 1fr); }
+  .sk-cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .sk-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .sk-cols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+/* Auto-fit grid: as many columns as fit, min 240px each */
+.sk-grid-auto { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+/* Make one item span the full row */
+.sk-span-all { grid-column: 1 / -1; }
+
+/* Flexbox utilities */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.flex-wrap { flex-wrap: wrap; }
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1 1 0%; }
+.grow { flex-grow: 1; }
+.shrink-0 { flex-shrink: 0; }
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+
+/* Display */
+.block { display: block; }
+.inline-block { display: inline-block; }
+.hidden { display: none; }
+.grid { display: grid; }
+
+/* Show/hide by screen size (mobile-first) */
+@media (max-width: 767px) { .hide-mobile { display: none !important; } }
+@media (min-width: 768px) { .hide-desktop { display: none !important; } }
+
+/* Position */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.sticky-top { position: sticky; top: 0; z-index: 50; }
+
+/* --------------------------------------------------------------------------
+   4. SPACING UTILITIES  (scale: 1=0.25rem, 2=0.5rem, 3=0.75rem, 4=1rem,
+                          5=1.25rem, 6=1.5rem, 8=2rem, 10=2.5rem, 12=3rem, 16=4rem)
+   -------------------------------------------------------------------------- */
+.m-0 { margin: 0; }        .p-0 { padding: 0; }
+.m-1 { margin: 0.25rem; }  .p-1 { padding: 0.25rem; }
+.m-2 { margin: 0.5rem; }   .p-2 { padding: 0.5rem; }
+.m-3 { margin: 0.75rem; }  .p-3 { padding: 0.75rem; }
+.m-4 { margin: 1rem; }     .p-4 { padding: 1rem; }
+.m-6 { margin: 1.5rem; }   .p-6 { padding: 1.5rem; }
+.m-8 { margin: 2rem; }     .p-8 { padding: 2rem; }
+
+.mt-0 { margin-top: 0; }       .pt-0 { padding-top: 0; }
+.mt-1 { margin-top: 0.25rem; } .pt-1 { padding-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }  .pt-2 { padding-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; } .pt-3 { padding-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }    .pt-4 { padding-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }  .pt-6 { padding-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }    .pt-8 { padding-top: 2rem; }
+.mt-12 { margin-top: 3rem; }   .pt-12 { padding-top: 3rem; }
+.mt-16 { margin-top: 4rem; }   .pt-16 { padding-top: 4rem; }
+
+.mb-0 { margin-bottom: 0; }       .pb-0 { padding-bottom: 0; }
+.mb-1 { margin-bottom: 0.25rem; } .pb-1 { padding-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }  .pb-2 { padding-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; } .pb-3 { padding-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }    .pb-4 { padding-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }  .pb-6 { padding-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }    .pb-8 { padding-bottom: 2rem; }
+.mb-12 { margin-bottom: 3rem; }   .pb-12 { padding-bottom: 3rem; }
+.mb-16 { margin-bottom: 4rem; }   .pb-16 { padding-bottom: 4rem; }
+
+.ml-1 { margin-left: 0.25rem; }  .pl-1 { padding-left: 0.25rem; }
+.ml-2 { margin-left: 0.5rem; }   .pl-2 { padding-left: 0.5rem; }
+.ml-3 { margin-left: 0.75rem; }  .pl-3 { padding-left: 0.75rem; }
+.ml-4 { margin-left: 1rem; }     .pl-4 { padding-left: 1rem; }
+.ml-auto { margin-left: auto; }
+
+.mr-1 { margin-right: 0.25rem; } .pr-1 { padding-right: 0.25rem; }
+.mr-2 { margin-right: 0.5rem; }  .pr-2 { padding-right: 0.5rem; }
+.mr-3 { margin-right: 0.75rem; } .pr-3 { padding-right: 0.75rem; }
+.mr-4 { margin-right: 1rem; }    .pr-4 { padding-right: 1rem; }
+.mr-auto { margin-right: auto; }
+
+.mx-auto { margin-left: auto; margin-right: auto; }
+.mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+.mx-4 { margin-left: 1rem; margin-right: 1rem; }
+.my-2 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+.my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+.my-8 { margin-top: 2rem; margin-bottom: 2rem; }
+
+.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+.py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+
+/* Sizing */
+.w-full { width: 100%; }
+.w-auto { width: auto; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+.max-w-sm { max-width: 24rem; }
+.max-w-md { max-width: 28rem; }
+.max-w-lg { max-width: 32rem; }
+.max-w-xl { max-width: 36rem; }
+.max-w-2xl { max-width: 42rem; }
+.max-w-3xl { max-width: 48rem; }
+
+/* --------------------------------------------------------------------------
+   5. TEXT UTILITIES
+   -------------------------------------------------------------------------- */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
+
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-mono { font-family: var(--sk-font-mono); }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.uppercase { text-transform: uppercase; letter-spacing: 0.05em; }
+.capitalize { text-transform: capitalize; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.leading-tight { line-height: 1.25; }
+.leading-relaxed { line-height: 1.75; }
+.no-underline { text-decoration: none !important; }
+
+/* Text colors */
+.text-main { color: var(--sk-text); }
+.text-secondary { color: var(--sk-text-2); }
+.text-muted { color: var(--sk-muted); }
+.text-primary { color: var(--sk-primary); }
+.text-success { color: var(--sk-success-text); }
+.text-warning { color: var(--sk-warning-text); }
+.text-danger { color: var(--sk-danger-text); }
+.text-info { color: var(--sk-info-text); }
+.text-white { color: #fff; }
+
+/* Backgrounds */
+.bg-page { background: var(--sk-bg); }
+.bg-surface { background: var(--sk-surface); }
+.bg-surface-2 { background: var(--sk-surface-2); }
+.bg-primary { background: var(--sk-primary); }
+.bg-success { background: var(--sk-success); }
+.bg-warning { background: var(--sk-warning); }
+.bg-danger { background: var(--sk-danger); }
+
+/* Borders + radius + shadow */
+.border { border: 1px solid var(--sk-border); }
+.border-2 { border: 1px solid var(--sk-border-2); }
+.border-t { border-top: 1px solid var(--sk-border); }
+.border-b { border-bottom: 1px solid var(--sk-border); }
+.rounded { border-radius: var(--sk-radius); }
+.rounded-sm { border-radius: var(--sk-radius-sm); }
+.rounded-lg { border-radius: var(--sk-radius-lg); }
+.rounded-full { border-radius: 9999px; }
+.shadow { box-shadow: var(--sk-shadow); }
+.shadow-lg { box-shadow: var(--sk-shadow-lg); }
+.overflow-hidden { overflow: hidden; }
+.overflow-auto { overflow: auto; }
+.cursor-pointer { cursor: pointer; }
+.opacity-50 { opacity: 0.5; }
+.opacity-75 { opacity: 0.75; }
+
+/* --------------------------------------------------------------------------
+   6. BUTTONS
+   -------------------------------------------------------------------------- */
+.sk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.925rem;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  color: var(--sk-text);
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--sk-transition), border-color var(--sk-transition),
+              color var(--sk-transition), transform 0.08s ease, box-shadow var(--sk-transition);
+}
+.sk-btn:hover { background: var(--sk-border); text-decoration: none; color: var(--sk-text); }
+.sk-btn:active { transform: scale(0.97); }
+.sk-btn:disabled, .sk-btn.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+.sk-btn-primary { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
+.sk-btn-primary:hover { background: var(--sk-primary-hover); border-color: var(--sk-primary-hover); color: #fff; }
+
+.sk-btn-success { background: var(--sk-success); border-color: var(--sk-success); color: #fff; }
+.sk-btn-success:hover { background: #15803d; border-color: #15803d; color: #fff; }
+
+.sk-btn-danger { background: var(--sk-danger); border-color: var(--sk-danger); color: #fff; }
+.sk-btn-danger:hover { background: var(--sk-danger-hover); border-color: var(--sk-danger-hover); color: #fff; }
+
+.sk-btn-outline { background: transparent; border-color: var(--sk-border-2); color: var(--sk-text-2); }
+.sk-btn-outline:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+
+.sk-btn-ghost { background: transparent; border-color: transparent; color: var(--sk-text-2); }
+.sk-btn-ghost:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+
+/* Sizes */
+.sk-btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+.sk-btn-lg { padding: 0.75rem 1.5rem; font-size: 1.05rem; }
+.sk-btn-block { display: flex; width: 100%; }
+
+/* Icon-only round button */
+.sk-btn-icon { padding: 0.55rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; }
+
+/* --------------------------------------------------------------------------
+   7. CARDS
+   -------------------------------------------------------------------------- */
+.sk-card {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow);
+  overflow: hidden;
+}
+.sk-card-body { padding: 1.25rem; }
+.sk-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.sk-card-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--sk-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.sk-card-title { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.35rem; }
+.sk-card-subtitle { font-size: 0.875rem; color: var(--sk-muted); margin: 0 0 0.75rem; }
+
+/* Card that lifts slightly on hover — nice for clickable cards */
+.sk-card-hover { transition: transform var(--sk-transition), border-color var(--sk-transition), box-shadow var(--sk-transition); }
+.sk-card-hover:hover { transform: translateY(-3px); border-color: var(--sk-border-2); box-shadow: var(--sk-shadow-lg); }
+
+/* Stat card helpers */
+.sk-stat-label { font-size: 0.8rem; color: var(--sk-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.sk-stat-value { font-size: 1.9rem; font-weight: 650; line-height: 1.2; margin-top: 0.25rem; }
+
+/* --------------------------------------------------------------------------
+   8. BADGES + ALERTS
+   -------------------------------------------------------------------------- */
+.sk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  background: var(--sk-surface-2);
+  color: var(--sk-text-2);
+  border: 1px solid var(--sk-border-2);
+  white-space: nowrap;
+}
+.sk-badge-primary { background: var(--sk-primary-soft); color: var(--sk-primary-text); border-color: transparent; }
+.sk-badge-success { background: var(--sk-success-soft); color: var(--sk-success-text); border-color: transparent; }
+.sk-badge-warning { background: var(--sk-warning-soft); color: var(--sk-warning-text); border-color: transparent; }
+.sk-badge-danger  { background: var(--sk-danger-soft);  color: var(--sk-danger-text);  border-color: transparent; }
+.sk-badge-info    { background: var(--sk-info-soft);    color: var(--sk-info-text);    border-color: transparent; }
+
+.sk-alert {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--sk-radius-sm);
+  border: 1px solid var(--sk-border-2);
+  background: var(--sk-surface);
+  color: var(--sk-text-2);
+  font-size: 0.925rem;
+}
+.sk-alert-success { background: var(--sk-success-soft); border-color: rgba(22,163,74,.35); color: var(--sk-success-text); }
+.sk-alert-warning { background: var(--sk-warning-soft); border-color: rgba(217,119,6,.35); color: var(--sk-warning-text); }
+.sk-alert-danger  { background: var(--sk-danger-soft);  border-color: rgba(220,38,38,.35); color: var(--sk-danger-text); }
+.sk-alert-info    { background: var(--sk-info-soft);    border-color: rgba(14,165,233,.35); color: var(--sk-info-text); }
+
+/* --------------------------------------------------------------------------
+   9. FORMS
+   -------------------------------------------------------------------------- */
+.sk-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sk-text-2);
+  margin-bottom: 0.35rem;
+}
+.sk-help { font-size: 0.8rem; color: var(--sk-muted); margin-top: 0.3rem; }
+.sk-field { margin-bottom: 1rem; }
+
+.sk-input, .sk-select, .sk-textarea {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.925rem;
+  font-family: inherit;
+  color: var(--sk-text);
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-input::placeholder, .sk-textarea::placeholder { color: var(--sk-faint); }
+.sk-input:focus, .sk-select:focus, .sk-textarea:focus {
+  outline: none;
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-textarea { min-height: 100px; resize: vertical; }
+.sk-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238b95a7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+.sk-input.sk-invalid, .sk-select.sk-invalid, .sk-textarea.sk-invalid {
+  border-color: var(--sk-danger);
+}
+.sk-error { font-size: 0.8rem; color: var(--sk-danger-text); margin-top: 0.3rem; }
+
+/* Checkboxes + radios */
+.sk-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.925rem;
+  color: var(--sk-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.sk-check input[type="checkbox"], .sk-check input[type="radio"] {
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  border: 1px solid var(--sk-border-2);
+  background: var(--sk-bg);
+  cursor: pointer;
+  transition: background var(--sk-transition), border-color var(--sk-transition);
+  flex-shrink: 0;
+}
+.sk-check input[type="checkbox"] { border-radius: 5px; }
+.sk-check input[type="radio"] { border-radius: 50%; }
+.sk-check input:checked {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+}
+.sk-check input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  background-size: 70%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.sk-check input[type="radio"]:checked {
+  box-shadow: inset 0 0 0 3.5px var(--sk-bg);
+}
+
+/* Toggle switch — use: <label class="sk-toggle"><input type="checkbox"><span></span> Label text</label> */
+.sk-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.925rem;
+  color: var(--sk-text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.sk-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.sk-toggle span {
+  width: 42px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--sk-border-2);
+  position: relative;
+  transition: background var(--sk-transition);
+  flex-shrink: 0;
+}
+.sk-toggle span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--sk-transition);
+}
+.sk-toggle input:checked + span { background: var(--sk-primary); }
+.sk-toggle input:checked + span::after { transform: translateX(18px); }
+.sk-toggle input:focus-visible + span { outline: 2px solid var(--sk-primary); outline-offset: 2px; }
+
+/* Input group: label above, input below, all widths aligned */
+.sk-input-group { display: flex; }
+.sk-input-group .sk-input { border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm); }
+.sk-input-group .sk-btn { border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0; }
+
+/* --------------------------------------------------------------------------
+   10. NAVBAR
+   -------------------------------------------------------------------------- */
+.sk-navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--sk-navbar-height);
+  padding: 0.5rem 1.25rem;
+  background: var(--sk-surface);
+  border-bottom: 1px solid var(--sk-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.sk-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-navbar-brand:hover { color: var(--sk-text); text-decoration: none; }
+.sk-navbar-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--sk-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.sk-navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sk-navbar-nav a {
+  display: block;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--sk-transition), background var(--sk-transition);
+}
+.sk-navbar-nav a:hover { color: var(--sk-text); background: var(--sk-surface-2); text-decoration: none; }
+.sk-navbar-nav a.active { color: var(--sk-text); background: var(--sk-surface-2); }
+.sk-navbar-end { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Hamburger button — hidden on desktop */
+.sk-navbar-burger {
+  display: none;
+  background: none;
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text);
+  padding: 0.4rem 0.55rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Mobile: hide the nav links, show the burger.
+   JS toggles .sk-open on the navbar to reveal a dropdown menu. */
+@media (max-width: 767px) {
+  .sk-navbar { flex-wrap: wrap; }
+  .sk-navbar-burger { display: block; margin-left: auto; }
+  .sk-navbar-end { margin-left: 0; }
+  .sk-navbar-nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    order: 10;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sk-border);
+    margin-top: 0.5rem;
+  }
+  .sk-navbar.sk-open .sk-navbar-nav { display: flex; }
+}
+
+/* --------------------------------------------------------------------------
+   11. SIDEBAR LAYOUT
+   Use: <div class="sk-layout">
+          <aside class="sk-sidebar"> ... </aside>
+          <main class="sk-main"> ... </main>
+        </div>
+   On mobile the sidebar slides in from the left (JS toggles .sk-open).
+   -------------------------------------------------------------------------- */
+.sk-layout { display: flex; min-height: 100vh; }
+
+.sk-sidebar {
+  width: var(--sk-sidebar-width);
+  flex-shrink: 0;
+  background: var(--sk-surface);
+  border-right: 1px solid var(--sk-border);
+  padding: 1.25rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sk-sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sk-faint);
+  padding: 0.75rem 0.85rem 0.35rem;
+}
+.sk-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--sk-transition), background var(--sk-transition);
+}
+.sk-sidebar a:hover { color: var(--sk-text); background: var(--sk-surface-2); text-decoration: none; }
+.sk-sidebar a.active { color: #c7d2fe; background: var(--sk-primary-soft); }
+
+.sk-main { flex: 1; min-width: 0; padding: 1.5rem; }
+@media (min-width: 768px) { .sk-main { padding: 2rem; } }
+
+/* Backdrop shown behind the mobile sidebar (JS adds/removes .sk-show) */
+.sk-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 190;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sk-transition);
+}
+.sk-backdrop.sk-show { opacity: 1; pointer-events: auto; }
+
+@media (max-width: 767px) {
+  .sk-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+  }
+  .sk-sidebar.sk-open { transform: translateX(0); box-shadow: var(--sk-shadow-lg); }
+}
+
+/* --------------------------------------------------------------------------
+   12. TABLES
+   Wrap in <div class="sk-table-wrap"> for horizontal scrolling on phones.
+   -------------------------------------------------------------------------- */
+.sk-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  background: var(--sk-surface);
+}
+.sk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.sk-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sk-muted);
+  border-bottom: 1px solid var(--sk-border);
+  background: var(--sk-surface);
+  white-space: nowrap;
+}
+.sk-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--sk-border);
+  color: var(--sk-text-2);
+}
+.sk-table tbody tr:last-child td { border-bottom: none; }
+.sk-table-hover tbody tr { transition: background var(--sk-transition); }
+.sk-table-hover tbody tr:hover { background: var(--sk-surface-2); }
+.sk-table-striped tbody tr:nth-child(odd) { background: rgba(255, 255, 255, 0.02); }
+
+/* --------------------------------------------------------------------------
+   13. TABS
+   Use: <div class="sk-tabs" data-sk-tabs>
+          <button class="sk-tab active" data-sk-tab="panel-1">Tab 1</button>
+          ...
+        </div>
+        <div class="sk-tab-panel active" id="panel-1"> ... </div>
+   -------------------------------------------------------------------------- */
+.sk-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  overflow-x: auto;
+}
+.sk-tab {
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--sk-muted);
+  font-size: 0.925rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--sk-transition), border-color var(--sk-transition);
+}
+.sk-tab:hover { color: var(--sk-text); }
+.sk-tab.active { color: var(--sk-primary); border-bottom-color: var(--sk-primary); }
+
+.sk-tab-panel { display: none; padding-top: 1.25rem; }
+.sk-tab-panel.active { display: block; animation: sk-fade-in 0.25s ease; }
+
+/* Pill-style tabs variant: add .sk-tabs-pills to the container */
+.sk-tabs-pills { border-bottom: none; gap: 0.4rem; }
+.sk-tabs-pills .sk-tab {
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  margin-bottom: 0;
+  padding: 0.45rem 1rem;
+}
+.sk-tabs-pills .sk-tab.active {
+  color: #fff;
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+}
+
+/* --------------------------------------------------------------------------
+   14. MODALS
+   Use: <button data-sk-open="my-modal">Open</button>
+        <div class="sk-modal" id="my-modal">
+          <div class="sk-modal-box"> ...content...
+            <button data-sk-close>Close</button>
+          </div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.sk-modal.sk-open { opacity: 1; pointer-events: auto; }
+
+.sk-modal-box {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.2s ease;
+}
+.sk-modal.sk-open .sk-modal-box { transform: translateY(0) scale(1); }
+.sk-modal-box.sk-modal-lg { max-width: 720px; }
+.sk-modal-box.sk-modal-sm { max-width: 360px; }
+
+.sk-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.35rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.sk-modal-body { padding: 1.35rem; }
+.sk-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.35rem;
+  border-top: 1px solid var(--sk-border);
+}
+.sk-modal-x {
+  background: none;
+  border: none;
+  color: var(--sk-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: var(--sk-radius-sm);
+  transition: color var(--sk-transition);
+}
+.sk-modal-x:hover { color: var(--sk-text); }
+
+body.sk-modal-open { overflow: hidden; }
+
+/* --------------------------------------------------------------------------
+   15. TOASTS  (created by skynet-ui.js — call skToast("Saved!", "success"))
+   -------------------------------------------------------------------------- */
+.sk-toast-container {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: calc(100vw - 2.5rem);
+}
+.sk-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 260px;
+  max-width: 380px;
+  padding: 0.85rem 1.1rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-left: 3px solid var(--sk-primary);
+  border-radius: var(--sk-radius-sm);
+  box-shadow: var(--sk-shadow-lg);
+  color: var(--sk-text);
+  font-size: 0.9rem;
+  animation: sk-toast-in 0.25s ease;
+}
+.sk-toast.sk-toast-leaving { animation: sk-toast-out 0.25s ease forwards; }
+.sk-toast-success { border-left-color: var(--sk-success); }
+.sk-toast-warning { border-left-color: var(--sk-warning); }
+.sk-toast-danger  { border-left-color: var(--sk-danger); }
+.sk-toast-x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--sk-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem;
+}
+.sk-toast-x:hover { color: var(--sk-text); }
+
+@keyframes sk-toast-in {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes sk-toast-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(30px); }
+}
+@keyframes sk-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   16. DROPDOWNS
+   Use: <div class="sk-dropdown">
+          <button class="sk-btn" data-sk-dropdown>Menu ▾</button>
+          <div class="sk-dropdown-menu">
+            <a href="#">Item</a> ...
+          </div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-dropdown { position: relative; display: inline-block; }
+.sk-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 150;
+  min-width: 180px;
+  padding: 0.4rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  box-shadow: var(--sk-shadow-lg);
+  display: none;
+}
+.sk-dropdown-menu.sk-right { left: auto; right: 0; }
+.sk-dropdown.sk-open .sk-dropdown-menu { display: block; animation: sk-fade-in 0.15s ease; }
+.sk-dropdown-menu a, .sk-dropdown-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  color: var(--sk-text-2);
+  font-size: 0.9rem;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-dropdown-menu a:hover, .sk-dropdown-menu button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-dropdown-divider { border: none; border-top: 1px solid var(--sk-border); margin: 0.4rem 0; }
+
+/* --------------------------------------------------------------------------
+   17. MISC — avatar, spinner, progress, kbd
+   -------------------------------------------------------------------------- */
+.sk-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--sk-primary-soft);
+  color: var(--sk-primary-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.sk-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sk-avatar-sm { width: 28px; height: 28px; font-size: 0.7rem; }
+.sk-avatar-lg { width: 52px; height: 52px; font-size: 1.1rem; }
+
+.sk-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--sk-border-2);
+  border-top-color: var(--sk-primary);
+  border-radius: 50%;
+  animation: sk-spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes sk-spin { to { transform: rotate(360deg); } }
+
+.sk-progress {
+  width: 100%;
+  height: 8px;
+  background: var(--sk-surface-2);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sk-progress-bar {
+  height: 100%;
+  background: var(--sk-primary);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+kbd {
+  font-family: var(--sk-font-mono);
+  font-size: 0.8em;
+  padding: 0.15em 0.45em;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  color: var(--sk-text-2);
+}
+
+/* Divider with centered text: <div class="sk-divider">or</div> */
+.sk-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--sk-faint);
+  font-size: 0.8rem;
+  margin: 1.25rem 0;
+}
+.sk-divider::before, .sk-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--sk-border);
+}
+
+/* --------------------------------------------------------------------------
+   18. BREADCRUMBS
+   Use: <nav class="sk-breadcrumbs" aria-label="Breadcrumb">
+          <a href="/">Home</a>
+          <a href="/projects">Projects</a>
+          <span>Skynet</span>          ← current page, not a link
+        </nav>
+   -------------------------------------------------------------------------- */
+.sk-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--sk-text-2);
+}
+.sk-breadcrumbs a { color: var(--sk-muted); }
+.sk-breadcrumbs a:hover { color: var(--sk-primary); text-decoration: none; }
+.sk-breadcrumbs > * + *::before {
+  content: "/";
+  color: var(--sk-faint);
+  margin-right: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   19. PAGINATION
+   Use: <nav class="sk-pagination" aria-label="Pagination">
+          <a href="?p=1">&laquo;</a>
+          <a href="?p=1">1</a>
+          <span class="active">2</span>
+          <a href="?p=3">3</a>
+          <a href="?p=3">&raquo;</a>
+        </nav>
+   Works with <a>, <button>, or <span>. Disabled: [disabled] or .sk-disabled.
+   -------------------------------------------------------------------------- */
+.sk-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.sk-pagination > * {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--sk-transition), border-color var(--sk-transition), color var(--sk-transition);
+}
+.sk-pagination > a:hover,
+.sk-pagination > button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-pagination > .active {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+  cursor: default;
+}
+.sk-pagination > [disabled],
+.sk-pagination > .sk-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   20. ACCORDION — zero JS, uses the native <details> element
+   Use: <details class="sk-accordion" open>
+          <summary>Question or section title</summary>
+          <div class="sk-accordion-body">Content…</div>
+        </details>
+   Stack several in a row; add `open` to the one expanded by default.
+   -------------------------------------------------------------------------- */
+.sk-accordion {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+.sk-accordion summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background var(--sk-transition);
+}
+.sk-accordion summary::-webkit-details-marker { display: none; }
+.sk-accordion summary:hover { background: var(--sk-surface-2); }
+.sk-accordion summary::after {
+  content: "+";
+  color: var(--sk-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform var(--sk-transition);
+}
+.sk-accordion[open] summary::after { transform: rotate(45deg); }
+.sk-accordion-body {
+  padding: 0.25rem 1.25rem 1.1rem;
+  color: var(--sk-text-2);
+  font-size: 0.9375rem;
+}
+
+/* --------------------------------------------------------------------------
+   21. TOOLTIPS — pure CSS, shown on hover/focus
+   Use: <button class="sk-btn" data-sk-tip="Tooltip text">Hover me</button>
+   Appears above by default; add class sk-tip-bottom to flip below.
+   Keep the text short — it doesn't wrap.
+   -------------------------------------------------------------------------- */
+[data-sk-tip] { position: relative; }
+[data-sk-tip]::after {
+  content: attr(data-sk-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  background: var(--sk-text);
+  color: var(--sk-bg);
+  font-size: 0.775rem;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--sk-radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 90;
+  transition: opacity var(--sk-transition), transform var(--sk-transition);
+}
+[data-sk-tip]:hover::after,
+[data-sk-tip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.sk-tip-bottom::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translateX(-50%) translateY(-4px);
+}
+.sk-tip-bottom:hover::after,
+.sk-tip-bottom:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   22. SKELETON LOADERS — shimmering placeholders while content loads
+   Use: <div class="sk-skeleton" style="width: 60%"></div>
+        <div class="sk-skeleton sk-skeleton-text"></div>   ← thinner, stacks
+        <span class="sk-skeleton sk-skeleton-circle"></span> ← avatar-sized
+   -------------------------------------------------------------------------- */
+.sk-skeleton {
+  display: block;
+  height: 1.1rem;
+  border-radius: var(--sk-radius-sm);
+  background: linear-gradient(90deg,
+    var(--sk-surface-2) 25%,
+    var(--sk-border-2) 50%,
+    var(--sk-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+.sk-skeleton-text { height: 0.85rem; }
+.sk-skeleton-text + .sk-skeleton-text { margin-top: 0.6rem; }
+.sk-skeleton-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@keyframes sk-shimmer { to { background-position: -200% 0; } }
+
+/* --------------------------------------------------------------------------
+   23. CHIPS — compact tags, optionally removable
+   Use: <span class="sk-chip">design</span>
+        <span class="sk-chip sk-chip-primary">
+          frontend <button class="sk-chip-x" data-sk-dismiss aria-label="Remove">&times;</button>
+        </span>
+   data-sk-dismiss (from skynet-ui.js) removes the chip on click.
+   -------------------------------------------------------------------------- */
+.sk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--sk-text-2);
+  line-height: 1.4;
+}
+.sk-chip-primary { background: var(--sk-primary-soft); border-color: transparent; color: var(--sk-primary-text); }
+.sk-chip-success { background: var(--sk-success-soft); border-color: transparent; color: var(--sk-success-text); }
+.sk-chip-warning { background: var(--sk-warning-soft); border-color: transparent; color: var(--sk-warning-text); }
+.sk-chip-danger  { background: var(--sk-danger-soft);  border-color: transparent; color: var(--sk-danger-text); }
+.sk-chip-info    { background: var(--sk-info-soft);    border-color: transparent; color: var(--sk-info-text); }
+.sk-chip-x {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: -0.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.sk-chip-x:hover { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   24. LIST GROUP — bordered stack of rows (links, buttons, or plain divs)
+   Use: <div class="sk-list">
+          <a href="/inbox" class="active">Inbox</a>
+          <a href="/sent">Sent</a>
+          <div>Plain non-interactive row</div>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-list {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  overflow: hidden;
+}
+.sk-list > * {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border: none;
+  border-bottom: 1px solid var(--sk-border);
+  background: none;
+  color: var(--sk-text-2);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  text-align: left;
+}
+.sk-list > *:last-child { border-bottom: none; }
+.sk-list > a, .sk-list > button { cursor: pointer; transition: background var(--sk-transition), color var(--sk-transition); }
+.sk-list > a:hover, .sk-list > button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-list > .active {
+  background: var(--sk-primary-soft);
+  color: var(--sk-text);
+  box-shadow: inset 3px 0 0 var(--sk-primary);
+}
+
+/* --------------------------------------------------------------------------
+   25. EMPTY STATE — friendly placeholder when there's no data yet
+   Use: <div class="sk-empty">
+          <div class="sk-empty-icon">&#128230;</div>
+          <div class="sk-empty-title">No projects yet</div>
+          <p>Create your first project to get started.</p>
+          <button class="sk-btn sk-btn-primary sk-btn-sm">New project</button>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--sk-border-2);
+  border-radius: var(--sk-radius-lg);
+  color: var(--sk-muted);
+  font-size: 0.9375rem;
+}
+.sk-empty-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 0.85rem;
+  opacity: 0.8;
+}
+.sk-empty-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--sk-text);
+  margin-bottom: 0.35rem;
+}
+.sk-empty p { max-width: 26rem; margin-left: auto; margin-right: auto; }
+.sk-empty .sk-btn { margin-top: 0.75rem; }
+
+/* --------------------------------------------------------------------------
+   26. HERO — big centered landing-page opener
+   Use: <section class="sk-hero">
+          <h1 class="sk-hero-title">Ship faster</h1>
+          <p class="sk-hero-subtitle">One-line pitch goes here.</p>
+          <div class="sk-hero-actions">
+            <a class="sk-btn sk-btn-primary sk-btn-lg" href="/signup">Start free</a>
+            <a class="sk-btn sk-btn-outline sk-btn-lg" href="/docs">Read docs</a>
+          </div>
+        </section>
+   -------------------------------------------------------------------------- */
+.sk-hero {
+  text-align: center;
+  padding: 4.5rem 1.5rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, var(--sk-primary-soft), transparent);
+}
+.sk-hero-title {
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.sk-hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--sk-text-2);
+  max-width: 38rem;
+  margin: 0 auto;
+}
+.sk-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   27. FOOTER — site footer with link columns and a bottom bar
+   Use: <footer class="sk-footer">
+          <div class="sk-container">
+            <div class="sk-footer-grid">
+              <div>
+                <div class="sk-footer-title">Product</div>
+                <a href="/features">Features</a>
+                <a href="/pricing">Pricing</a>
+              </div>
+              …more columns…
+            </div>
+            <div class="sk-footer-bottom">
+              <span>&copy; 2026 My Site</span>
+              <span>Made with Skynet UI</span>
+            </div>
+          </div>
+        </footer>
+   -------------------------------------------------------------------------- */
+.sk-footer {
+  background: var(--sk-surface);
+  border-top: 1px solid var(--sk-border);
+  padding: 3rem 0 2rem;
+  margin-top: 4rem;
+  font-size: 0.9375rem;
+  color: var(--sk-text-2);
+}
+.sk-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem 1.5rem;
+}
+.sk-footer-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sk-muted);
+  margin-bottom: 0.75rem;
+}
+.sk-footer-grid a {
+  display: block;
+  padding: 0.2rem 0;
+  color: var(--sk-text-2);
+}
+.sk-footer-grid a:hover { color: var(--sk-primary); text-decoration: none; }
+.sk-footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  border-top: 1px solid var(--sk-border);
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--sk-muted);
+}
+
+/* --------------------------------------------------------------------------
+   28. RANGE SLIDER
+   Use: <input type="range" class="sk-range" min="0" max="100" value="40">
+   -------------------------------------------------------------------------- */
+.sk-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--sk-border-2);
+  border-radius: 9999px;
+  outline-offset: 4px;
+  cursor: pointer;
+}
+.sk-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--sk-primary);
+  border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2);
+  transition: transform var(--sk-transition);
+}
+.sk-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--sk-primary);
+  border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2);
+}
+.sk-range::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+/* --------------------------------------------------------------------------
+   29. STEPPER — wizard / checkout progress
+   Use: <div class="sk-steps">
+          <div class="sk-step done"><div class="sk-step-dot">&check;</div><div class="sk-step-label">Cart</div></div>
+          <div class="sk-step active"><div class="sk-step-dot">2</div><div class="sk-step-label">Shipping</div></div>
+          <div class="sk-step"><div class="sk-step-dot">3</div><div class="sk-step-label">Payment</div></div>
+        </div>
+   States: done (completed), active (current), none (upcoming).
+   -------------------------------------------------------------------------- */
+.sk-steps { display: flex; }
+.sk-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  position: relative;
+  min-width: 0;
+}
+.sk-step-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  color: var(--sk-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.sk-step-label {
+  font-size: 0.8125rem;
+  color: var(--sk-muted);
+  padding: 0 0.25rem;
+}
+/* connector line to the previous step */
+.sk-step::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--sk-border-2);
+}
+.sk-step:first-child::before { display: none; }
+.sk-step.active .sk-step-dot { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
+.sk-step.active .sk-step-label { color: var(--sk-text); font-weight: 600; }
+.sk-step.done .sk-step-dot { background: var(--sk-primary-soft); border-color: var(--sk-primary); color: var(--sk-primary-text); }
+.sk-step.done::before, .sk-step.active::before { background: var(--sk-primary); }
+
+/* --------------------------------------------------------------------------
+   30. TIMELINE — vertical activity feed
+   Use: <div class="sk-timeline">
+          <div class="sk-timeline-item sk-tl-success">
+            <div class="sk-timeline-time">2 hours ago</div>
+            <div class="sk-timeline-title">Deploy finished</div>
+            <p class="text-muted text-sm mb-0">v2.1 rolled out to production.</p>
+          </div>
+          …
+        </div>
+   Dot colors: sk-tl-primary | sk-tl-success | sk-tl-warning | sk-tl-danger | sk-tl-info
+   -------------------------------------------------------------------------- */
+.sk-timeline {
+  position: relative;
+  padding-left: 1.75rem;
+}
+.sk-timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--sk-border);
+}
+.sk-timeline-item { position: relative; padding-bottom: 1.5rem; }
+.sk-timeline-item:last-child { padding-bottom: 0; }
+.sk-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -1.75rem;
+  top: 5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sk-border-2);
+  box-shadow: 0 0 0 3px var(--sk-bg);
+}
+.sk-tl-primary::before { background: var(--sk-primary); }
+.sk-tl-success::before { background: var(--sk-success); }
+.sk-tl-warning::before { background: var(--sk-warning); }
+.sk-tl-danger::before  { background: var(--sk-danger); }
+.sk-tl-info::before    { background: var(--sk-info); }
+.sk-timeline-time { font-size: 0.75rem; color: var(--sk-faint); }
+.sk-timeline-title { font-weight: 600; color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   31. BUTTON GROUP + SEGMENTED CONTROL + LOADING BUTTON
+   Group:     <div class="sk-btn-group"> <button class="sk-btn">…</button> … </div>
+   Segmented: add data-sk-segment to the group — clicking a button moves the
+              .active highlight automatically (skynet-ui.js).
+   Loading:   add .sk-btn-loading to any .sk-btn — shows a spinner, blocks clicks.
+   -------------------------------------------------------------------------- */
+.sk-btn-group { display: inline-flex; }
+.sk-btn-group .sk-btn { border-radius: 0; }
+.sk-btn-group .sk-btn + .sk-btn { margin-left: -1px; }
+.sk-btn-group .sk-btn:first-child { border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm); }
+.sk-btn-group .sk-btn:last-child { border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0; }
+.sk-btn-group .sk-btn.active {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.sk-btn-loading { pointer-events: none; opacity: 0.75; }
+.sk-btn-loading::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sk-spin 0.7s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   32. AVATAR GROUP + PRESENCE DOT
+   Overlap:  <div class="sk-avatar-group">
+               <span class="sk-avatar">AB</span><span class="sk-avatar">CD</span>
+               <span class="sk-avatar">+3</span>
+             </div>
+   Presence: <span class="sk-presence sk-online"><span class="sk-avatar">SK</span></span>
+             States: sk-online | sk-away | sk-busy | sk-offline
+   -------------------------------------------------------------------------- */
+.sk-avatar-group { display: inline-flex; }
+.sk-avatar-group .sk-avatar,
+.sk-avatar-group .sk-presence { box-shadow: 0 0 0 2px var(--sk-surface); }
+.sk-avatar-group > * + * { margin-left: -10px; }
+
+.sk-presence { position: relative; display: inline-flex; border-radius: 50%; }
+.sk-presence::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--sk-faint);
+  border: 2px solid var(--sk-surface);
+}
+.sk-online::after  { background: var(--sk-success); }
+.sk-away::after    { background: var(--sk-warning); }
+.sk-busy::after    { background: var(--sk-danger); }
+.sk-offline::after { background: var(--sk-faint); }
+
+/* --------------------------------------------------------------------------
+   33. CALLOUT — highlighted note with a colored edge (docs-style)
+   Use: <div class="sk-callout sk-callout-warning">
+          <div class="sk-callout-title">Heads up</div>
+          Anything after the title is the body.
+        </div>
+   Variants: sk-callout-success | sk-callout-warning | sk-callout-danger | sk-callout-info
+   (default edge is the primary color)
+   -------------------------------------------------------------------------- */
+.sk-callout {
+  padding: 1rem 1.25rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-left: 4px solid var(--sk-primary);
+  border-radius: var(--sk-radius);
+  font-size: 0.9375rem;
+  color: var(--sk-text-2);
+}
+.sk-callout-title { font-weight: 600; color: var(--sk-text); margin-bottom: 0.25rem; }
+.sk-callout-success { border-left-color: var(--sk-success); }
+.sk-callout-warning { border-left-color: var(--sk-warning); }
+.sk-callout-danger  { border-left-color: var(--sk-danger); }
+.sk-callout-info    { border-left-color: var(--sk-info); }
+
+/* --------------------------------------------------------------------------
+   34. FILE INPUT
+   Use: <input class="sk-file" type="file">
+   -------------------------------------------------------------------------- */
+.sk-file {
+  display: block;
+  width: 100%;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--sk-muted);
+  cursor: pointer;
+}
+.sk-file::file-selector-button {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  margin-right: 0.75rem;
+  color: var(--sk-text-2);
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-file::file-selector-button:hover { background: var(--sk-border); color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   35. DRAWER — slide-in panel (offcanvas)
+   Use: <button class="sk-btn" data-sk-open="my-drawer">Open drawer</button>
+
+        <div class="sk-drawer" id="my-drawer" role="dialog" aria-modal="true">
+          <div class="sk-drawer-box">
+            <div class="sk-drawer-header">
+              Title
+              <button class="sk-modal-x" data-sk-close aria-label="Close">&times;</button>
+            </div>
+            <div class="sk-drawer-body">…anything…</div>
+            <div class="sk-drawer-footer">
+              <button class="sk-btn sk-btn-primary" data-sk-close>Done</button>
+            </div>
+          </div>
+        </div>
+   Same wiring as modals: data-sk-open / data-sk-close / backdrop click / Esc.
+   Slides from the right; add sk-drawer-left to the container for the left side.
+   -------------------------------------------------------------------------- */
+.sk-drawer {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.62);
+  z-index: 290;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.sk-drawer.sk-open { opacity: 1; visibility: visible; }
+.sk-drawer-box {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 92vw);
+  background: var(--sk-surface);
+  border-left: 1px solid var(--sk-border);
+  box-shadow: var(--sk-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+.sk-drawer.sk-open .sk-drawer-box { transform: none; }
+.sk-drawer-left .sk-drawer-box {
+  right: auto;
+  left: 0;
+  border-left: none;
+  border-right: 1px solid var(--sk-border);
+  transform: translateX(-100%);
+}
+.sk-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--sk-border);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.sk-drawer-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+.sk-drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--sk-border);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   36. SORTABLE TABLE HEADERS  (behavior in skynet-ui.js)
+   Use: <th data-sk-sort>Name</th> — click cycles ascending/descending.
+   Numeric columns are detected and sorted numerically.
+   -------------------------------------------------------------------------- */
+th[data-sk-sort] { cursor: pointer; user-select: none; white-space: nowrap; }
+th[data-sk-sort]::after {
+  content: "\2195";           /* ↕ */
+  margin-left: 0.4rem;
+  font-size: 0.75em;
+  opacity: 0.4;
+}
+th[data-sk-sort].sk-sort-asc::after  { content: "\2191"; opacity: 1; color: var(--sk-primary); }
+th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(--sk-primary); }
+
+/* --------------------------------------------------------------------------
+   37. POPOVER — click-toggled rich panel (dropdown's bigger sibling)
+   Use: <div class="sk-popover">
+          <button class="sk-btn" data-sk-popover>Details</button>
+          <div class="sk-popover-panel">
+            <div class="sk-popover-title">Optional title</div>
+            Any content — text, lists, buttons.
+          </div>
+        </div>
+   Opens below the trigger. On the panel: sk-top opens above, sk-right
+   aligns to the trigger's right edge. Outside click + Esc close.
+   -------------------------------------------------------------------------- */
+.sk-popover { position: relative; display: inline-block; }
+.sk-popover-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 260px;
+  max-width: 340px;
+  padding: 1rem 1.1rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  font-size: 0.9rem;
+  color: var(--sk-text-2);
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity var(--sk-transition), transform var(--sk-transition),
+              visibility var(--sk-transition);
+}
+.sk-popover.sk-open > .sk-popover-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.sk-popover-panel.sk-top { top: auto; bottom: calc(100% + 8px); transform: translateY(-4px); }
+.sk-popover.sk-open > .sk-popover-panel.sk-top { transform: none; }
+.sk-popover-panel.sk-right { left: auto; right: 0; }
+.sk-popover-title { font-weight: 600; color: var(--sk-text); margin-bottom: 0.35rem; }
+
+/* --------------------------------------------------------------------------
+   38. COMMAND PALETTE — Ctrl/Cmd+K opens it; type to filter; ↑↓ + Enter
+   Use (place near the end of <body>):
+     <div class="sk-cmdk" id="my-cmdk" role="dialog" aria-modal="true">
+       <div class="sk-cmdk-box">
+         <input class="sk-cmdk-input" type="text" placeholder="Type a command…" aria-label="Search commands">
+         <div class="sk-cmdk-list">
+           <a href="/dashboard">&#128200; Dashboard</a>
+           <button onclick="doThing()">&#9889; Run thing</button>
+         </div>
+         <div class="sk-cmdk-empty">No matches.</div>
+       </div>
+     </div>
+   Also opens from a button with data-sk-open="my-cmdk". Items can carry
+   data-sk-keywords="extra search words". All behavior is in skynet-ui.js.
+   -------------------------------------------------------------------------- */
+.sk-cmdk {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.62);
+  z-index: 310;
+  padding: 10vh 1rem 0;
+  opacity: 0;
+  visibility: hidden;
+  /* visibility flips only after the fade-out; on open it flips instantly
+     (see .sk-open below) so the input can be focused right away */
+  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+}
+.sk-cmdk.sk-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease;
+}
+.sk-cmdk-box {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-lg);
+  box-shadow: var(--sk-shadow-lg);
+  overflow: hidden;
+  transform: translateY(-8px) scale(0.98);
+  transition: transform 0.15s ease;
+}
+.sk-cmdk.sk-open .sk-cmdk-box { transform: none; }
+.sk-cmdk-input {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--sk-border);
+  color: var(--sk-text);
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+.sk-cmdk-input::placeholder { color: var(--sk-faint); }
+.sk-cmdk-list { max-height: 320px; overflow-y: auto; padding: 0.4rem; }
+.sk-cmdk-list > * {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  background: none;
+  color: var(--sk-text-2);
+  font-family: inherit;
+  font-size: 0.925rem;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sk-cmdk-list > *:hover { background: var(--sk-surface-2); color: var(--sk-text); text-decoration: none; }
+.sk-cmdk-list > .active { background: var(--sk-primary-soft); color: var(--sk-text); }
+.sk-cmdk-empty { display: none; padding: 1.25rem; text-align: center; color: var(--sk-muted); font-size: 0.875rem; }
+.sk-cmdk.sk-no-results .sk-cmdk-empty { display: block; }
+.sk-cmdk-hint {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 1.1rem;
+  border-top: 1px solid var(--sk-border);
+  color: var(--sk-faint);
+  font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   39. CAROUSEL — scroll-snap slider (swipe on touch; optional arrow buttons)
+   Use: <div class="sk-carousel">
+          <div class="sk-carousel-track">
+            <div class="sk-carousel-slide">…</div>
+            <div class="sk-carousel-slide">…</div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-prev aria-label="Previous">&larr;</button>
+            <button class="sk-btn sk-btn-outline sk-btn-icon" data-sk-carousel-next aria-label="Next">&rarr;</button>
+          </div>
+        </div>
+   One slide per view by default. On the carousel: sk-carousel-peek shows the
+   edge of the next slide; sk-carousel-cols-2 / -cols-3 show 2/3 per view
+   from 768px up.
+   -------------------------------------------------------------------------- */
+.sk-carousel { position: relative; }
+.sk-carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sk-carousel-track::-webkit-scrollbar { display: none; }
+.sk-carousel-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.sk-carousel-peek .sk-carousel-slide { flex-basis: 85%; }
+@media (min-width: 768px) {
+  .sk-carousel-cols-2 .sk-carousel-slide { flex-basis: calc(50% - 0.5rem); }
+  .sk-carousel-cols-3 .sk-carousel-slide { flex-basis: calc(33.333% - 0.667rem); }
+}
+
+/* --------------------------------------------------------------------------
+   40. TOAST ACTION BUTTON  (created by skynet-ui.js — see skToast options:
+       skToast("Deleted", "info", {actionText: "Undo", onAction: fn}))
+   -------------------------------------------------------------------------- */
+.sk-toast-action {
+  margin-left: auto;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0.1rem 0.2rem;
+  color: var(--sk-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sk-toast-action:hover { text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   41. CHARACTER COUNTER  (created by skynet-ui.js)
+   Use: <textarea class="sk-textarea" maxlength="200" data-sk-count></textarea>
+   A live "37 / 200" line appears under the field; it warns near the limit.
+   -------------------------------------------------------------------------- */
+.sk-count {
+  font-size: 0.75rem;
+  color: var(--sk-muted);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+.sk-count.sk-count-warn { color: var(--sk-warning-text); }
+
+/* --------------------------------------------------------------------------
+   42. SCROLL REVEAL  (behavior in skynet-ui.js)
+   Use: <div class="sk-card" data-sk-reveal>…</div>
+   The element fades and rises into view the first time it's scrolled to.
+   JS applies .sk-reveal-init up front (so content stays visible without JS)
+   and .sk-revealed when the element enters the viewport.
+   -------------------------------------------------------------------------- */
+.sk-reveal-init {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.sk-reveal-init.sk-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
