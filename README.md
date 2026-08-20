@@ -94,14 +94,20 @@ You can also override variables per-site without touching the framework file —
 </style>
 ```
 
-Four themes are built in — set `data-theme` on the `<html>` or `<body>` tag:
+Eight themes are built in — set `data-theme` on the `<html>` or `<body>` tag:
 
-| Theme | `data-theme` | Look |
-|---|---|---|
-| Dark | *(none)* or `"dark"` | the default — deep navy, indigo accent |
-| Light | `"light"` | clean white/gray, indigo accent |
-| Midnight | `"midnight"` | pure-black OLED, cyan accent |
-| Paper | `"paper"` | warm cream, amber accent |
+| Theme | `data-theme` | Family | Look |
+|---|---|---|---|
+| Dark | *(none)* or `"dark"` | dark | the default — deep navy, indigo accent |
+| Midnight | `"midnight"` | dark | pure-black OLED, cyan accent |
+| Forest | `"forest"` | dark | deep green, emerald accent |
+| Dusk | `"dusk"` | dark | deep violet, fuchsia accent |
+| Light | `"light"` | light | clean white/gray, indigo accent |
+| Paper | `"paper"` | light | warm cream, amber accent |
+| Sky | `"sky"` | light | cool blue-tinted, azure accent |
+| Rose | `"rose"` | light | warm blush, rose accent |
+
+The family matters for `data-sk-theme-toggle` / `skToggleTheme()`: toggling from any dark-family theme lands on light, and vice versa.
 
 Want user-facing switching? Two options, both remembered in `localStorage` across page loads:
 

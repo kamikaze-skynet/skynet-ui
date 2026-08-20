@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.4.0 — behavior script
+   Skynet UI v1.5.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -16,7 +16,8 @@
      data-sk-toast="Message"   → shows a toast (data-sk-toast-type="success")
      data-sk-theme-toggle      → flips dark ↔ light theme family (remembered)
      data-sk-theme="name"      → switches to that theme: dark, light,
-                                 midnight, paper (remembered)
+                                 midnight, paper, forest, dusk, sky,
+                                 rose (remembered)
      data-sk-validate          → on a <form>: blocks invalid submits and
                                  shows styled inline errors
      data-sk-autogrow          → on a <textarea>: grows with its content
@@ -53,12 +54,13 @@
   "use strict";
 
   /* ----------------------------------------------------------------------
-     THEMES — built-ins: dark (default), light, midnight, paper.
+     THEMES — built-ins: dark (default), midnight, forest, dusk (dark
+     family) and light, paper, sky, rose (light family).
      The saved choice is restored on load. data-sk-theme="name" buttons set
      a specific theme; data-sk-theme-toggle flips dark family ↔ light family.
      ---------------------------------------------------------------------- */
   var THEME_KEY = "sk-theme";
-  var LIGHT_THEMES = ["light", "paper"];
+  var LIGHT_THEMES = ["light", "paper", "sky", "rose"];
 
   try {
     var savedTheme = localStorage.getItem(THEME_KEY);

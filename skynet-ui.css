@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.4.0
+   Skynet UI v1.5.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -63,7 +63,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   BUILT-IN THEMES — set data-theme="light|midnight|paper" on <html> or <body>
+   BUILT-IN THEMES — set data-theme="light|midnight|paper|forest|dusk|sky|rose"
+   on <html> or <body>
    (no attribute, or data-theme="dark", = the default dark theme above).
    Buttons with data-sk-theme="name" switch and remember the theme via
    skynet-ui.js; skToggleTheme() flips between the dark and light families.
@@ -122,6 +123,86 @@
   --sk-primary-text:   #92400e;
   --sk-shadow:    0 1px 2px rgba(87,66,26,.08), 0 4px 16px rgba(87,66,26,.1);
   --sk-shadow-lg: 0 8px 40px rgba(87,66,26,.2);
+}
+
+/* Forest — deep green dark with an emerald accent */
+[data-theme="forest"] {
+  color-scheme: dark;
+  --sk-bg:        #0a120d;
+  --sk-surface:   #101a13;
+  --sk-surface-2: #17251b;
+  --sk-border:    #1f3025;
+  --sk-border-2:  #2c4233;
+  --sk-text:      #e7f0ea;
+  --sk-text-2:    #adc2b4;
+  --sk-muted:     #869c8e;
+  --sk-faint:     #57695e;
+  --sk-primary:        #34d399;
+  --sk-primary-hover:  #10b981;
+  --sk-primary-soft:   rgba(52, 211, 153, 0.13);
+  --sk-primary-text:   #6ee7b7;
+  --sk-shadow:    0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.3);
+  --sk-shadow-lg: 0 8px 40px rgba(0,0,0,.55);
+}
+
+/* Dusk — deep violet dark with a fuchsia accent */
+[data-theme="dusk"] {
+  color-scheme: dark;
+  --sk-bg:        #120c1d;
+  --sk-surface:   #1a1229;
+  --sk-surface-2: #241938;
+  --sk-border:    #2e2145;
+  --sk-border-2:  #3f2f5c;
+  --sk-text:      #efe9f7;
+  --sk-text-2:    #c0b3d6;
+  --sk-muted:     #9a8cb3;
+  --sk-faint:     #6a5d84;
+  --sk-primary:        #e879f9;
+  --sk-primary-hover:  #d946ef;
+  --sk-primary-soft:   rgba(232, 121, 249, 0.14);
+  --sk-primary-text:   #f0abfc;
+  --sk-shadow:    0 1px 2px rgba(9,4,20,.4), 0 4px 16px rgba(9,4,20,.35);
+  --sk-shadow-lg: 0 8px 40px rgba(9,4,20,.6);
+}
+
+/* Sky — cool blue-tinted light with an azure accent */
+[data-theme="sky"] {
+  color-scheme: light;
+  --sk-bg:        #eef4fb;
+  --sk-surface:   #ffffff;
+  --sk-surface-2: #e3edf8;
+  --sk-border:    #d4e2f2;
+  --sk-border-2:  #b6cce6;
+  --sk-text:      #0f2136;
+  --sk-text-2:    #33506d;
+  --sk-muted:     #5b7794;
+  --sk-faint:     #8fa9c4;
+  --sk-primary:        #0284c7;
+  --sk-primary-hover:  #0369a1;
+  --sk-primary-soft:   rgba(2, 132, 199, 0.12);
+  --sk-primary-text:   #075985;
+  --sk-shadow:    0 1px 2px rgba(15,48,84,.06), 0 4px 16px rgba(15,48,84,.09);
+  --sk-shadow-lg: 0 8px 40px rgba(15,48,84,.18);
+}
+
+/* Rose — warm blush light with a rose accent */
+[data-theme="rose"] {
+  color-scheme: light;
+  --sk-bg:        #faf1f3;
+  --sk-surface:   #fffbfc;
+  --sk-surface-2: #f5e6ea;
+  --sk-border:    #eed9de;
+  --sk-border-2:  #ddbcc5;
+  --sk-text:      #331b22;
+  --sk-text-2:    #5d3c47;
+  --sk-muted:     #87616c;
+  --sk-faint:     #b18e98;
+  --sk-primary:        #e11d48;
+  --sk-primary-hover:  #be123c;
+  --sk-primary-soft:   rgba(225, 29, 72, 0.11);
+  --sk-primary-text:   #9f1239;
+  --sk-shadow:    0 1px 2px rgba(84,26,42,.06), 0 4px 16px rgba(84,26,42,.09);
+  --sk-shadow-lg: 0 8px 40px rgba(84,26,42,.18);
 }
 
 /* --------------------------------------------------------------------------
