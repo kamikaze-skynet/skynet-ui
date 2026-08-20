@@ -67,6 +67,21 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 Pin a version for anything real: latest URLs can change how your site looks when a new release ships. Minified builds (`skynet-ui.min.css` / `skynet-ui.min.js`) and SRI integrity hashes (`sri.txt`) sit next to every pinned version. The machine-readable reference for AI tools lives at `https://skynetui.com/llms.txt`, and AI agents can connect to the MCP server at `https://skynetui.com/mcp` (`claude mcp add --transport http skynet-ui https://skynetui.com/mcp`).
 
+## 1c. Or use npm (for bundler projects)
+
+```sh
+npm install skynet-ui
+```
+
+```js
+import "skynet-ui/css";  // the stylesheet
+import "skynet-ui";      // the behaviors (browser-only — client-side imports in SSR frameworks)
+```
+
+Minified variants: `skynet-ui/css/min` and `skynet-ui/min`. The package also ships `LLM.md`, so your repo-local AI tooling can read the reference from `node_modules/skynet-ui/LLM.md`.
+
+**Publishing (maintainer notes):** `scripts/build-package.sh` assembles `pkg/` with the version read from the CSS header; publish by running the **"Publish to npm"** workflow from the Actions tab (needs an `NPM_TOKEN` repository secret — an npm *Automation* token), or manually with `cd pkg && npm publish --access public`.
+
 ### How the hosting works (maintainer notes)
 
 The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare applies automatically.
