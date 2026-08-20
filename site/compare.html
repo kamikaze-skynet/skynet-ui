@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skynet UI vs Tailwind vs Bootstrap</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="An honest comparison: Skynet UI vs Tailwind CSS vs Bootstrap — build steps, theming, components, AI-readiness, and when to pick each.">
+  <meta property="og:title" content="Skynet UI vs Tailwind vs Bootstrap">
+  <meta property="og:description" content="An honest comparison: build steps, theming, components, AI-readiness, and when to pick each.">
+  <meta property="og:image" content="https://skynetui.com/og.png">
+  <meta property="og:url" content="https://skynetui.com/compare">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Skynet UI</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="/">Components</a></li>
+      <li><a href="/examples.html">Examples</a></li>
+      <li><a href="/themer.html">Theme builder</a></li>
+      <li><a href="/play.html">Playground</a></li>
+      <li><a href="/changelog.html">Changelog</a></li>
+    </ul>
+  </nav>
+
+  <div class="sk-container py-8" style="max-width: 960px">
+    <header class="mb-8">
+      <h1 class="text-balance">Skynet UI vs Tailwind CSS vs Bootstrap</h1>
+      <p class="text-secondary max-w-2xl">An honest comparison. All three are good tools — they optimize for
+      different things. Skynet UI optimizes for <strong>zero build steps</strong> and
+      <strong>LLM-generated markup that just works</strong>.</p>
+    </header>
+
+    <div class="sk-table-wrap mb-8">
+      <table class="sk-table sk-sticky-col" style="min-width: 720px">
+        <thead>
+          <tr><th></th><th>Skynet UI</th><th>Tailwind CSS</th><th>Bootstrap</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Setup</td><td>2 files, paste a <code>&lt;link&gt;</code> + <code>&lt;script&gt;</code></td><td>Build step (CLI/PostCSS/Vite)</td><td>1–2 files or npm</td></tr>
+          <tr><td>Build step</td><td><span class="sk-badge sk-badge-success">None, ever</span></td><td>Required for real use</td><td>None (Sass optional)</td></tr>
+          <tr><td>Components</td><td>80+ styled + behaviors built in</td><td>None (utilities only; paid Tailwind Plus or libraries)</td><td>~25 styled, JS via plugins</td></tr>
+          <tr><td>Utilities</td><td>~400, Tailwind-named, semantic colors</td><td>Everything, any value (JIT)</td><td>Basic set</td></tr>
+          <tr><td>Arbitrary values</td><td>No — use <code>style=""</code></td><td><span class="sk-badge sk-badge-success">Yes</span></td><td>No</td></tr>
+          <tr><td>Theming</td><td>9 themes + <a href="/themer.html">builder</a>; CSS vars, one attribute</td><td>Config/CSS-first tokens; dark via variant</td><td>CSS vars + Sass; dark since 5.3</td></tr>
+          <tr><td>Dark mode</td><td>Default, automatic everywhere</td><td>You write <code>dark:</code> on every element</td><td>One attribute</td></tr>
+          <tr><td>JS behaviors</td><td>Declarative <code>data-sk-*</code>, zero deps</td><td>Bring your own</td><td>Bundled plugins</td></tr>
+          <tr><td>AI / LLM support</td><td><span class="sk-badge sk-badge-success">First-class</span>: <a href="/llms.txt">llms.txt</a>, MCP server, chat kit, markdown renderer, streaming</td><td>Well known to models (training data)</td><td>Well known to models</td></tr>
+          <tr><td>File size (page pays)</td><td>~160 KB CSS + ~106 KB JS, cached; ~34 KB gzipped total</td><td>Tiny (purged) — plus your component CSS</td><td>~230 KB + Popper</td></tr>
+          <tr><td>Purge / tree-shake</td><td>No (one shared cached file)</td><td>Yes (compiler)</td><td>No (Sass imports)</td></tr>
+          <tr><td>Ecosystem</td><td>Small and new</td><td><span class="sk-badge sk-badge-success">Huge</span></td><td>Huge, mature</td></tr>
+          <tr><td>License / cost</td><td>MIT, everything free</td><td>MIT core; component library is paid</td><td>MIT</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sk-grid sk-cols-3 mb-8">
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="text-lg">Pick Skynet UI when&hellip;</h3>
+        <ul class="sk-prose text-sm mb-0">
+          <li>You (or your LLM) want a finished page from one HTML file</li>
+          <li>No build tooling is wanted or possible</li>
+          <li>Dark mode + theming should be free</li>
+          <li>You're rendering AI/chat output</li>
+        </ul>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="text-lg">Pick Tailwind when&hellip;</h3>
+        <ul class="sk-prose text-sm mb-0">
+          <li>You have a design team with exact, custom values</li>
+          <li>A bundler already exists in the project</li>
+          <li>You need arbitrary values and exotic variants</li>
+          <li>Byte-perfect purged CSS matters</li>
+        </ul>
+      </div></div>
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="text-lg">Pick Bootstrap when&hellip;</h3>
+        <ul class="sk-prose text-sm mb-0">
+          <li>Your team already knows it well</li>
+          <li>You depend on its plugin ecosystem</li>
+          <li>Long-term enterprise familiarity wins</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="sk-callout mb-8">
+      <div class="sk-callout-title">Porting from Tailwind?</div>
+      Most structural Tailwind classes work unchanged — Skynet UI utilities use the same names
+      (<code>flex</code>, <code>grid-cols-3</code>, <code>md:hidden</code>, <code>hover:scale-105</code>,
+      <code>bg-gradient-to-r</code>&hellip;) with semantic colors instead of the raw palette.
+      The <a href="/llms.txt">LLM reference</a> ends with a step-by-step conversion guide any model can follow.
+    </div>
+
+    <div class="bg-gradient-to-r from-primary-soft to-transparent rounded-lg p-6 mb-8">
+      <h3 class="mt-0">Try it in 10 seconds</h3>
+      <pre class="text-sm mb-0">&lt;link rel="stylesheet" href="https://skynetui.com/skynet-ui.css"&gt;
+&lt;script src="https://skynetui.com/skynet-ui.js" defer&gt;&lt;/script&gt;</pre>
+    </div>
+  </div>
+
+  <footer class="sk-footer">
+    <div class="sk-container">
+      <div class="sk-footer-bottom">
+        <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
+        <span><a href="/">Home</a> &middot; <a href="/llms.txt">llms.txt</a> &middot; <a href="/changelog.html">Changelog</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="skynet-ui.js" defer></script>
+</body>
+</html>

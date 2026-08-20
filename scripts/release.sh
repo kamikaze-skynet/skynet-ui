@@ -8,7 +8,8 @@
 #   - copies skynet-ui.css / skynet-ui.js to site/                 (the "latest" URLs)
 #   - copies them to site/v<version>/                              (pinned, immutable)
 #   - minifies both into skynet-ui.min.css / skynet-ui.min.js      (latest + pinned)
-#   - copies LLM.md to site/llms.txt and site/v<version>/llms.txt  (versioned docs)
+#   - copies LLM.md to site/llms-full.txt and site/v<version>/llms.txt (versioned
+#     docs); bumps the version link inside the slim site/llms.txt index
 #   - writes site/v<version>/sri.txt with sha384 integrity hashes
 #
 # Afterwards, update site/index.html by hand (version badge + pinned CDN
@@ -29,8 +30,9 @@ fi
 mkdir -p "site/v$VERSION"
 cp skynet-ui.css skynet-ui.js site/
 cp skynet-ui.css skynet-ui.js "site/v$VERSION/"
-cp LLM.md site/llms.txt
+cp LLM.md site/llms-full.txt
 cp LLM.md "site/v$VERSION/llms.txt"
+sed -i.bak -E "s|/v[0-9]+\.[0-9]+\.[0-9]+/llms\.txt|/v$VERSION/llms.txt|g; s|pinned copy for v[0-9]+\.[0-9]+\.[0-9]+|pinned copy for v$VERSION|g" site/llms.txt && rm -f site/llms.txt.bak
 
 echo "Minifying…"
 npx --yes esbuild skynet-ui.css --minify --outfile=site/skynet-ui.min.css --log-level=error

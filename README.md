@@ -57,8 +57,8 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 ```html
 <!-- pinned version (recommended for production — immutable, cached forever) -->
-<link rel="stylesheet" href="https://skynetui.com/v3.1.0/skynet-ui.css">
-<script src="https://skynetui.com/v3.1.0/skynet-ui.js" defer></script>
+<link rel="stylesheet" href="https://skynetui.com/v3.2.0/skynet-ui.css">
+<script src="https://skynetui.com/v3.2.0/skynet-ui.js" defer></script>
 
 <!-- or always-latest (updates automatically within the hour) -->
 <link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
@@ -857,6 +857,14 @@ Right-clicking any element with `data-sk-context` opens that menu at the cursor 
 ```
 
 `data-sk-copy="text"` copies literal text; `data-sk-copy-target="element-id"` copies that element's value (inputs) or text content. A success toast confirms the copy.
+
+### The v3.2 additions
+
+- **Tailwind parity pack** — hover:/focus:/group-hover:/peer-* state variants, transforms, filters + backdrop-blur, semantic gradients, animate-spin/ping/pulse/bounce, ring, xl:/2xl: breakpoints, negative margins, RTL-aware ps/pe/ms/me — Tailwind markup ports almost 1:1 now
+- **Forms** — multi-select combobox (wraps a native `<select multiple>`), OTP input, file dropzone, input masks
+- **Interaction** — drag-to-reorder lists + kanban groups, resizable split panes, pure-CSS masonry, `skVirtual` virtual scrolling for 10k-row lists, sticky first table column
+- **Calendar** — month view with event pills (`skCalendar` / `data-sk-calendar`)
+- **AI kit 2** — `skChat.streamAsync` renders async iterables/ReadableStreams as live markdown, tool-call + thinking bubbles, message action rows, a `sk-prompt` chat input, and `skDiff` for rendered line diffs
 
 ### The v3.1 additions
 

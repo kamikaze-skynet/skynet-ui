@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v3.1.0 — behavior script
+   Skynet UI v3.2.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -81,6 +81,16 @@
                                     markdown render on completion
      skChat.typing(chat, show)      toggle a typing-dots bubble
      skLocale({copied: "…", …})     override the built-in UI strings (i18n)
+     skChat.streamAsync(chat, src, opts?) → Promise  render an async
+                                    iterable / ReadableStream / chunk array
+                                    as live markdown (LLM streaming)
+     skDiff(before, after) → HTML  line diff for a .sk-diff block
+     skCalendar(el, {year, month, events, onSelect})  month view
+     skVirtual(el, {count, itemHeight, render})  virtualized list
+     skScan(root?)                  re-init data-sk-* widgets added later
+     data-sk-multiselect / data-sk-otp / data-sk-dropzone / data-sk-mask /
+     data-sk-sortable / data-sk-split / data-sk-calendar /
+     data-sk-promptinput            v3.2 declarative widgets (see docs)
    ========================================================================== */
 (function () {
   "use strict";
@@ -1941,4 +1951,810 @@
       });
     });
   }
+})();
+
+/* ==========================================================================
+   v3.2 BEHAVIORS — multiselect, OTP, dropzone, input masks, sortable,
+   split panes, calendar, virtual scroll, prompt input, diffs, chat streaming
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  /* ----------------------------------------------------------------------
+     MULTI-SELECT COMBOBOX — data-sk-multiselect wrapping a <select multiple>
+     ---------------------------------------------------------------------- */
+  function initMultiselect(box) {
+    if (box._skMs) return;
+    var select = box.querySelector("select[multiple]");
+    if (!select) return;
+    box._skMs = true;
+
+    var control = document.createElement("div");
+    control.className = "sk-ms-control";
+    var input = document.createElement("input");
+    input.type = "text";
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-expanded", "false");
+    input.placeholder = box.getAttribute("data-sk-placeholder") || "Select…";
+    var panel = document.createElement("div");
+    panel.className = "sk-ms-panel";
+    panel.setAttribute("role", "listbox");
+    panel.setAttribute("aria-multiselectable", "true");
+    control.appendChild(input);
+    box.appendChild(control);
+    box.appendChild(panel);
+
+    function options() {
+      return Array.prototype.slice.call(select.options);
+    }
+
+    function renderChips() {
+      control.querySelectorAll(".sk-chip").forEach(function (c) { c.parentNode.removeChild(c); });
+      options().filter(function (o) { return o.selected; }).forEach(function (o) {
+        var chip = document.createElement("span");
+        chip.className = "sk-chip";
+        chip.textContent = o.text;
+        var x = document.createElement("button");
+        x.type = "button";
+        x.textContent = "×";
+        x.setAttribute("aria-label", "Remove " + o.text);
+        x.addEventListener("click", function (e) {
+          e.stopPropagation();
+          o.selected = false;
+          sync();
+        });
+        chip.appendChild(x);
+        control.insertBefore(chip, input);
+      });
+      input.placeholder = select.selectedOptions.length ? "" : (box.getAttribute("data-sk-placeholder") || "Select…");
+    }
+
+    function renderPanel() {
+      var q = input.value.toLowerCase();
+      panel.innerHTML = "";
+      var shown = 0;
+      options().forEach(function (o) {
+        if (q && o.text.toLowerCase().indexOf(q) === -1) return;
+        shown++;
+        var row = document.createElement("div");
+        row.className = "sk-ms-option";
+        row.setAttribute("role", "option");
+        row.setAttribute("aria-selected", o.selected ? "true" : "false");
+        row.innerHTML = '<span class="sk-ms-check">✓</span>';
+        row.appendChild(document.createTextNode(o.text));
+        row.addEventListener("mousedown", function (e) {
+          e.preventDefault();
+          o.selected = !o.selected;
+          sync();
+        });
+        panel.appendChild(row);
+      });
+      if (!shown) {
+        var empty = document.createElement("div");
+        empty.className = "sk-ms-empty";
+        empty.textContent = "No matches";
+        panel.appendChild(empty);
+      }
+    }
+
+    function sync() {
+      renderChips();
+      renderPanel();
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    function open() {
+      box.classList.add("sk-open");
+      input.setAttribute("aria-expanded", "true");
+      renderPanel();
+    }
+    function close() {
+      box.classList.remove("sk-open");
+      input.setAttribute("aria-expanded", "false");
+    }
+
+    control.addEventListener("click", function () { input.focus(); open(); });
+    input.addEventListener("focus", open);
+    input.addEventListener("input", renderPanel);
+    input.addEventListener("keydown", function (e) {
+      var active = panel.querySelector(".sk-ms-option.sk-active");
+      var rows = Array.prototype.slice.call(panel.querySelectorAll(".sk-ms-option"));
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!box.classList.contains("sk-open")) return open();
+        var i = rows.indexOf(active);
+        var next = e.key === "ArrowDown" ? Math.min(i + 1, rows.length - 1) : Math.max(i - 1, 0);
+        if (active) active.classList.remove("sk-active");
+        if (rows[next]) {
+          rows[next].classList.add("sk-active");
+          rows[next].scrollIntoView({ block: "nearest" });
+        }
+      } else if (e.key === "Enter") {
+        if (active) {
+          e.preventDefault();
+          var evt = document.createEvent("MouseEvents");
+          evt.initEvent("mousedown", true, true);
+          active.dispatchEvent(evt);
+        }
+      } else if (e.key === "Escape") {
+        close();
+      } else if (e.key === "Backspace" && !input.value) {
+        var sel = select.selectedOptions;
+        if (sel.length) { sel[sel.length - 1].selected = false; sync(); }
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (!box.contains(e.target)) close();
+    });
+
+    renderChips();
+  }
+
+  /* ----------------------------------------------------------------------
+     OTP / PIN INPUT — data-sk-otp
+     ---------------------------------------------------------------------- */
+  function initOtp(box) {
+    if (box._skOtp) return;
+    box._skOtp = true;
+    var len = parseInt(box.getAttribute("data-sk-length"), 10) || 6;
+    var hidden = null;
+    var name = box.getAttribute("data-sk-name");
+    if (name) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = name;
+      box.appendChild(hidden);
+    }
+    var inputs = [];
+    for (var i = 0; i < len; i++) {
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.inputMode = "numeric";
+      inp.maxLength = 1;
+      inp.autocomplete = i === 0 ? "one-time-code" : "off";
+      inp.setAttribute("aria-label", "Digit " + (i + 1) + " of " + len);
+      box.appendChild(inp);
+      inputs.push(inp);
+    }
+
+    function value() {
+      return inputs.map(function (x) { return x.value; }).join("");
+    }
+    function update() {
+      if (hidden) hidden.value = value();
+      var done = value().length === len;
+      box.classList.toggle("sk-otp-done", done);
+      if (done) {
+        box.dispatchEvent(new CustomEvent("sk-otp", { bubbles: true, detail: { value: value() } }));
+      }
+    }
+    function fill(text, from) {
+      var chars = text.replace(/\s/g, "").split("");
+      for (var j = 0; j < chars.length && from + j < len; j++) inputs[from + j].value = chars[j];
+      var next = Math.min(from + chars.length, len - 1);
+      inputs[next].focus();
+      update();
+    }
+
+    inputs.forEach(function (inp, idx) {
+      inp.addEventListener("input", function () {
+        if (inp.value.length > 1) inp.value = inp.value.slice(-1);
+        if (inp.value && idx < len - 1) inputs[idx + 1].focus();
+        update();
+      });
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Backspace" && !inp.value && idx > 0) {
+          inputs[idx - 1].value = "";
+          inputs[idx - 1].focus();
+          update();
+        } else if (e.key === "ArrowLeft" && idx > 0) {
+          inputs[idx - 1].focus();
+        } else if (e.key === "ArrowRight" && idx < len - 1) {
+          inputs[idx + 1].focus();
+        }
+      });
+      inp.addEventListener("paste", function (e) {
+        e.preventDefault();
+        fill((e.clipboardData || window.clipboardData).getData("text"), idx);
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     FILE DROPZONE — data-sk-dropzone (delegated; list auto-managed)
+     ---------------------------------------------------------------------- */
+  function dzInput(zone) { return zone.querySelector('input[type="file"]'); }
+  function dzList(zone) {
+    var list = zone.nextElementSibling;
+    if (!list || !list.classList.contains("sk-dropzone-files")) {
+      list = document.createElement("ul");
+      list.className = "sk-dropzone-files";
+      zone.parentNode.insertBefore(list, zone.nextSibling);
+    }
+    return list;
+  }
+  function dzSize(n) {
+    if (n >= 1048576) return (n / 1048576).toFixed(1) + " MB";
+    if (n >= 1024) return (n / 1024).toFixed(0) + " KB";
+    return n + " B";
+  }
+  function dzRender(zone) {
+    var input = dzInput(zone);
+    if (!input) return;
+    var list = dzList(zone);
+    list.innerHTML = "";
+    Array.prototype.slice.call(input.files).forEach(function (f, i) {
+      var li = document.createElement("li");
+      var name = document.createElement("span");
+      name.textContent = f.name;
+      var size = document.createElement("span");
+      size.className = "sk-file-size";
+      size.textContent = dzSize(f.size);
+      var rm = document.createElement("button");
+      rm.type = "button";
+      rm.className = "sk-file-remove";
+      rm.textContent = "×";
+      rm.setAttribute("aria-label", "Remove " + f.name);
+      rm.addEventListener("click", function () {
+        var dt = new DataTransfer();
+        Array.prototype.slice.call(input.files).forEach(function (g, j) {
+          if (j !== i) dt.items.add(g);
+        });
+        input.files = dt.files;
+        dzRender(zone);
+        zone.dispatchEvent(new CustomEvent("sk-files", { bubbles: true, detail: { files: input.files } }));
+      });
+      li.appendChild(name);
+      li.appendChild(size);
+      li.appendChild(rm);
+      list.appendChild(li);
+    });
+  }
+  document.addEventListener("dragover", function (e) {
+    var zone = e.target.closest && e.target.closest("[data-sk-dropzone]");
+    if (!zone) return;
+    e.preventDefault();
+    zone.classList.add("sk-dragover");
+  });
+  document.addEventListener("dragleave", function (e) {
+    var zone = e.target.closest && e.target.closest("[data-sk-dropzone]");
+    if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove("sk-dragover");
+  });
+  document.addEventListener("drop", function (e) {
+    var zone = e.target.closest && e.target.closest("[data-sk-dropzone]");
+    if (!zone) return;
+    e.preventDefault();
+    zone.classList.remove("sk-dragover");
+    var input = dzInput(zone);
+    if (!input || !e.dataTransfer) return;
+    var dt = new DataTransfer();
+    Array.prototype.slice.call(input.files).forEach(function (f) { dt.items.add(f); });
+    Array.prototype.slice.call(e.dataTransfer.files).forEach(function (f) { dt.items.add(f); });
+    if (!input.multiple && dt.items.length > 1) {
+      var last = dt.files[dt.files.length - 1];
+      dt = new DataTransfer();
+      dt.items.add(last);
+    }
+    input.files = dt.files;
+    dzRender(zone);
+    zone.dispatchEvent(new CustomEvent("sk-files", { bubbles: true, detail: { files: input.files } }));
+  });
+  document.addEventListener("change", function (e) {
+    var zone = e.target.closest && e.target.closest("[data-sk-dropzone]");
+    if (zone && e.target.type === "file") {
+      dzRender(zone);
+      zone.dispatchEvent(new CustomEvent("sk-files", { bubbles: true, detail: { files: e.target.files } }));
+    }
+  });
+
+  /* ----------------------------------------------------------------------
+     INPUT MASKS — data-sk-mask="(999) 999-9999"  9=digit a=letter *=either
+     ---------------------------------------------------------------------- */
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (!el.getAttribute || !el.getAttribute("data-sk-mask")) return;
+    var mask = el.getAttribute("data-sk-mask");
+    var raw = el.value.replace(/[^0-9a-zA-Z]/g, "");
+    var out = "";
+    var r = 0;
+    for (var m = 0; m < mask.length && r < raw.length; m++) {
+      var mc = mask[m];
+      if (mc === "9") {
+        while (r < raw.length && !/[0-9]/.test(raw[r])) r++;
+        if (r < raw.length) out += raw[r++];
+      } else if (mc === "a") {
+        while (r < raw.length && !/[a-zA-Z]/.test(raw[r])) r++;
+        if (r < raw.length) out += raw[r++];
+      } else if (mc === "*") {
+        out += raw[r++];
+      } else {
+        out += mc;
+      }
+    }
+    el.value = out;
+  });
+
+  /* ----------------------------------------------------------------------
+     SORTABLE / DRAG-TO-REORDER — data-sk-sortable (+ data-sk-group)
+     ---------------------------------------------------------------------- */
+  var dragged = null;
+  function initSortable(container) {
+    if (container._skSortable) return;
+    container._skSortable = true;
+    Array.prototype.slice.call(container.children).forEach(function (child) {
+      child.draggable = true;
+    });
+    new MutationObserver(function (muts) {
+      muts.forEach(function (mu) {
+        Array.prototype.slice.call(mu.addedNodes).forEach(function (n) {
+          if (n.nodeType === 1) n.draggable = true;
+        });
+      });
+    }).observe(container, { childList: true });
+
+    container.addEventListener("dragstart", function (e) {
+      var item = e.target.closest("[draggable]");
+      if (!item || item.parentNode !== container) return;
+      dragged = item;
+      item.classList.add("sk-sorting");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", ""); } catch (err) { /* IE */ }
+    });
+    container.addEventListener("dragend", function () {
+      if (dragged) dragged.classList.remove("sk-sorting");
+      dragged = null;
+    });
+    container.addEventListener("dragover", function (e) {
+      if (!dragged) return;
+      var sameContainer = dragged.parentNode === container;
+      var sameGroup = container.getAttribute("data-sk-group") &&
+        dragged.parentNode.getAttribute &&
+        dragged.parentNode.getAttribute("data-sk-group") === container.getAttribute("data-sk-group");
+      if (!sameContainer && !sameGroup) return;
+      e.preventDefault();
+      var after = null;
+      var kids = Array.prototype.slice.call(container.children).filter(function (c) { return c !== dragged; });
+      for (var i = 0; i < kids.length; i++) {
+        var rect = kids[i].getBoundingClientRect();
+        if (e.clientY < rect.top + rect.height / 2) { after = kids[i]; break; }
+      }
+      if (after) container.insertBefore(dragged, after);
+      else container.appendChild(dragged);
+    });
+    container.addEventListener("drop", function (e) {
+      if (!dragged) return;
+      e.preventDefault();
+      container.dispatchEvent(new CustomEvent("sk-sorted", { bubbles: true, detail: { item: dragged } }));
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     SPLIT PANES — data-sk-split (+ sk-split-v, data-sk-persist)
+     ---------------------------------------------------------------------- */
+  function initSplit(split) {
+    if (split._skSplit || split.children.length < 2) return;
+    split._skSplit = true;
+    var vertical = split.classList.contains("sk-split-v");
+    var bar = document.createElement("div");
+    bar.className = "sk-split-bar";
+    bar.setAttribute("role", "separator");
+    bar.setAttribute("aria-orientation", vertical ? "horizontal" : "vertical");
+    split.insertBefore(bar, split.children[1]);
+    var storeKey = split.getAttribute("data-sk-persist");
+    if (storeKey) {
+      try {
+        var saved = localStorage.getItem("sk-split-" + storeKey);
+        if (saved) split.style.setProperty("--sk-split", saved);
+      } catch (err) { /* private mode */ }
+    }
+    bar.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      bar.classList.add("sk-active");
+      bar.setPointerCapture(e.pointerId);
+      function move(ev) {
+        var rect = split.getBoundingClientRect();
+        var pct = vertical
+          ? ((ev.clientY - rect.top) / rect.height) * 100
+          : ((ev.clientX - rect.left) / rect.width) * 100;
+        pct = Math.max(10, Math.min(90, pct));
+        split.style.setProperty("--sk-split", pct.toFixed(1) + "%");
+      }
+      function up() {
+        bar.classList.remove("sk-active");
+        bar.removeEventListener("pointermove", move);
+        bar.removeEventListener("pointerup", up);
+        if (storeKey) {
+          try { localStorage.setItem("sk-split-" + storeKey, split.style.getPropertyValue("--sk-split")); } catch (err) { /* ignore */ }
+        }
+      }
+      bar.addEventListener("pointermove", move);
+      bar.addEventListener("pointerup", up);
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     CALENDAR MONTH VIEW — skCalendar(el, opts) / data-sk-calendar
+     ---------------------------------------------------------------------- */
+  var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+  function dateKey(y, m, d) { return y + "-" + pad2(m + 1) + "-" + pad2(d); }
+
+  function skCalendar(el, opts) {
+    el = typeof el === "string" ? document.getElementById(el) : el;
+    if (!el) return null;
+    opts = opts || {};
+    var today = new Date();
+    var state = el._skCal || {};
+    state.y = opts.year != null ? opts.year : (state.y != null ? state.y : today.getFullYear());
+    state.m = opts.month != null ? opts.month : (state.m != null ? state.m : today.getMonth());
+    if (opts.events) state.events = opts.events;
+    if (opts.onSelect) state.onSelect = opts.onSelect;
+    state.events = state.events || [];
+    el._skCal = state;
+
+    var byDate = {};
+    state.events.forEach(function (ev) {
+      (byDate[ev.date] = byDate[ev.date] || []).push(ev);
+    });
+
+    el.classList.add("sk-cal");
+    el.innerHTML = "";
+    var head = document.createElement("div");
+    head.className = "sk-cal-head";
+    var title = document.createElement("div");
+    title.className = "sk-cal-title";
+    title.textContent = MONTHS[state.m] + " " + state.y;
+    var nav = document.createElement("div");
+    nav.className = "sk-cal-nav";
+    [["‹", -1, "Previous month"], ["›", 1, "Next month"]].forEach(function (b) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = b[0];
+      btn.setAttribute("aria-label", b[2]);
+      btn.addEventListener("click", function () {
+        var m = state.m + b[1];
+        var y = state.y;
+        if (m < 0) { m = 11; y--; }
+        if (m > 11) { m = 0; y++; }
+        skCalendar(el, { year: y, month: m });
+      });
+      nav.appendChild(btn);
+    });
+    head.appendChild(title);
+    head.appendChild(nav);
+    el.appendChild(head);
+
+    var grid = document.createElement("div");
+    grid.className = "sk-cal-grid";
+    DOW.forEach(function (d) {
+      var c = document.createElement("div");
+      c.className = "sk-cal-dow";
+      c.textContent = d;
+      grid.appendChild(c);
+    });
+
+    var first = new Date(state.y, state.m, 1);
+    var start = new Date(state.y, state.m, 1 - first.getDay());
+    var todayKey = dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+    for (var i = 0; i < 42; i++) {
+      var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      var key = dateKey(d.getFullYear(), d.getMonth(), d.getDate());
+      var cell = document.createElement("div");
+      cell.className = "sk-cal-day";
+      if (d.getMonth() !== state.m) cell.classList.add("sk-cal-out");
+      if (key === todayKey) cell.classList.add("sk-cal-today");
+      var num = document.createElement("span");
+      num.className = "sk-cal-num";
+      num.textContent = d.getDate();
+      cell.appendChild(num);
+      var evs = byDate[key] || [];
+      if (evs.length) cell.classList.add("sk-cal-has-evt");
+      evs.slice(0, 3).forEach(function (ev) {
+        var pill = document.createElement("span");
+        pill.className = "sk-cal-evt" + (ev.color ? " sk-" + ev.color : "");
+        pill.textContent = ev.label || "";
+        pill.title = ev.label || "";
+        cell.appendChild(pill);
+      });
+      (function (k) {
+        cell.addEventListener("click", function () {
+          if (state.onSelect) state.onSelect(k);
+          el.dispatchEvent(new CustomEvent("sk-date", { bubbles: true, detail: { date: k } }));
+        });
+      })(key);
+      grid.appendChild(cell);
+    }
+    el.appendChild(grid);
+    return el;
+  }
+  window.skCalendar = skCalendar;
+
+  /* ----------------------------------------------------------------------
+     VIRTUAL SCROLL — skVirtual(el, {count, itemHeight, render, overscan})
+     ---------------------------------------------------------------------- */
+  function skVirtual(el, opts) {
+    el = typeof el === "string" ? document.getElementById(el) : el;
+    if (!el) return null;
+    opts = opts || {};
+    var itemHeight = opts.itemHeight || 36;
+    var overscan = opts.overscan || 5;
+    var count = opts.count || 0;
+    var render = opts.render || function (i) { return String(i); };
+
+    el.classList.add("sk-virtual");
+    el.innerHTML = "";
+    var spacer = document.createElement("div");
+    spacer.className = "sk-virtual-spacer";
+    el.appendChild(spacer);
+    var pool = {};
+
+    function draw() {
+      spacer.style.height = count * itemHeight + "px";
+      var from = Math.max(0, Math.floor(el.scrollTop / itemHeight) - overscan);
+      var to = Math.min(count, Math.ceil((el.scrollTop + el.clientHeight) / itemHeight) + overscan);
+      Object.keys(pool).forEach(function (k) {
+        if (k < from || k >= to) {
+          el.removeChild(pool[k]);
+          delete pool[k];
+        }
+      });
+      for (var i = from; i < to; i++) {
+        if (pool[i]) continue;
+        var item = document.createElement("div");
+        item.className = "sk-virtual-item";
+        item.style.top = i * itemHeight + "px";
+        item.style.height = itemHeight + "px";
+        item.innerHTML = render(i);
+        el.appendChild(item);
+        pool[i] = item;
+      }
+    }
+
+    el.addEventListener("scroll", draw);
+    draw();
+
+    return {
+      update: function (newCount) { count = newCount; draw(); },
+      refresh: function () {
+        Object.keys(pool).forEach(function (k) { el.removeChild(pool[k]); delete pool[k]; });
+        draw();
+      },
+      scrollTo: function (i) { el.scrollTop = i * itemHeight; },
+    };
+  }
+  window.skVirtual = skVirtual;
+
+  /* ----------------------------------------------------------------------
+     PROMPT INPUT — data-sk-promptinput (delegated)
+     ---------------------------------------------------------------------- */
+  function promptSubmit(form) {
+    var ta = form.querySelector("textarea");
+    if (!ta) return;
+    var value = ta.value.trim();
+    if (!value) return;
+    form.dispatchEvent(new CustomEvent("sk-submit", { bubbles: true, detail: { value: value } }));
+    ta.value = "";
+    ta.style.height = "";
+    ta.focus();
+  }
+  document.addEventListener("submit", function (e) {
+    var form = e.target.closest && e.target.closest("[data-sk-promptinput]");
+    if (!form) return;
+    e.preventDefault();
+    promptSubmit(form);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || e.shiftKey) return;
+    var form = e.target.closest && e.target.closest("[data-sk-promptinput]");
+    if (!form || e.target.tagName !== "TEXTAREA") return;
+    e.preventDefault();
+    promptSubmit(form);
+  });
+  document.addEventListener("input", function (e) {
+    var form = e.target.closest && e.target.closest("[data-sk-promptinput]");
+    if (!form || e.target.tagName !== "TEXTAREA") return;
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+  });
+
+  /* ----------------------------------------------------------------------
+     DIFF — skDiff(before, after) → HTML for a .sk-diff block
+     ---------------------------------------------------------------------- */
+  function skDiff(before, after) {
+    var a = String(before).split("\n");
+    var b = String(after).split("\n");
+
+    /* trim common prefix/suffix so the LCS table stays small */
+    var pre = 0;
+    while (pre < a.length && pre < b.length && a[pre] === b[pre]) pre++;
+    var suf = 0;
+    while (suf < a.length - pre && suf < b.length - pre &&
+           a[a.length - 1 - suf] === b[b.length - 1 - suf]) suf++;
+    var ca = a.slice(pre, a.length - suf);
+    var cb = b.slice(pre, b.length - suf);
+
+    var rows = [];
+    a.slice(0, pre).forEach(function (l) { rows.push(["ctx", l]); });
+
+    if (ca.length * cb.length > 250000) {
+      /* too big for LCS — plain delete/insert block */
+      ca.forEach(function (l) { rows.push(["del", l]); });
+      cb.forEach(function (l) { rows.push(["add", l]); });
+    } else {
+      var n = ca.length, mB = cb.length;
+      var dp = [];
+      for (var i = n; i >= 0; i--) {
+        dp[i] = [];
+        for (var j = mB; j >= 0; j--) {
+          if (i === n || j === mB) dp[i][j] = 0;
+          else if (ca[i] === cb[j]) dp[i][j] = dp[i + 1][j + 1] + 1;
+          else dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+      var x = 0, y = 0;
+      while (x < n && y < mB) {
+        if (ca[x] === cb[y]) { rows.push(["ctx", ca[x]]); x++; y++; }
+        else if (dp[x + 1][y] >= dp[x][y + 1]) { rows.push(["del", ca[x]]); x++; }
+        else { rows.push(["add", cb[y]]); y++; }
+      }
+      while (x < n) { rows.push(["del", ca[x++]]); }
+      while (y < mB) { rows.push(["add", cb[y++]]); }
+    }
+
+    a.slice(a.length - suf).forEach(function (l) { rows.push(["ctx", l]); });
+
+    return '<div class="sk-diff">' + rows.map(function (r) {
+      var cls = r[0] === "add" ? ' class="sk-diff-add"' : r[0] === "del" ? ' class="sk-diff-del"' : "";
+      return "<div" + cls + ">" + (esc(r[1]) || "&nbsp;") + "</div>";
+    }).join("") + "</div>";
+  }
+  window.skDiff = skDiff;
+
+  /* ----------------------------------------------------------------------
+     CHAT STREAMING + MESSAGE ACTIONS
+     skChat.streamAsync(chat, source) — source: async iterable of chunks,
+     a ReadableStream, or a plain array of strings. Renders markdown as the
+     text arrives. Message actions: add data-sk-msg-actions to the .sk-chat
+     to get a copy button on assistant messages (+ a regenerate button if
+     data-sk-regen is present; it fires "sk-regenerate").
+     ---------------------------------------------------------------------- */
+  function chatOf(chat) {
+    return typeof chat === "string" ? document.getElementById(chat) : chat;
+  }
+
+  if (window.skChat) {
+    var origAppend = window.skChat.append;
+    window.skChat.append = function (chat, role, content, opts) {
+      var el = chatOf(chat);
+      var msg = origAppend(chat, role, content, opts);
+      if (msg && el && role === "assistant" && el.hasAttribute && el.hasAttribute("data-sk-msg-actions")) {
+        addActions(el, msg);
+      }
+      return msg;
+    };
+
+    window.skChat.streamAsync = function (chat, source, opts) {
+      opts = opts || {};
+      var el = chatOf(chat);
+      var msg = window.skChat.append(el, "assistant", "", { markdown: false });
+      if (!msg) return Promise.resolve(null);
+      msg.classList.add("sk-prose");
+      var buffer = "";
+      var lastPaint = 0;
+
+      function paint(final) {
+        var now = Date.now();
+        if (!final && now - lastPaint < 80) return;
+        lastPaint = now;
+        msg.innerHTML = window.skMarkdown(buffer);
+        if (msg.scrollIntoView) msg.scrollIntoView({ block: "nearest" });
+      }
+
+      function finish() {
+        paint(true);
+        if (opts.onDone) opts.onDone(msg, buffer);
+        return msg;
+      }
+
+      /* ReadableStream */
+      if (source && typeof source.getReader === "function") {
+        var reader = source.getReader();
+        var decoder = typeof TextDecoder !== "undefined" ? new TextDecoder() : null;
+        return new Promise(function (resolve, reject) {
+          (function pump() {
+            reader.read().then(function (res) {
+              if (res.done) return resolve(finish());
+              var chunk = res.value;
+              buffer += typeof chunk === "string" ? chunk : (decoder ? decoder.decode(chunk, { stream: true }) : String(chunk));
+              paint(false);
+              pump();
+            }, reject);
+          })();
+        });
+      }
+
+      /* Async iterable */
+      if (source && typeof Symbol !== "undefined" && Symbol.asyncIterator && source[Symbol.asyncIterator]) {
+        var it = source[Symbol.asyncIterator]();
+        return new Promise(function (resolve, reject) {
+          (function step() {
+            it.next().then(function (res) {
+              if (res.done) return resolve(finish());
+              buffer += String(res.value);
+              paint(false);
+              step();
+            }, reject);
+          })();
+        });
+      }
+
+      /* Array (or array-like) of chunks */
+      var arr = Array.prototype.slice.call(source || []);
+      var delay = opts.delay != null ? opts.delay : 30;
+      return new Promise(function (resolve) {
+        (function step(i) {
+          if (i >= arr.length) return resolve(finish());
+          buffer += String(arr[i]);
+          paint(false);
+          setTimeout(function () { step(i + 1); }, delay);
+        })(0);
+      });
+    };
+  }
+
+  function addActions(chat, msg) {
+    var wrap = document.createElement("div");
+    wrap.className = "sk-msg-wrap";
+    msg.parentNode.insertBefore(wrap, msg);
+    wrap.appendChild(msg);
+    var row = document.createElement("div");
+    row.className = "sk-msg-actions";
+    var copy = document.createElement("button");
+    copy.type = "button";
+    copy.textContent = "Copy";
+    copy.addEventListener("click", function () {
+      var write = navigator.clipboard && navigator.clipboard.writeText
+        ? navigator.clipboard.writeText(msg.innerText)
+        : Promise.reject();
+      write.then(function () {
+        if (window.skToast) window.skToast("Copied", "success");
+      }, function () {
+        if (window.skToast) window.skToast("Copy failed", "danger");
+      });
+    });
+    row.appendChild(copy);
+    if (chat.hasAttribute("data-sk-regen")) {
+      var regen = document.createElement("button");
+      regen.type = "button";
+      regen.textContent = "Regenerate";
+      regen.addEventListener("click", function () {
+        chat.dispatchEvent(new CustomEvent("sk-regenerate", { bubbles: true, detail: { message: msg } }));
+      });
+      row.appendChild(regen);
+    }
+    wrap.appendChild(row);
+  }
+
+  /* ----------------------------------------------------------------------
+     INIT — scan now + expose skScan(root) for dynamically added markup
+     ---------------------------------------------------------------------- */
+  function skScan(root) {
+    root = root || document;
+    root.querySelectorAll("[data-sk-multiselect]").forEach(initMultiselect);
+    root.querySelectorAll("[data-sk-otp]").forEach(initOtp);
+    root.querySelectorAll("[data-sk-sortable]").forEach(initSortable);
+    root.querySelectorAll("[data-sk-split]").forEach(initSplit);
+    root.querySelectorAll("[data-sk-calendar]").forEach(function (el) {
+      if (!el._skCal) skCalendar(el, {});
+    });
+  }
+  window.skScan = skScan;
+  skScan(document);
 })();

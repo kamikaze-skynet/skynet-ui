@@ -92,11 +92,11 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v3.1.0 &middot; built for LLMs</span>
+        <span class="sk-badge sk-badge-primary mb-3">v3.2.0 &middot; built for LLMs</span>
         <h1 class="mt-2">The UI kit your AI can learn from one URL</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a two-file, zero-build CSS + JS framework designed to be written by
-          language models. One compact reference &mdash; <a href="/llms.txt">skynetui.com/llms.txt</a> &mdash;
+          language models. One compact reference &mdash; <a href="/llms-full.txt">skynetui.com/llms-full.txt</a> (index at <a href="/llms.txt">/llms.txt</a>) &mdash;
           teaches any LLM every component, all 8 themes, and every behavior. A Tailwind-compat
           utility layer means models can also convert existing Tailwind pages almost 1:1.
         </p>
@@ -108,20 +108,20 @@
           <div class="sk-card"><div class="sk-card-body">
             <h3 class="sk-card-title">1 &middot; Build something new</h3>
             <p class="text-muted text-sm">Paste this into Claude, ChatGPT, Cursor &mdash; any model with web access. The reference teaches it the whole framework.</p>
-            <pre id="llm-prompt" class="text-sm mb-3">Read https://skynetui.com/llms.txt - it documents the
+            <pre id="llm-prompt" class="text-sm mb-3">Read https://skynetui.com/llms-full.txt - it documents the
 Skynet UI framework. Then build me a modern, responsive
 [landing page / dashboard / settings page] using Skynet UI,
 including the two CDN tags it specifies.</pre>
             <div class="flex gap-2 flex-wrap">
               <button class="sk-btn sk-btn-primary sk-btn-sm" data-sk-copy-target="llm-prompt">Copy prompt</button>
-              <a class="sk-btn sk-btn-ghost sk-btn-sm" href="/llms.txt">View llms.txt</a>
+              <a class="sk-btn sk-btn-ghost sk-btn-sm" href="/llms-full.txt">View llms-full.txt</a>
             <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-copy="claude mcp add --transport http skynet-ui https://skynetui.com/mcp" data-sk-tip="Copy the MCP add command">MCP server</button>
             </div>
           </div></div>
           <div class="sk-card"><div class="sk-card-body">
             <h3 class="sk-card-title">2 &middot; Or convert a Tailwind page</h3>
             <p class="text-muted text-sm">v2.0 ships Tailwind-compatible utilities plus step-by-step conversion rules in the reference &mdash; the result is smaller markup that all 8 themes restyle for free.</p>
-            <pre id="tw-prompt" class="text-sm mb-3">Read https://skynetui.com/llms.txt, especially the
+            <pre id="tw-prompt" class="text-sm mb-3">Read https://skynetui.com/llms-full.txt, especially the
 "Converting Tailwind CSS markup" section. Convert the
 following Tailwind page to Skynet UI, preserving the
 layout: [paste your HTML]</pre>
@@ -133,8 +133,8 @@ layout: [paste your HTML]</pre>
         </div>
         <div class="sk-callout">
           <div class="sk-callout-title">The only install &mdash; two tags, no build step</div>
-          <pre id="cdn-snippet" class="mb-3">&lt;link rel="stylesheet" href="https://skynetui.com/v3.1.0/skynet-ui.css"&gt;
-&lt;script src="https://skynetui.com/v3.1.0/skynet-ui.js" defer&gt;&lt;/script&gt;</pre>
+          <pre id="cdn-snippet" class="mb-3">&lt;link rel="stylesheet" href="https://skynetui.com/v3.2.0/skynet-ui.css"&gt;
+&lt;script src="https://skynetui.com/v3.2.0/skynet-ui.js" defer&gt;&lt;/script&gt;</pre>
           <div class="flex gap-2 flex-wrap items-center">
             <button class="sk-btn sk-btn-sm" data-sk-copy-target="cdn-snippet">Copy tags</button>
             <a class="sk-btn sk-btn-ghost sk-btn-sm" href="/skynet-ui.css">latest CSS</a>
@@ -782,7 +782,7 @@ layout: [paste your HTML]</pre>
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v3.1.0 &middot; <span class="font-mono text-faint">build __BUILD__</span> <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v3.2.0 &middot; <span class="font-mono text-faint">build __BUILD__</span> <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
@@ -857,6 +857,8 @@ layout: [paste your HTML]</pre>
         <a href="/themer.html" data-sk-keywords="colors palette custom theme builder">&#127912; Go to Theme builder</a>
         <a href="/play.html" data-sk-keywords="playground render paste preview">&#9654; Go to Playground</a>
         <a href="/changelog.html" data-sk-keywords="versions releases history">&#128220; Go to Changelog</a>
+        <a href="/compare.html" data-sk-keywords="tailwind bootstrap versus vs comparison">&#9878; Compare vs Tailwind &amp; Bootstrap</a>
+        <a href="/llms-full.txt" data-sk-keywords="docs reference llm ai context">&#129302; Open LLM reference</a>
         <a href="#buttons">&#128290; Go to Buttons</a>
         <a href="#forms" data-sk-keywords="input select textarea">&#128221; Go to Forms</a>
         <a href="#tables" data-sk-keywords="sort filter">&#128202; Go to Tables</a>
