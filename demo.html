@@ -23,7 +23,15 @@
     </ul>
     <div class="sk-navbar-end">
       <button class="sk-btn sk-btn-outline sk-btn-sm hide-mobile" data-sk-open="demo-cmdk">Search&hellip; <kbd>Ctrl K</kbd></button>
-      <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle data-sk-tip="Toggle theme" aria-label="Toggle light/dark theme">&#9681;</button>
+      <div class="sk-dropdown">
+        <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-dropdown>&#9681; Theme &#9662;</button>
+        <div class="sk-dropdown-menu sk-right">
+          <button data-sk-theme="dark">Dark (default)</button>
+          <button data-sk-theme="light">Light</button>
+          <button data-sk-theme="midnight">Midnight &mdash; OLED + cyan</button>
+          <button data-sk-theme="paper">Paper &mdash; warm + amber</button>
+        </div>
+      </div>
       <div class="sk-dropdown">
         <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-dropdown>Account &#9662;</button>
         <div class="sk-dropdown-menu sk-right">
@@ -71,7 +79,7 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v1.3.0 &middot; no build step</span>
+        <span class="sk-badge sk-badge-primary mb-3">v1.4.0 &middot; no build step</span>
         <h1 class="mt-2">Build modern dark UIs with two files</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a tiny CSS + JS framework: utility classes for layout and spacing,
@@ -88,7 +96,7 @@
       <div class="sk-grid sk-cols-4 mb-12">
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Components</div>
-          <div class="sk-stat-value">40+</div>
+          <div class="sk-stat-value">45+</div>
         </div></div>
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Dependencies</div>
@@ -168,16 +176,16 @@
       <!-- ============ CARDS ============ -->
       <section id="cards" class="mb-12">
         <h2>Cards</h2>
-        <p class="text-muted">Structure with <code>.sk-card-header</code>, <code>.sk-card-body</code>, <code>.sk-card-footer</code>. Add <code>.sk-card-hover</code> for a lift effect.</p>
+        <p class="text-muted">Structure with <code>.sk-card-header</code>, <code>.sk-card-body</code>, <code>.sk-card-footer</code>. Add <code>.sk-card-hover</code> for a lift effect. These three carry <code>data-sk-reveal</code>, so they fade in the first time you scroll to them.</p>
         <div class="sk-grid sk-cols-3">
-          <div class="sk-card sk-card-hover">
+          <div class="sk-card sk-card-hover" data-sk-reveal>
             <div class="sk-card-body">
               <h3 class="sk-card-title">Simple card</h3>
               <p class="sk-card-subtitle">Just a body, nothing else</p>
               <p class="text-secondary text-sm mb-0">Cards are the basic building block for grouping content on dark backgrounds.</p>
             </div>
           </div>
-          <div class="sk-card sk-card-hover">
+          <div class="sk-card sk-card-hover" data-sk-reveal>
             <div class="sk-card-header">
               Project status
               <span class="sk-badge sk-badge-success">Live</span>
@@ -191,7 +199,7 @@
               <button class="sk-btn sk-btn-ghost sk-btn-sm">Logs</button>
             </div>
           </div>
-          <div class="sk-card sk-card-hover">
+          <div class="sk-card sk-card-hover" data-sk-reveal>
             <div class="sk-card-body">
               <div class="flex items-center gap-3 mb-3">
                 <span class="sk-avatar">SK</span>
@@ -212,15 +220,15 @@
         <div class="sk-grid sk-cols-2">
           <div class="sk-card"><div class="sk-card-body">
             <h3 class="sk-card-title mb-4">Contact form</h3>
-            <form onsubmit="event.preventDefault(); skToast('Message sent!', 'success');">
+            <form data-sk-validate onsubmit="event.preventDefault(); if (this.checkValidity()) skToast('Message sent!', 'success');">
               <div class="sk-field">
                 <label class="sk-label" for="demo-name">Name</label>
-                <input class="sk-input" id="demo-name" type="text" placeholder="Jane Doe">
+                <input class="sk-input" id="demo-name" type="text" placeholder="Jane Doe" required>
               </div>
               <div class="sk-field">
                 <label class="sk-label" for="demo-email">Email</label>
-                <input class="sk-input" id="demo-email" type="email" placeholder="name@site.com">
-                <div class="sk-help">We never share your email.</div>
+                <input class="sk-input" id="demo-email" type="email" placeholder="name@site.com" required>
+                <div class="sk-help">We never share your email. The form uses <code>data-sk-validate</code> &mdash; try submitting it empty.</div>
               </div>
               <div class="sk-field">
                 <label class="sk-label" for="demo-topic">Topic</label>
@@ -232,7 +240,7 @@
               </div>
               <div class="sk-field">
                 <label class="sk-label" for="demo-msg">Message</label>
-                <textarea class="sk-textarea" id="demo-msg" placeholder="Type here&hellip;"></textarea>
+                <textarea class="sk-textarea" id="demo-msg" placeholder="Type here&hellip; (auto-grows, counts characters)" maxlength="200" data-sk-autogrow data-sk-count required></textarea>
               </div>
               <button class="sk-btn sk-btn-primary sk-btn-block" type="submit">Send message</button>
             </form>
@@ -381,6 +389,7 @@
             <button class="sk-btn sk-btn-outline" data-sk-open="confirm-modal">Confirm dialog</button>
             <button class="sk-btn sk-btn-outline" data-sk-open="demo-drawer">Open drawer</button>
             <button class="sk-btn sk-btn-outline" onclick="skConfirm('Delete 3 selected items?', {danger: true, okText: 'Delete'}).then(function(ok){ skToast(ok ? 'Deleted' : 'Kept everything', ok ? 'danger' : 'info'); })">skConfirm()</button>
+            <button class="sk-btn sk-btn-outline" onclick="skPrompt('Rename the project to?', {value: 'skynet-ui', okText: 'Rename'}).then(function(name){ if (name) skToast('Renamed to ' + name, 'success'); })">skPrompt()</button>
             <button class="sk-btn" data-sk-toast="This is an info toast">Info toast</button>
             <button class="sk-btn sk-btn-success" data-sk-toast="Saved successfully" data-sk-toast-type="success">Success toast</button>
             <button class="sk-btn" data-sk-toast="Careful with that" data-sk-toast-type="warning">Warning toast</button>
@@ -482,7 +491,7 @@
       <section id="carousel" class="mb-12">
         <h2>Carousel</h2>
         <p class="text-muted">Scroll-snap based — swipe on touch, arrows via <code>data-sk-carousel-prev/next</code>. Add <code>sk-carousel-peek</code> or <code>sk-carousel-cols-2/3</code> to show more per view.</p>
-        <div class="sk-carousel sk-carousel-peek">
+        <div class="sk-carousel sk-carousel-peek" data-sk-autoplay="6000">
           <div class="sk-carousel-track">
             <div class="sk-carousel-slide"><div class="sk-card"><div class="sk-card-body">
               <h3 class="sk-card-title">Slide one</h3>
@@ -721,7 +730,7 @@
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v1.3.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v1.4.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
@@ -796,7 +805,9 @@
         <a href="#forms" data-sk-keywords="input select textarea">&#128221; Go to Forms</a>
         <a href="#tables" data-sk-keywords="sort filter">&#128202; Go to Tables</a>
         <a href="#carousel" data-sk-keywords="slider slides">&#127902; Go to Carousel</a>
-        <button data-sk-theme-toggle>&#9681; Toggle theme</button>
+        <button data-sk-theme-toggle>&#9681; Toggle dark/light</button>
+        <button data-sk-theme="midnight" data-sk-keywords="theme dark oled cyan">&#127769; Midnight theme</button>
+        <button data-sk-theme="paper" data-sk-keywords="theme light sepia amber">&#128220; Paper theme</button>
         <button data-sk-toast="Cache cleared" data-sk-toast-type="success" data-sk-keywords="purge">&#9889; Clear cache</button>
         <button data-sk-open="demo-drawer" data-sk-keywords="settings notifications">&#128276; Notification settings</button>
       </div>

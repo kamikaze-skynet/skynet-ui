@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.3.0 — behavior script
+   Skynet UI v1.4.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -14,7 +14,15 @@
      data-sk-sidebar           → toggles the sidebar on mobile
      data-sk-burger            → toggles the navbar menu on mobile
      data-sk-toast="Message"   → shows a toast (data-sk-toast-type="success")
-     data-sk-theme-toggle      → switches light/dark theme (remembered)
+     data-sk-theme-toggle      → flips dark ↔ light theme family (remembered)
+     data-sk-theme="name"      → switches to that theme: dark, light,
+                                 midnight, paper (remembered)
+     data-sk-validate          → on a <form>: blocks invalid submits and
+                                 shows styled inline errors
+     data-sk-autogrow          → on a <textarea>: grows with its content
+     data-sk-count             → on a field with maxlength: live "37 / 200"
+     data-sk-reveal            → element fades in when scrolled into view
+     data-sk-autoplay="4000"   → on a .sk-carousel: auto-advance every N ms
      data-sk-copy="text"       → copies text to the clipboard (or use
                                  data-sk-copy-target="element-id")
      data-sk-dismiss           → removes the .sk-chip or .sk-alert it's inside
@@ -34,30 +42,40 @@
        3rd arg: duration ms (0 = sticky) OR options object
        {duration, actionText, onAction} for an action button ("Undo")
      skOpenModal(id) / skCloseModal(id)   (drawers + command palettes too)
-     skToggleTheme()                flips light/dark and remembers the choice
+     skSetTheme("midnight")         switches theme and remembers the choice
+     skToggleTheme()                flips dark ↔ light family, remembered
      skConfirm("Delete this?", {title, okText, cancelText, danger})
                                     → Promise<boolean> confirm dialog
+     skPrompt("Rename to?", {title, okText, cancelText, placeholder, value})
+                                    → Promise<string|null> input dialog
    ========================================================================== */
 (function () {
   "use strict";
 
   /* ----------------------------------------------------------------------
-     THEME — restores the saved choice on load; data-sk-theme-toggle flips it
+     THEMES — built-ins: dark (default), light, midnight, paper.
+     The saved choice is restored on load. data-sk-theme="name" buttons set
+     a specific theme; data-sk-theme-toggle flips dark family ↔ light family.
      ---------------------------------------------------------------------- */
   var THEME_KEY = "sk-theme";
+  var LIGHT_THEMES = ["light", "paper"];
 
   try {
     var savedTheme = localStorage.getItem(THEME_KEY);
     if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
   } catch (err) { /* localStorage unavailable (e.g. file:// in some browsers) */ }
 
-  function skToggleTheme() {
-    var root = document.documentElement;
-    var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
-    root.setAttribute("data-theme", next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (err) { /* ignore */ }
+  function skSetTheme(name) {
+    document.documentElement.setAttribute("data-theme", name);
+    try { localStorage.setItem(THEME_KEY, name); } catch (err) { /* ignore */ }
   }
 
+  function skToggleTheme() {
+    var current = document.documentElement.getAttribute("data-theme") || "dark";
+    skSetTheme(LIGHT_THEMES.indexOf(current) > -1 ? "dark" : "light");
+  }
+
+  window.skSetTheme = skSetTheme;
   window.skToggleTheme = skToggleTheme;
 
   /* ----------------------------------------------------------------------
@@ -238,6 +256,81 @@
   }
 
   window.skConfirm = skConfirm;
+
+  /* ----------------------------------------------------------------------
+     PROMPT DIALOG — skPrompt("Rename to?", {value: "old"}).then(v => …)
+     Resolves the typed string on OK/Enter, or null on Cancel/Esc/backdrop.
+     Options: {title, okText, cancelText, placeholder, value}
+     ---------------------------------------------------------------------- */
+  function skPrompt(message, opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      var modal = document.createElement("div");
+      modal.className = "sk-modal sk-open";
+      modal.setAttribute("role", "dialog");
+      modal.setAttribute("aria-modal", "true");
+
+      var box = document.createElement("div");
+      box.className = "sk-modal-box sk-modal-sm";
+
+      var header = document.createElement("div");
+      header.className = "sk-modal-header";
+      header.textContent = opts.title || "Input needed";
+
+      var body = document.createElement("div");
+      body.className = "sk-modal-body";
+      var label = document.createElement("label");
+      label.className = "sk-label";
+      label.textContent = message;
+      var input = document.createElement("input");
+      input.className = "sk-input";
+      input.type = "text";
+      if (opts.placeholder) input.placeholder = opts.placeholder;
+      if (opts.value) input.value = opts.value;
+      body.appendChild(label);
+      body.appendChild(input);
+
+      var footer = document.createElement("div");
+      footer.className = "sk-modal-footer";
+      var cancelBtn = document.createElement("button");
+      cancelBtn.className = "sk-btn sk-btn-ghost";
+      cancelBtn.textContent = opts.cancelText || "Cancel";
+      var okBtn = document.createElement("button");
+      okBtn.className = "sk-btn sk-btn-primary";
+      okBtn.textContent = opts.okText || "OK";
+      footer.appendChild(cancelBtn);
+      footer.appendChild(okBtn);
+
+      box.appendChild(header);
+      box.appendChild(body);
+      box.appendChild(footer);
+      modal.appendChild(box);
+      document.body.appendChild(modal);
+      document.body.classList.add("sk-modal-open");
+      input.focus();
+      if (opts.value) input.select();
+
+      function done(result) {
+        document.removeEventListener("keydown", onKey);
+        if (modal.parentNode) modal.parentNode.removeChild(modal);
+        if (!document.querySelector(OPEN_OVERLAYS)) {
+          document.body.classList.remove("sk-modal-open");
+        }
+        resolve(result);
+      }
+      function onKey(e) {
+        if (e.key === "Escape") done(null);
+        else if (e.key === "Enter" && document.activeElement === input) done(input.value);
+      }
+
+      cancelBtn.addEventListener("click", function () { done(null); });
+      okBtn.addEventListener("click", function () { done(input.value); });
+      modal.addEventListener("click", function (e) { if (e.target === modal) done(null); });
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  window.skPrompt = skPrompt;
 
   /* ----------------------------------------------------------------------
      SIDEBAR (mobile slide-in) — creates its own backdrop
@@ -465,6 +558,14 @@
       return;
     }
 
+    /* Theme picker: <button data-sk-theme="midnight">Midnight</button> */
+    t = e.target.closest("[data-sk-theme]");
+    if (t) {
+      e.preventDefault();
+      skSetTheme(t.getAttribute("data-sk-theme"));
+      return;
+    }
+
     /* Copy to clipboard: data-sk-copy="text" or data-sk-copy-target="element-id" */
     t = e.target.closest("[data-sk-copy], [data-sk-copy-target]");
     if (t) {
@@ -620,6 +721,22 @@
       return;
     }
 
+    /* Auto-growing textarea */
+    var grow = e.target.closest("textarea[data-sk-autogrow]");
+    if (grow) autogrow(grow);
+
+    /* Live character counter */
+    var counted = e.target.closest("[data-sk-count]");
+    if (counted) updateCount(counted);
+
+    /* Editing a field cleared by validation removes its error state */
+    if (e.target.classList && e.target.classList.contains("sk-invalid")) {
+      e.target.classList.remove("sk-invalid");
+      var oldError = e.target.parentNode &&
+        e.target.parentNode.querySelector(".sk-error[data-sk-generated]");
+      if (oldError) oldError.parentNode.removeChild(oldError);
+    }
+
     var input = e.target.closest("[data-sk-filter]");
     if (!input) return;
     var target = document.getElementById(input.getAttribute("data-sk-filter"));
@@ -633,6 +750,114 @@
         item.textContent.toLowerCase().indexOf(query) > -1 ? "" : "none";
     });
   });
+
+  /* ----------------------------------------------------------------------
+     FORM VALIDATION — <form data-sk-validate> blocks invalid submits and
+     marks each bad field with .sk-invalid plus the browser's own message
+     in a .sk-error line. Errors clear as the user edits the field.
+     ---------------------------------------------------------------------- */
+  document.querySelectorAll("form[data-sk-validate]").forEach(function (form) {
+    form.setAttribute("novalidate", "");
+  });
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target.closest("form[data-sk-validate]");
+    if (!form) return;
+
+    form.querySelectorAll(".sk-invalid").forEach(function (field) {
+      field.classList.remove("sk-invalid");
+    });
+    form.querySelectorAll(".sk-error[data-sk-generated]").forEach(function (err) {
+      err.parentNode.removeChild(err);
+    });
+
+    if (form.checkValidity()) return;
+    e.preventDefault();
+
+    var invalid = form.querySelectorAll("input:invalid, select:invalid, textarea:invalid");
+    invalid.forEach(function (field) {
+      field.classList.add("sk-invalid");
+      var error = document.createElement("div");
+      error.className = "sk-error";
+      error.setAttribute("data-sk-generated", "");
+      error.textContent = field.validationMessage;
+      field.parentNode.insertBefore(error, field.nextSibling);
+    });
+    if (invalid[0]) invalid[0].focus();
+  });
+
+  /* ----------------------------------------------------------------------
+     AUTO-GROWING TEXTAREAS + CHARACTER COUNTERS
+     ---------------------------------------------------------------------- */
+  function autogrow(textarea) {
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+  }
+
+  function updateCount(field) {
+    var counter = field._skCounter;
+    if (!counter) {
+      counter = document.createElement("div");
+      counter.className = "sk-count";
+      field.parentNode.insertBefore(counter, field.nextSibling);
+      field._skCounter = counter;
+    }
+    var max = parseInt(field.getAttribute("maxlength"), 10);
+    counter.textContent = max ? field.value.length + " / " + max : String(field.value.length);
+    counter.classList.toggle("sk-count-warn", !!max && field.value.length >= max * 0.9);
+  }
+
+  document.querySelectorAll("textarea[data-sk-autogrow]").forEach(autogrow);
+  document.querySelectorAll("[data-sk-count]").forEach(updateCount);
+
+  /* ----------------------------------------------------------------------
+     SCROLL REVEAL — data-sk-reveal fades an element in the first time it
+     scrolls into view. Without IntersectionObserver support (or without
+     JS at all) the element just stays visible.
+     ---------------------------------------------------------------------- */
+  if ("IntersectionObserver" in window) {
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("sk-revealed");
+        revealObserver.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+
+    document.querySelectorAll("[data-sk-reveal]").forEach(function (el) {
+      el.classList.add("sk-reveal-init");
+      revealObserver.observe(el);
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     CAROUSEL AUTOPLAY — <div class="sk-carousel" data-sk-autoplay="4000">
+     Advances one view per interval, wraps to the start, pauses while the
+     pointer or keyboard focus is inside, and respects reduced motion.
+     ---------------------------------------------------------------------- */
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    document.querySelectorAll(".sk-carousel[data-sk-autoplay]").forEach(function (carousel) {
+      var track = carousel.querySelector(".sk-carousel-track");
+      if (!track) return;
+      var delay = parseInt(carousel.getAttribute("data-sk-autoplay"), 10) || 5000;
+      var paused = false;
+      carousel.addEventListener("mouseenter", function () { paused = true; });
+      carousel.addEventListener("mouseleave", function () { paused = false; });
+      carousel.addEventListener("focusin", function () { paused = true; });
+      carousel.addEventListener("focusout", function () { paused = false; });
+      carousel.addEventListener("touchstart", function () { paused = true; }, { passive: true });
+
+      setInterval(function () {
+        if (paused || !document.contains(track)) return;
+        var maxScroll = track.scrollWidth - track.clientWidth;
+        if (track.scrollLeft >= maxScroll - 4) track.scrollTo({ left: 0, behavior: "smooth" });
+        else track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+      }, delay);
+    });
+  }
 
   /* ----------------------------------------------------------------------
      SCROLLSPY — data-sk-scrollspy on a nav/sidebar of #anchor links keeps

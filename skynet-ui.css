@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v1.3.0
+   Skynet UI v1.4.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -29,6 +29,7 @@
   --sk-primary:        #6366f1;
   --sk-primary-hover:  #4f52e0;
   --sk-primary-soft:   rgba(99, 102, 241, 0.15);
+  --sk-primary-text:   #a5b4fc;   /* readable accent tint on soft backgrounds */
   --sk-success:        #16a34a;
   --sk-success-soft:   rgba(22, 163, 74, 0.15);
   --sk-success-text:   #4ade80;
@@ -61,7 +62,12 @@
   --sk-sidebar-width: 250px;
 }
 
-/* Optional light theme: add data-theme="light" to <html> or <body> */
+/* --------------------------------------------------------------------------
+   BUILT-IN THEMES — set data-theme="light|midnight|paper" on <html> or <body>
+   (no attribute, or data-theme="dark", = the default dark theme above).
+   Buttons with data-sk-theme="name" switch and remember the theme via
+   skynet-ui.js; skToggleTheme() flips between the dark and light families.
+   -------------------------------------------------------------------------- */
 [data-theme="light"] {
   color-scheme: light;
   --sk-bg:        #f4f6fa;
@@ -73,8 +79,49 @@
   --sk-text-2:    #3d4a5d;
   --sk-muted:     #64748b;
   --sk-faint:     #94a3b8;
+  --sk-primary-text: #4649c9;
   --sk-shadow:    0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.08);
   --sk-shadow-lg: 0 8px 40px rgba(16,24,40,.16);
+}
+
+/* Midnight — pure-black OLED dark with a cyan accent */
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --sk-bg:        #000000;
+  --sk-surface:   #0a0d12;
+  --sk-surface-2: #131720;
+  --sk-border:    #1b202b;
+  --sk-border-2:  #29303e;
+  --sk-text:      #e8edf5;
+  --sk-text-2:    #a9b3c4;
+  --sk-muted:     #8490a3;
+  --sk-faint:     #566175;
+  --sk-primary:        #22d3ee;
+  --sk-primary-hover:  #06b6d4;
+  --sk-primary-soft:   rgba(34, 211, 238, 0.12);
+  --sk-primary-text:   #67e8f9;
+  --sk-shadow:    0 1px 2px rgba(0,0,0,.5), 0 4px 16px rgba(0,0,0,.4);
+  --sk-shadow-lg: 0 8px 40px rgba(0,0,0,.7);
+}
+
+/* Paper — warm cream light with an amber accent */
+[data-theme="paper"] {
+  color-scheme: light;
+  --sk-bg:        #f5efe3;
+  --sk-surface:   #fdfaf2;
+  --sk-surface-2: #efe7d6;
+  --sk-border:    #e4dac5;
+  --sk-border-2:  #cfc2a6;
+  --sk-text:      #2c251a;
+  --sk-text-2:    #5a4d38;
+  --sk-muted:     #7e7259;
+  --sk-faint:     #a4977c;
+  --sk-primary:        #b45309;
+  --sk-primary-hover:  #92400e;
+  --sk-primary-soft:   rgba(180, 83, 9, 0.13);
+  --sk-primary-text:   #92400e;
+  --sk-shadow:    0 1px 2px rgba(87,66,26,.08), 0 4px 16px rgba(87,66,26,.1);
+  --sk-shadow-lg: 0 8px 40px rgba(87,66,26,.2);
 }
 
 /* --------------------------------------------------------------------------
@@ -453,7 +500,7 @@ pre code { background: none; border: none; padding: 0; }
   border: 1px solid var(--sk-border-2);
   white-space: nowrap;
 }
-.sk-badge-primary { background: var(--sk-primary-soft); color: #a5b4fc; border-color: transparent; }
+.sk-badge-primary { background: var(--sk-primary-soft); color: var(--sk-primary-text); border-color: transparent; }
 .sk-badge-success { background: var(--sk-success-soft); color: var(--sk-success-text); border-color: transparent; }
 .sk-badge-warning { background: var(--sk-warning-soft); color: var(--sk-warning-text); border-color: transparent; }
 .sk-badge-danger  { background: var(--sk-danger-soft);  color: var(--sk-danger-text);  border-color: transparent; }
@@ -1032,7 +1079,7 @@ body.sk-modal-open { overflow: hidden; }
   height: 38px;
   border-radius: 50%;
   background: var(--sk-primary-soft);
-  color: #a5b4fc;
+  color: var(--sk-primary-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1304,7 +1351,7 @@ kbd {
   color: var(--sk-text-2);
   line-height: 1.4;
 }
-.sk-chip-primary { background: var(--sk-primary-soft); border-color: transparent; color: #a5b4fc; }
+.sk-chip-primary { background: var(--sk-primary-soft); border-color: transparent; color: var(--sk-primary-text); }
 .sk-chip-success { background: var(--sk-success-soft); border-color: transparent; color: var(--sk-success-text); }
 .sk-chip-warning { background: var(--sk-warning-soft); border-color: transparent; color: var(--sk-warning-text); }
 .sk-chip-danger  { background: var(--sk-danger-soft);  border-color: transparent; color: var(--sk-danger-text); }
@@ -1577,7 +1624,7 @@ kbd {
 .sk-step:first-child::before { display: none; }
 .sk-step.active .sk-step-dot { background: var(--sk-primary); border-color: var(--sk-primary); color: #fff; }
 .sk-step.active .sk-step-label { color: var(--sk-text); font-weight: 600; }
-.sk-step.done .sk-step-dot { background: var(--sk-primary-soft); border-color: var(--sk-primary); color: #a5b4fc; }
+.sk-step.done .sk-step-dot { background: var(--sk-primary-soft); border-color: var(--sk-primary); color: var(--sk-primary-text); }
 .sk-step.done::before, .sk-step.active::before { background: var(--sk-primary); }
 
 /* --------------------------------------------------------------------------
@@ -2011,6 +2058,36 @@ th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(
   cursor: pointer;
 }
 .sk-toast-action:hover { text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   41. CHARACTER COUNTER  (created by skynet-ui.js)
+   Use: <textarea class="sk-textarea" maxlength="200" data-sk-count></textarea>
+   A live "37 / 200" line appears under the field; it warns near the limit.
+   -------------------------------------------------------------------------- */
+.sk-count {
+  font-size: 0.75rem;
+  color: var(--sk-muted);
+  text-align: right;
+  margin-top: 0.25rem;
+}
+.sk-count.sk-count-warn { color: var(--sk-warning-text); }
+
+/* --------------------------------------------------------------------------
+   42. SCROLL REVEAL  (behavior in skynet-ui.js)
+   Use: <div class="sk-card" data-sk-reveal>…</div>
+   The element fades and rises into view the first time it's scrolled to.
+   JS applies .sk-reveal-init up front (so content stays visible without JS)
+   and .sk-revealed when the element enters the viewport.
+   -------------------------------------------------------------------------- */
+.sk-reveal-init {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.sk-reveal-init.sk-revealed {
+  opacity: 1;
+  transform: none;
+}
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
