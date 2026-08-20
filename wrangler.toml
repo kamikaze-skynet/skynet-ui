@@ -1,0 +1,8 @@
+# Cloudflare Worker (static assets) serving the site/ folder — skynetui.com
+# Deploy: npx wrangler deploy   (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID)
+# site/_headers and site/_redirects are honored by Workers static assets.
+name = "skynetui"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./site"

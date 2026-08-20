@@ -69,16 +69,16 @@ Pin a version for anything real: latest URLs can change how your site looks when
 
 ### How the hosting works (maintainer notes)
 
-The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare Pages applies automatically.
+The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare applies automatically.
 
-Deploys run from GitHub Actions (`.github/workflows/deploy.yml`): every push to `main` uploads `site/` to the `skynetui` Cloudflare Pages project with wrangler — no dashboard Git integration needed, and the repo can be private.
+Hosting is a **Cloudflare Worker with static assets** (`wrangler.toml` at the repo root points at `site/`), with `skynetui.com` attached as the Worker's custom domain — already set up and live. Deploys run from GitHub Actions (`.github/workflows/deploy.yml`): every push to `main` runs `wrangler deploy` — no dashboard Git integration needed, and the repo can be private.
 
-One-time setup:
+CI needs two repository secrets (repo → **Settings → Secrets and variables → Actions**):
 
-1. Create an API token at **dash.cloudflare.com/profile/api-tokens** with the **"Cloudflare Pages — Edit"** permission.
-2. In the GitHub repo → **Settings → Secrets and variables → Actions**, add two repository secrets: `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (shown in the right sidebar of the Cloudflare dashboard's Workers & Pages page).
-3. Push to `main` (or run the workflow manually from the Actions tab) — the first run creates the `skynetui` Pages project and deploys.
-4. In the Cloudflare dashboard → **Workers & Pages → skynetui → Custom domains → add `skynetui.com`** — one click if the domain's DNS is on Cloudflare, HTTPS automatic.
+1. `CLOUDFLARE_API_TOKEN` — a token from the **"Edit Cloudflare Workers"** template at dash.cloudflare.com/profile/api-tokens
+2. `CLOUDFLARE_ACCOUNT_ID` — shown in the right sidebar of the Cloudflare dashboard's Workers & Pages page
+
+A deploy can also be run from any machine: `CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler@4 deploy`.
 
 Cutting a release: `scripts/release.sh 1.6.0` copies the current files into `site/` and `site/v1.6.0/`, then update the version badge + CDN snippet in `site/index.html` and commit. Published `site/vX.Y.Z/` folders are immutable — never overwrite one.
 
