@@ -6,6 +6,12 @@
   Access-Control-Allow-Origin: *
   X-Content-Type-Options: nosniff
 
+# HTML always revalidates so every deploy is visible immediately
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+
 # "Latest" files — short cache so new releases roll out within the hour
 /skynet-ui.css
   Cache-Control: public, max-age=3600

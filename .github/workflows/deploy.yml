@@ -26,6 +26,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Replace the __BUILD__ placeholder in the landing page with the short
+      # commit SHA + deploy time. This stamps the footer (visible proof of
+      # which push is live) and cache-busts the page's own CSS/JS links.
+      - name: Stamp build info into the landing page
+        run: |
+          sed -i "s/__BUILD__/${GITHUB_SHA:0:7}/g" site/index.html
+          grep -o "build [^<]*" site/index.html | head -1
+
       - name: Deploy with wrangler
         run: npx --yes wrangler@4 deploy
         env:
