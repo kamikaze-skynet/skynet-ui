@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v2.0.0 — behavior script
+   Skynet UI v2.1.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -30,6 +30,11 @@
      data-sk-segment           → on a .sk-btn-group: clicks move the .active
      data-sk-sort              → on a <th>: click sorts the table by that column
      data-sk-filter="id"       → on an <input>: typing filters that table/list
+     data-sk-paginate="5"      → on a <table>: client-side pagination, N rows
+                                 per page (composes with sort + filter)
+     data-sk-taginput          → tag/chip input (Enter adds, × removes;
+                                 data-sk-name="tags" adds a hidden form field)
+     data-sk-context="menu-id" → right-click opens that .sk-context-menu
      data-sk-scroll-top        → button smooth-scrolls back to the top
      data-sk-scrollspy         → on a sidebar/nav of #links: highlights the
                                  link whose section is currently on screen
@@ -514,7 +519,7 @@
       return;
     }
 
-    /* Dropdown toggle */
+    /* Dropdown toggle (menus are clamped so they never open off-screen) */
     t = e.target.closest("[data-sk-dropdown]");
     if (t) {
       e.preventDefault();
@@ -522,7 +527,22 @@
       if (dd) {
         var willOpen = !dd.classList.contains("sk-open");
         closeAllDropdowns();
-        if (willOpen) dd.classList.add("sk-open");
+        if (willOpen) {
+          dd.classList.add("sk-open");
+          var menu = dd.querySelector(".sk-dropdown-menu");
+          if (menu) {
+            menu.style.left = "";
+            menu.style.right = "";
+            var rect = menu.getBoundingClientRect();
+            if (rect.right > window.innerWidth - 8) {
+              menu.style.left = "auto";
+              menu.style.right = "0";
+            } else if (rect.left < 8) {
+              menu.style.left = "0";
+              menu.style.right = "auto";
+            }
+          }
+        }
       }
       return;
     }
@@ -585,13 +605,23 @@
       return;
     }
 
-    /* Dismiss: removes the chip or alert the button sits inside */
+    /* Dismiss: removes the chip or alert the button sits inside
+       (chips inside a tag input also resync its form value) */
     t = e.target.closest("[data-sk-dismiss]");
     if (t) {
       e.preventDefault();
       var box = t.closest(".sk-chip, .sk-alert");
+      var tagOwner = t.closest("[data-sk-taginput]");
       if (box && box.parentNode) box.parentNode.removeChild(box);
+      if (tagOwner) syncTagInput(tagOwner);
       return;
+    }
+
+    /* Clicking a tag input's empty area focuses its text field */
+    t = e.target.closest("[data-sk-taginput]");
+    if (t && !e.target.closest("input, .sk-chip")) {
+      var tagField = t.querySelector("input[type=text], input:not([type])");
+      if (tagField) tagField.focus();
     }
 
     /* Segmented control: move .active inside a data-sk-segment button group */
@@ -625,9 +655,10 @@
       closeSidebar();
     }
 
-    /* Any other click closes open dropdowns and popovers */
+    /* Any other click closes open dropdowns, popovers, and context menus */
     if (!e.target.closest(".sk-dropdown")) closeAllDropdowns();
     if (!e.target.closest(".sk-popover")) closeAllPopovers();
+    closeAllContextMenus();
   });
 
   /* Escape closes overlays, dropdowns, popovers, and the mobile sidebar.
@@ -637,6 +668,7 @@
       document.querySelectorAll(OPEN_OVERLAYS).forEach(closeModal);
       closeAllDropdowns();
       closeAllPopovers();
+      closeAllContextMenus();
       closeSidebar();
       return;
     }
@@ -707,6 +739,9 @@
       return asc ? diff : -diff;
     });
     rows.forEach(function (r) { tbody.appendChild(r); });
+
+    /* Paginated tables re-slice the new order */
+    if (table._skPager) table._skPager.refresh();
   }
 
   /* ----------------------------------------------------------------------
@@ -744,6 +779,12 @@
     var target = document.getElementById(input.getAttribute("data-sk-filter"));
     if (!target) return;
     if (target.tagName === "TABLE" && !target.tBodies[0]) return;
+
+    /* Paginated tables filter through their pager instead */
+    if (target._skPager) {
+      target._skPager.setQuery(input.value.toLowerCase());
+      return;
+    }
 
     var items = target.tagName === "TABLE" ? target.tBodies[0].rows : target.children;
     var query = input.value.toLowerCase();
@@ -860,6 +901,177 @@
       }, delay);
     });
   }
+
+  /* ----------------------------------------------------------------------
+     TAG INPUT — [data-sk-taginput] container with a text field inside.
+     Enter/comma adds a chip; Backspace on empty removes the last;
+     data-sk-name creates a hidden form field with the joined value.
+     ---------------------------------------------------------------------- */
+  function tagField(box) {
+    return box.querySelector("input[type=text], input:not([type])");
+  }
+
+  function syncTagInput(box) {
+    if (!box._skHidden) return;
+    var tags = Array.prototype.map.call(box.querySelectorAll(".sk-chip"), function (chip) {
+      return chip.getAttribute("data-sk-tag");
+    });
+    box._skHidden.value = tags.join(",");
+  }
+
+  function addTag(box, text) {
+    text = text.trim().replace(/,+$/, "");
+    if (!text) return;
+    var duplicate = Array.prototype.some.call(box.querySelectorAll(".sk-chip"), function (chip) {
+      return chip.getAttribute("data-sk-tag").toLowerCase() === text.toLowerCase();
+    });
+    if (duplicate) return;
+
+    var chip = document.createElement("span");
+    chip.className = "sk-chip";
+    chip.setAttribute("data-sk-tag", text);
+    var label = document.createElement("span");
+    label.textContent = text;
+    var x = document.createElement("button");
+    x.className = "sk-chip-x";
+    x.setAttribute("data-sk-dismiss", "");
+    x.setAttribute("aria-label", "Remove " + text);
+    x.type = "button";
+    x.innerHTML = "&times;";
+    chip.appendChild(label);
+    chip.appendChild(x);
+
+    var field = tagField(box);
+    box.insertBefore(chip, field || null);
+    syncTagInput(box);
+  }
+
+  document.querySelectorAll("[data-sk-taginput]").forEach(function (box) {
+    var name = box.getAttribute("data-sk-name");
+    if (name) {
+      var hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = name;
+      box.appendChild(hidden);
+      box._skHidden = hidden;
+    }
+    (box.getAttribute("data-sk-value") || "").split(",").forEach(function (tag) {
+      addTag(box, tag);
+    });
+
+    box.addEventListener("keydown", function (e) {
+      var field = tagField(box);
+      if (!field || e.target !== field) return;
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        addTag(box, field.value);
+        field.value = "";
+      } else if (e.key === "Backspace" && field.value === "") {
+        var chips = box.querySelectorAll(".sk-chip");
+        var last = chips[chips.length - 1];
+        if (last) {
+          last.parentNode.removeChild(last);
+          syncTagInput(box);
+        }
+      }
+    });
+  });
+
+  /* ----------------------------------------------------------------------
+     TABLE PAGINATION — <table data-sk-paginate="5">. Builds sk-pagination
+     controls after the table and composes with data-sk-sort (re-slices
+     after sorting) and data-sk-filter (paginates the matching rows).
+     ---------------------------------------------------------------------- */
+  function buildPager(table) {
+    var perPage = parseInt(table.getAttribute("data-sk-paginate"), 10) || 10;
+    var tbody = table.tBodies[0];
+    if (!tbody) return;
+
+    var nav = document.createElement("nav");
+    nav.className = "sk-pagination mt-3";
+    nav.setAttribute("aria-label", "Pagination");
+    var anchor = table.closest(".sk-table-wrap") || table;
+    anchor.parentNode.insertBefore(nav, anchor.nextSibling);
+
+    var pager = { page: 1, query: "" };
+
+    function pageButton(label, target, state) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = label;
+      if (state === "active") b.className = "active";
+      if (state === "disabled") b.className = "sk-disabled";
+      b.addEventListener("click", function () {
+        pager.page = target;
+        pager.refresh();
+      });
+      nav.appendChild(b);
+    }
+
+    pager.refresh = function () {
+      var rows = Array.prototype.slice.call(tbody.rows);
+      var eligible = pager.query
+        ? rows.filter(function (r) { return r.textContent.toLowerCase().indexOf(pager.query) > -1; })
+        : rows;
+      var pages = Math.max(1, Math.ceil(eligible.length / perPage));
+      if (pager.page > pages) pager.page = pages;
+      if (pager.page < 1) pager.page = 1;
+
+      rows.forEach(function (r) { r.style.display = "none"; });
+      var start = (pager.page - 1) * perPage;
+      eligible.slice(start, start + perPage).forEach(function (r) { r.style.display = ""; });
+
+      nav.innerHTML = "";
+      pageButton("&laquo;", pager.page - 1, pager.page === 1 ? "disabled" : "");
+      if (pages <= 7) {
+        for (var p = 1; p <= pages; p++) {
+          pageButton(String(p), p, p === pager.page ? "active" : "");
+        }
+      } else {
+        var info = document.createElement("span");
+        info.className = "active";
+        info.textContent = pager.page + " / " + pages;
+        nav.appendChild(info);
+      }
+      pageButton("&raquo;", pager.page + 1, pager.page === pages ? "disabled" : "");
+    };
+
+    pager.setQuery = function (q) {
+      pager.query = q;
+      pager.page = 1;
+      pager.refresh();
+    };
+
+    table._skPager = pager;
+    pager.refresh();
+  }
+
+  document.querySelectorAll("table[data-sk-paginate]").forEach(buildPager);
+
+  /* ----------------------------------------------------------------------
+     CONTEXT MENUS — right-click on [data-sk-context="menu-id"] opens that
+     .sk-context-menu at the cursor; any click or Esc closes it.
+     ---------------------------------------------------------------------- */
+  function closeAllContextMenus() {
+    document.querySelectorAll(".sk-context-menu.sk-open").forEach(function (m) {
+      m.classList.remove("sk-open");
+    });
+  }
+
+  document.addEventListener("contextmenu", function (e) {
+    closeAllContextMenus();
+    var t = e.target.closest("[data-sk-context]");
+    if (!t) return;
+    var menu = document.getElementById(t.getAttribute("data-sk-context"));
+    if (!menu) return;
+    e.preventDefault();
+    menu.classList.add("sk-open");
+    var x = e.clientX, y = e.clientY;
+    if (x + menu.offsetWidth > window.innerWidth - 8) x = window.innerWidth - menu.offsetWidth - 8;
+    if (y + menu.offsetHeight > window.innerHeight - 8) y = window.innerHeight - menu.offsetHeight - 8;
+    menu.style.left = Math.max(8, x) + "px";
+    menu.style.top = Math.max(8, y) + "px";
+  });
 
   /* ----------------------------------------------------------------------
      SCROLLSPY — data-sk-scrollspy on a nav/sidebar of #anchor links keeps

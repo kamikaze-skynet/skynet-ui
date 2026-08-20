@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v2.0.0
+   Skynet UI v2.1.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -1129,6 +1129,7 @@ body.sk-modal-open { overflow: hidden; }
   display: none;
 }
 .sk-dropdown-menu.sk-right { left: auto; right: 0; }
+.sk-dropdown-menu { max-width: calc(100vw - 1rem); }
 .sk-dropdown.sk-open .sk-dropdown-menu { display: block; animation: sk-fade-in 0.15s ease; }
 .sk-dropdown-menu a, .sk-dropdown-menu button {
   display: block;
@@ -2457,6 +2458,152 @@ th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(
   .lg\:text-left { text-align: left; }
   .lg\:text-center { text-align: center; }
 }
+
+/* --------------------------------------------------------------------------
+   44. TAG INPUT  (behavior in skynet-ui.js)
+   Use: <div class="sk-taginput" data-sk-taginput data-sk-name="tags" data-sk-value="alpha,beta">
+          <input type="text" placeholder="Add a tag…" aria-label="Add a tag">
+        </div>
+   Type + Enter (or comma) adds a chip; Backspace on an empty field removes
+   the last one; each chip has an × remove button. data-sk-name creates a
+   hidden input carrying the comma-separated value for form submission;
+   data-sk-value seeds initial tags.
+   -------------------------------------------------------------------------- */
+.sk-taginput {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: text;
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-taginput:focus-within {
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-taginput input {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.2rem 0.1rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.925rem;
+  color: var(--sk-text);
+}
+.sk-taginput input::placeholder { color: var(--sk-faint); }
+
+/* --------------------------------------------------------------------------
+   45. TREE VIEW — zero JS, nested native <details>
+   Use: <div class="sk-tree">
+          <details open>
+            <summary>src</summary>
+            <div class="sk-tree-children">
+              <details><summary>components</summary>
+                <div class="sk-tree-children"><a href="#">Button.tsx</a></div>
+              </details>
+              <a href="#" class="active">index.ts</a>
+            </div>
+          </details>
+          <a href="#">README.md</a>
+        </div>
+   Branches are <details>/<summary>; leaves are <a> (or <div>) rows.
+   Mark the current leaf with class active.
+   -------------------------------------------------------------------------- */
+.sk-tree { font-size: 0.925rem; }
+.sk-tree summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-tree summary::-webkit-details-marker { display: none; }
+.sk-tree summary::before {
+  content: "\25B8";
+  font-size: 0.7em;
+  color: var(--sk-muted);
+  flex-shrink: 0;
+  transition: transform var(--sk-transition);
+}
+.sk-tree details[open] > summary::before { transform: rotate(90deg); }
+.sk-tree summary:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+.sk-tree-children {
+  margin-left: 0.8rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--sk-border);
+}
+.sk-tree a, .sk-tree-leaf {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem 0.35rem 1.2rem;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  transition: background var(--sk-transition), color var(--sk-transition);
+}
+.sk-tree a:hover { background: var(--sk-surface-2); color: var(--sk-text); text-decoration: none; }
+.sk-tree .active { background: var(--sk-primary-soft); color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   46. CONTEXT MENU  (behavior in skynet-ui.js)
+   Use: <div class="sk-card" data-sk-context="file-menu">Right-click me</div>
+
+        <!-- near the end of <body> -->
+        <div class="sk-context-menu" id="file-menu" role="menu">
+          <button onclick="openFile()">Open</button>
+          <button onclick="renameFile()">Rename</button>
+          <hr>
+          <button class="text-danger" onclick="deleteFile()">Delete</button>
+        </div>
+   Right-clicking the element opens the menu at the cursor; any click or
+   Esc closes it. Several elements can share one menu.
+   -------------------------------------------------------------------------- */
+.sk-context-menu {
+  position: fixed;
+  z-index: 320;
+  min-width: 180px;
+  padding: 0.35rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  display: none;
+}
+.sk-context-menu.sk-open { display: block; }
+.sk-context-menu > a, .sk-context-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  font-family: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sk-context-menu > a:hover, .sk-context-menu > button:hover {
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  text-decoration: none;
+}
+.sk-context-menu hr { border: none; border-top: 1px solid var(--sk-border); margin: 0.35rem 0; }
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {

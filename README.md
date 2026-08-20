@@ -57,8 +57,8 @@ Skynet UI is served from **skynetui.com**, so any page can use it with two tags 
 
 ```html
 <!-- pinned version (recommended for production — immutable, cached forever) -->
-<link rel="stylesheet" href="https://skynetui.com/v2.0.0/skynet-ui.css">
-<script src="https://skynetui.com/v2.0.0/skynet-ui.js" defer></script>
+<link rel="stylesheet" href="https://skynetui.com/v2.1.0/skynet-ui.css">
+<script src="https://skynetui.com/v2.1.0/skynet-ui.js" defer></script>
 
 <!-- or always-latest (updates automatically within the hour) -->
 <link rel="stylesheet" href="https://skynetui.com/skynet-ui.css">
@@ -69,14 +69,16 @@ Pin a version for anything real: latest URLs can change how your site looks when
 
 ### How the hosting works (maintainer notes)
 
-The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare Pages applies automatically.
+The `site/` folder is the deployed website: `index.html` (this demo as the landing page), the latest `skynet-ui.css`/`skynet-ui.js`, pinned copies under `site/vX.Y.Z/`, `llms.txt`, and a `_headers` file with the cache/CORS rules Cloudflare applies automatically.
 
-One-time setup on Cloudflare Pages (works with a **private** GitHub repo):
+Hosting is a **Cloudflare Worker with static assets** (`wrangler.toml` at the repo root points at `site/`), with `skynetui.com` attached as the Worker's custom domain — already set up and live. Deploys run from GitHub Actions (`.github/workflows/deploy.yml`): every push to `main` runs `wrangler deploy` — no dashboard Git integration needed, and the repo can be private.
 
-1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**, pick this repo.
-2. Build settings: framework preset **None**, build command **(empty)**, build output directory **`site`**.
-3. After the first deploy, **Custom domains → add `skynetui.com`** (and `www.skynetui.com` if you want) — Cloudflare handles DNS + HTTPS if the domain is on Cloudflare.
-4. Done. Every push to `main` redeploys automatically; the GitHub repo can stay private the whole time.
+CI needs two repository secrets (repo → **Settings → Secrets and variables → Actions**):
+
+1. `CLOUDFLARE_API_TOKEN` — a token from the **"Edit Cloudflare Workers"** template at dash.cloudflare.com/profile/api-tokens
+2. `CLOUDFLARE_ACCOUNT_ID` — shown in the right sidebar of the Cloudflare dashboard's Workers & Pages page
+
+A deploy can also be run from any machine: `CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npx wrangler@4 deploy`.
 
 Cutting a release: `scripts/release.sh 1.6.0` copies the current files into `site/` and `site/v1.6.0/`, then update the version badge + CDN snippet in `site/index.html` and commit. Published `site/vX.Y.Z/` folders are immutable — never overwrite one.
 
@@ -345,6 +347,8 @@ The toggle needs that empty `<span></span>` right after the input — that's the
 Always keep the `sk-table-wrap` wrapper — it gives the rounded border and lets wide tables scroll sideways on phones instead of breaking the layout. Options: `sk-table-hover` (row highlight), `sk-table-striped` (zebra rows).
 
 Sorting: put `data-sk-sort` on any `<th>` and clicking it sorts the rows by that column (click again to reverse). Columns whose cells are all numbers — including `99.98%` or `$1,200` — sort numerically.
+
+Pagination: add `data-sk-paginate="10"` to the table and page controls appear under it automatically. It composes with sorting (re-slices the new order) and filtering (pages the matching rows).
 
 Filtering: an input with `data-sk-filter="table-id"` hides rows that don't contain the typed text as you type. It works on lists too — point it at a `.sk-list` (or any container) and it filters the direct children:
 
@@ -779,6 +783,50 @@ Add `data-sk-scrollspy` to a sidebar or nav whose links point at `#section-ids` 
 ```html
 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button>
 ```
+
+### Tag input
+
+```html
+<div class="sk-taginput" data-sk-taginput data-sk-name="tags" data-sk-value="alpha,beta">
+  <input type="text" placeholder="Add a tag…" aria-label="Add a tag">
+</div>
+```
+
+Enter or comma adds a chip, Backspace on an empty field removes the last one, and each chip has an × button. `data-sk-name` adds a hidden input carrying the comma-separated value so plain form posts work; `data-sk-value` seeds initial tags.
+
+### Tree view
+
+```html
+<div class="sk-tree">
+  <details open>
+    <summary>src</summary>
+    <div class="sk-tree-children">
+      <details><summary>components</summary>
+        <div class="sk-tree-children"><a href="#">Button.tsx</a></div>
+      </details>
+      <a href="#" class="active">index.ts</a>
+    </div>
+  </details>
+  <a href="#">README.md</a>
+</div>
+```
+
+Built on nested native `<details>` — zero JavaScript. Branches are `<details>`/`<summary>`; leaves are links (or `.sk-tree-leaf` divs); mark the current one `active`.
+
+### Context menus
+
+```html
+<div class="sk-card" data-sk-context="file-menu">Right-click me</div>
+
+<!-- near the end of <body> -->
+<div class="sk-context-menu" id="file-menu" role="menu">
+  <button onclick="openFile()">Open</button>
+  <hr>
+  <button class="text-danger" onclick="deleteFile()">Delete</button>
+</div>
+```
+
+Right-clicking any element with `data-sk-context` opens that menu at the cursor (clamped to the viewport). Any click or Esc closes it; several elements can share one menu.
 
 ### Copy to clipboard
 
