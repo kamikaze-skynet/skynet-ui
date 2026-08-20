@@ -1,19 +1,17 @@
-# Publishes the skynet-ui package to npm.
+# Publishes skynet-ui and create-skynet-ui to npm with provenance, and
+# creates a GitHub Release for the version.
 #
-# One-time setup: create an npm Automation token (npmjs.com → Access Tokens →
-# Generate New Token → Automation) and add it as the NPM_TOKEN repository
-# secret (Settings → Secrets and variables → Actions).
-#
-# Run it from the Actions tab (workflow_dispatch) after cutting a release —
-# the published version is read from the skynet-ui.css header, so bump the
-# framework first. Publishing an already-published version fails safely.
+# Setup: NPM_TOKEN repository secret (npm Automation token). Run from the
+# Actions tab after cutting a release — versions are read from the files,
+# and already-published versions are skipped safely.
 name: Publish to npm
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # create the GitHub Release
+  id-token: write   # npm provenance
 
 jobs:
   publish:
@@ -26,13 +24,40 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
 
-      - name: Assemble package
+      - name: Assemble skynet-ui package
         run: bash scripts/build-package.sh
 
-      - name: Show what will be published
-        run: cd pkg && npm pack --dry-run
-
-      - name: Publish
-        run: cd pkg && npm publish --access public
+      - name: Publish skynet-ui (skipped if version exists)
+        run: |
+          V=$(node -p "require('./pkg/package.json').version")
+          if npm view "skynet-ui@$V" version >/dev/null 2>&1; then
+            echo "skynet-ui@$V already published — skipping"
+          else
+            cd pkg && npm publish --access public --provenance
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish create-skynet-ui (skipped if version exists)
+        run: |
+          V=$(node -p "require('./create/package.json').version")
+          if npm view "create-skynet-ui@$V" version >/dev/null 2>&1; then
+            echo "create-skynet-ui@$V already published — skipping"
+          else
+            cd create && npm publish --access public --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release for the version
+        run: |
+          V=$(node -p "require('./pkg/package.json').version")
+          if gh release view "v$V" >/dev/null 2>&1; then
+            echo "release v$V exists — skipping"
+          else
+            gh release create "v$V" \
+              --title "Skynet UI v$V" \
+              --notes "See the changelog: https://skynetui.com/changelog — CDN: https://skynetui.com/v$V/skynet-ui.css · npm: skynet-ui@$V"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

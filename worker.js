@@ -10,7 +10,7 @@
  */
 
 const PROTOCOL_VERSION = "2025-03-26";
-const SERVER_INFO = { name: "skynet-ui", version: "3.0.0" };
+const SERVER_INFO = { name: "skynet-ui", version: "3.1.0" };
 
 const TOOLS = [
   {
@@ -20,6 +20,36 @@ const TOOLS = [
       "the utility classes including the Tailwind-compat layer, the JS API, and the " +
       "Tailwind-to-Skynet conversion guide. Read this before writing Skynet UI markup.",
     inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "search_reference",
+    description:
+      "Search the Skynet UI reference by keyword and get only the matching sections " +
+      "(component docs, utility groups, conversion rules). Cheaper than get_reference " +
+      "when you need one component or topic.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Keywords, e.g. 'modal', 'chat', 'tailwind convert'" },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_theme_css",
+    description:
+      "Get the CSS variable block for one built-in theme (dark, light, midnight, paper, " +
+      "forest, dusk, sky, rose, contrast) — useful as a starting point for a custom theme.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        theme: {
+          type: "string",
+          enum: ["dark", "light", "midnight", "paper", "forest", "dusk", "sky", "rose", "contrast"],
+        },
+      },
+      required: ["theme"],
+    },
   },
   {
     name: "get_example",
@@ -100,7 +130,7 @@ async function handleMcp(request, env) {
     case "initialize":
       return rpcResult(id, {
         protocolVersion: PROTOCOL_VERSION,
-        capabilities: { tools: {} },
+        capabilities: { tools: {}, resources: {} },
         serverInfo: SERVER_INFO,
       });
 
@@ -110,6 +140,33 @@ async function handleMcp(request, env) {
     case "tools/list":
       return rpcResult(id, { tools: TOOLS });
 
+    case "resources/list":
+      return rpcResult(id, {
+        resources: [
+          { uri: "skynetui://llms.txt", name: "Skynet UI reference", mimeType: "text/plain",
+            description: "The complete framework reference (components, themes, utilities, conversion guide)" },
+          { uri: "skynetui://examples/dashboard", name: "Example: ops dashboard", mimeType: "text/html" },
+          { uri: "skynetui://examples/chat", name: "Example: AI chat", mimeType: "text/html" },
+          { uri: "skynetui://examples/auth", name: "Example: auth page", mimeType: "text/html" },
+        ],
+      });
+
+    case "resources/read": {
+      const uri = params && params.uri;
+      const origin2 = new URL(request.url).origin;
+      try {
+        let path = null, mime = "text/plain";
+        if (uri === "skynetui://llms.txt") path = "/llms.txt";
+        const exm = /^skynetui:\/\/examples\/(dashboard|chat|auth)$/.exec(uri || "");
+        if (exm) { path = "/examples/" + exm[1] + ".html"; mime = "text/html"; }
+        if (!path) return rpcError(id, -32602, "Unknown resource: " + uri);
+        const text = await readAsset(env, origin2, path);
+        return rpcResult(id, { contents: [{ uri, mimeType: mime, text }] });
+      } catch (err) {
+        return rpcError(id, -32603, "Read failed: " + err.message);
+      }
+    }
+
     case "tools/call": {
       const origin = new URL(request.url).origin;
       const toolName = params && params.name;
@@ -117,6 +174,46 @@ async function handleMcp(request, env) {
       try {
         if (toolName === "get_reference") {
           const text = await readAsset(env, origin, "/llms.txt");
+          return rpcResult(id, { content: [{ type: "text", text }] });
+        }
+        if (toolName === "search_reference") {
+          const ref = await readAsset(env, origin, "/llms.txt");
+          const terms = String(args.query || "").toLowerCase().split(/\s+/).filter(Boolean);
+          if (!terms.length) {
+            return rpcResult(id, { content: [{ type: "text", text: "Provide a query." }], isError: true });
+          }
+          /* split on ## / ### headings, score sections by term hits */
+          const sections = ref.split(/\n(?=##+ )/);
+          const scored = sections
+            .map((sec) => {
+              const low = sec.toLowerCase();
+              let score = 0;
+              for (const t of terms) {
+                const first = low.split("\n", 1)[0];
+                if (first.includes(t)) score += 5;
+                score += low.split(t).length - 1;
+              }
+              return { sec, score };
+            })
+            .filter((x) => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 4);
+          const text = scored.length
+            ? scored.map((x) => x.sec.trim()).join("\n\n---\n\n")
+            : "No sections matched. Try get_reference for the full document.";
+          return rpcResult(id, { content: [{ type: "text", text }] });
+        }
+        if (toolName === "get_theme_css") {
+          const css = await readAsset(env, origin, "/skynet-ui.css");
+          let text;
+          if (args.theme === "dark") {
+            const m = /:root \{[\s\S]*?\n\}/.exec(css);
+            text = m ? m[0] : "not found";
+          } else {
+            const re = new RegExp('\\[data-theme="' + args.theme + '"\\] \\{[\\s\\S]*?\\n\\}');
+            const m = re.exec(css);
+            text = m ? m[0] : "Theme not found: " + args.theme;
+          }
           return rpcResult(id, { content: [{ type: "text", text }] });
         }
         if (toolName === "get_example") {

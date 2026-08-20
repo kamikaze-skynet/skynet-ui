@@ -1,0 +1,16 @@
+name: Feature request
+description: A component, utility, or behavior you'd like added
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it do?
+      description: Describe the component/behavior and roughly the markup you'd expect to write.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does it belong in the core?
+      description: Skynet UI ships as two files with zero dependencies — the bar is "most sites need this".

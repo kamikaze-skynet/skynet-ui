@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v3.0.0
+   Skynet UI v3.1.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -3033,6 +3033,144 @@ tr.sk-row-selected > td { background: var(--sk-primary-soft); }
   .sk-card, .sk-table-wrap { box-shadow: none !important; border-color: #ccc !important; }
   a { color: #000 !important; }
 }
+
+/* --------------------------------------------------------------------------
+   61. CODE TOKENS — colors used by skHighlight() / skMarkdown() code blocks
+   -------------------------------------------------------------------------- */
+.sk-tok-kw  { color: var(--sk-primary-text); }
+.sk-tok-str { color: var(--sk-success-text); }
+.sk-tok-num { color: var(--sk-warning-text); }
+.sk-tok-com { color: var(--sk-faint); font-style: italic; }
+
+/* --------------------------------------------------------------------------
+   62. CHARTS — pure CSS: bar rows, sparkline columns, donut, legend
+   Bars:  <div class="sk-bars">
+            <div class="sk-bar-row"><span class="sk-bar-label">API</span>
+              <span class="sk-bar-track"><span class="sk-bar" style="width: 72%"></span></span>
+              <span class="sk-bar-value">72%</span></div>
+          </div>
+   Spark: <div class="sk-spark" aria-hidden="true"><i style="height:40%"></i><i style="height:80%"></i>…</div>
+   Donut: <div class="sk-donut" style="--p: 68"><div><div class="sk-donut-label">68%</div>
+            <div class="sk-donut-sub">used</div></div></div>
+          (--sk-donut-hole defaults to the surface color — set it to match
+           the background the donut sits on)
+   Legend: <div class="sk-legend"><span><i class="sk-legend-dot"></i> Series A</span>…</div>
+   Color variants for .sk-bar / .sk-spark i / .sk-legend-dot:
+   sk-success | sk-warning | sk-danger | sk-info
+   -------------------------------------------------------------------------- */
+.sk-bars { display: flex; flex-direction: column; gap: 0.6rem; }
+.sk-bar-row {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+.sk-bar-label { color: var(--sk-muted); }
+.sk-bar-track {
+  display: block;
+  height: 10px;
+  background: var(--sk-surface-2);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sk-bar {
+  display: block;
+  height: 100%;
+  background: var(--sk-primary);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+.sk-bar-value { color: var(--sk-text-2); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.sk-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+}
+.sk-spark i {
+  flex: 1;
+  min-height: 2px;
+  background: var(--sk-primary);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.85;
+}
+.sk-spark i:hover { opacity: 1; }
+
+.sk-donut {
+  --p: 0;
+  --sk-donut-size: 120px;
+  --sk-donut-thickness: 62%;
+  --sk-donut-hole: var(--sk-surface);
+  width: var(--sk-donut-size);
+  height: var(--sk-donut-size);
+  border-radius: 50%;
+  background:
+    radial-gradient(var(--sk-donut-hole) var(--sk-donut-thickness), transparent calc(var(--sk-donut-thickness) + 1px)),
+    conic-gradient(var(--sk-primary) calc(var(--p) * 1%), var(--sk-surface-2) 0);
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.sk-donut-label { font-weight: 700; font-size: 1.15rem; line-height: 1.1; }
+.sk-donut-sub { font-size: 0.7rem; color: var(--sk-muted); }
+
+.sk-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-size: 0.8rem; color: var(--sk-muted); }
+.sk-legend > span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.sk-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  background: var(--sk-primary);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.sk-bar.sk-success, .sk-spark i.sk-success, .sk-legend-dot.sk-success { background: var(--sk-success); }
+.sk-bar.sk-warning, .sk-spark i.sk-warning, .sk-legend-dot.sk-warning { background: var(--sk-warning); }
+.sk-bar.sk-danger,  .sk-spark i.sk-danger,  .sk-legend-dot.sk-danger  { background: var(--sk-danger); }
+.sk-bar.sk-info,    .sk-spark i.sk-info,    .sk-legend-dot.sk-info    { background: var(--sk-info); }
+
+/* --------------------------------------------------------------------------
+   63. RTL SUPPORT — set dir="rtl" on <html>; the major directional
+   components flip. (Flex/grid alignment flips automatically.)
+   -------------------------------------------------------------------------- */
+[dir="rtl"] .sk-dropdown-menu { left: auto; right: 0; }
+[dir="rtl"] .sk-dropdown-menu.sk-right { right: auto; left: 0; }
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+[dir="rtl"] .sk-timeline { padding-left: 0; padding-right: 1.75rem; }
+[dir="rtl"] .sk-timeline::before { left: auto; right: 6px; }
+[dir="rtl"] .sk-timeline-item::before { left: auto; right: -1.75rem; }
+[dir="rtl"] .sk-tree-children {
+  margin-left: 0; margin-right: 0.8rem;
+  padding-left: 0; padding-right: 0.6rem;
+  border-left: none; border-right: 1px solid var(--sk-border);
+}
+[dir="rtl"] .sk-tree a, [dir="rtl"] .sk-tree-leaf { padding: 0.35rem 1.2rem 0.35rem 0.5rem; }
+[dir="rtl"] .sk-callout {
+  border-left: 1px solid var(--sk-border);
+  border-right: 4px solid var(--sk-primary);
+  border-radius: var(--sk-radius);
+}
+[dir="rtl"] .sk-callout-success { border-right-color: var(--sk-success); }
+[dir="rtl"] .sk-callout-warning { border-right-color: var(--sk-warning); }
+[dir="rtl"] .sk-callout-danger  { border-right-color: var(--sk-danger); }
+[dir="rtl"] .sk-callout-info    { border-right-color: var(--sk-info); }
+[dir="rtl"] .sk-drawer-box {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid var(--sk-border);
+  transform: translateX(-100%);
+}
+[dir="rtl"] .sk-drawer.sk-open .sk-drawer-box { transform: none; }
+[dir="rtl"] .sk-toast-container { right: auto; left: 1.25rem; }
+[dir="rtl"] .sk-list > .active { box-shadow: inset -3px 0 0 var(--sk-primary); }
+[dir="rtl"] .sk-prose blockquote {
+  border-left: none;
+  border-right: 4px solid var(--sk-primary);
+  border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm);
+}
+[dir="rtl"] .sk-sidebar { border-right: none; border-left: 1px solid var(--sk-border); }
+[dir="rtl"] .sk-table th, [dir="rtl"] .sk-table td { text-align: right; }
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
