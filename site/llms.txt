@@ -1,9 +1,9 @@
-# Skynet UI — LLM reference (v2.0.0)
+# Skynet UI — LLM reference (v2.1.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
 RULES FOR GENERATION:
-- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v2.0.0/skynet-ui.css` and `https://skynetui.com/v2.0.0/skynet-ui.js` (pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v2.1.0/skynet-ui.css` and `https://skynetui.com/v2.1.0/skynet-ui.js` (pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
 - Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
 - Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
 - Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
@@ -51,6 +51,9 @@ data-sk-tip="text" — CSS-only tooltip on hover/focus (above by default; add cl
 data-sk-segment — on a .sk-btn-group: clicking a button moves the .active highlight (segmented control)
 data-sk-sort — on a <th>: click sorts tbody rows by that column, toggles asc/desc; numeric columns (incl. "99.9%", "$1,200") auto-detected
 data-sk-filter="target-id" — on an <input>: typing hides non-matching rows (table) or direct children (list/grid) of the target
+data-sk-paginate="10" — on a <table>: client-side pagination, N rows/page; controls render below the table automatically; composes with data-sk-sort and data-sk-filter
+data-sk-taginput — on a div containing a text input: tag/chip input (Enter/comma adds, Backspace removes last, × on chips); data-sk-name="tags" adds a hidden form field with the comma-joined value; data-sk-value="a,b" seeds tags
+data-sk-context="menu-id" — right-click on the element opens that .sk-context-menu at the cursor (any click / Esc closes)
 data-sk-scroll-top — button smooth-scrolls the window to the top
 data-sk-scrollspy — on a nav/sidebar of href="#id" links: link for the section on screen gets .active automatically
 
@@ -241,8 +244,8 @@ div.sk-callout (+ sk-callout-success|warning|danger|info; default edge = primary
 <input class="sk-file" type="file">
 ```
 
-### Sortable/filterable table (add-ons to Table above)
-th[data-sk-sort] → click-sortable column. input[data-sk-filter="table-or-list-id"] → live row filter.
+### Sortable/filterable/paginated table (add-ons to Table above)
+th[data-sk-sort] → click-sortable column. input[data-sk-filter="table-or-list-id"] → live row filter. table[data-sk-paginate="10"] → client-side pages (controls auto-render below; all three compose).
 ```html
 <input class="sk-input mb-3" type="search" data-sk-filter="t1" placeholder="Filter…">
 <div class="sk-table-wrap"><table class="sk-table" id="t1"><thead><tr><th data-sk-sort>Name</th></tr></thead><tbody>…</tbody></table></div>
@@ -275,6 +278,25 @@ div.sk-carousel (modifiers: sk-carousel-peek shows next slide's edge; sk-carouse
 Just use sk-input — color-scheme makes native pickers match the theme.
 ```html
 <input class="sk-input" type="date"> <input class="sk-input" type="time">
+```
+
+### Tag input
+div.sk-taginput[data-sk-taginput] (opts: data-sk-name="field" for form value, data-sk-value="a,b" seeds) > input[type=text] inside.
+```html
+<div class="sk-taginput" data-sk-taginput data-sk-name="tags"><input type="text" placeholder="Add a tag…" aria-label="Add a tag"></div>
+```
+
+### Tree view (zero JS, nested native <details>)
+div.sk-tree > details (branch: summary + div.sk-tree-children) and/or <a>/.sk-tree-leaf (leaves; current = class active). Nest freely.
+```html
+<div class="sk-tree"><details open><summary>src</summary><div class="sk-tree-children"><a href="#" class="active">index.ts</a></div></details><a href="#">README.md</a></div>
+```
+
+### Context menu
+Trigger: any element with data-sk-context="menu-id" (right-click opens). Menu (place at end of body): div.sk-context-menu#id[role=menu] > <button>/<a> items + optional <hr>.
+```html
+<div class="sk-card" data-sk-context="m1">Right-click me</div>
+<div class="sk-context-menu" id="m1" role="menu"><button onclick="open()">Open</button><hr><button class="text-danger">Delete</button></div>
 ```
 
 ### Breadcrumbs
