@@ -3,7 +3,7 @@
  * MCP endpoint: POST https://skynetui.com/mcp  (streamable-HTTP, stateless,
  * JSON responses). Tools let AI agents pull the framework reference and
  * example pages directly:
- *   - get_reference: the full llms.txt (components, themes, utilities,
+ *   - get_reference: the full llms-full.txt (components, themes, utilities,
  *     Tailwind conversion guide)
  *   - get_example: a complete example page (dashboard | chat | auth)
  * Add to Claude Code with:  claude mcp add --transport http skynet-ui https://skynetui.com/mcp
@@ -16,7 +16,7 @@ const TOOLS = [
   {
     name: "get_reference",
     description:
-      "Get the complete Skynet UI reference (llms.txt): every component, all 9 themes, " +
+      "Get the complete Skynet UI reference (llms-full.txt): every component, all 9 themes, " +
       "the utility classes including the Tailwind-compat layer, the JS API, and the " +
       "Tailwind-to-Skynet conversion guide. Read this before writing Skynet UI markup.",
     inputSchema: { type: "object", properties: {} },
@@ -143,7 +143,7 @@ async function handleMcp(request, env) {
     case "resources/list":
       return rpcResult(id, {
         resources: [
-          { uri: "skynetui://llms.txt", name: "Skynet UI reference", mimeType: "text/plain",
+          { uri: "skynetui://llms-full.txt", name: "Skynet UI full reference", mimeType: "text/plain",
             description: "The complete framework reference (components, themes, utilities, conversion guide)" },
           { uri: "skynetui://examples/dashboard", name: "Example: ops dashboard", mimeType: "text/html" },
           { uri: "skynetui://examples/chat", name: "Example: AI chat", mimeType: "text/html" },
@@ -156,6 +156,7 @@ async function handleMcp(request, env) {
       const origin2 = new URL(request.url).origin;
       try {
         let path = null, mime = "text/plain";
+        if (uri === "skynetui://llms-full.txt") path = "/llms-full.txt";
         if (uri === "skynetui://llms.txt") path = "/llms.txt";
         const exm = /^skynetui:\/\/examples\/(dashboard|chat|auth)$/.exec(uri || "");
         if (exm) { path = "/examples/" + exm[1] + ".html"; mime = "text/html"; }
@@ -173,11 +174,11 @@ async function handleMcp(request, env) {
       const args = (params && params.arguments) || {};
       try {
         if (toolName === "get_reference") {
-          const text = await readAsset(env, origin, "/llms.txt");
+          const text = await readAsset(env, origin, "/llms-full.txt");
           return rpcResult(id, { content: [{ type: "text", text }] });
         }
         if (toolName === "search_reference") {
-          const ref = await readAsset(env, origin, "/llms.txt");
+          const ref = await readAsset(env, origin, "/llms-full.txt");
           const terms = String(args.query || "").toLowerCase().split(/\s+/).filter(Boolean);
           if (!terms.length) {
             return rpcResult(id, { content: [{ type: "text", text: "Provide a query." }], isError: true });

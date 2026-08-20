@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v3.1.0
+   Skynet UI v3.2.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -3171,6 +3171,905 @@ tr.sk-row-selected > td { background: var(--sk-primary-soft); }
 }
 [dir="rtl"] .sk-sidebar { border-right: none; border-left: 1px solid var(--sk-border); }
 [dir="rtl"] .sk-table th, [dir="rtl"] .sk-table td { text-align: right; }
+
+/* --------------------------------------------------------------------------
+   64. TAILWIND PARITY PACK — state variants, transforms, filters, gradients,
+   animations, group/peer, ring, xl/2xl breakpoints, negative + logical
+   spacing, grid extras, shadows, scroll, transitions, columns, typography.
+   Same rules as section 43: semantic colors only, write classes exactly like
+   Tailwind (class="hover:scale-105 md:grid-cols-3 xl:grid-cols-4").
+   -------------------------------------------------------------------------- */
+
+/* Transforms — modern individual properties, so they compose like Tailwind */
+.scale-0 { scale: 0; }      .scale-50 { scale: 0.5; }   .scale-75 { scale: 0.75; }
+.scale-90 { scale: 0.9; }   .scale-95 { scale: 0.95; }  .scale-100 { scale: 1; }
+.scale-105 { scale: 1.05; } .scale-110 { scale: 1.1; }  .scale-125 { scale: 1.25; }
+.scale-150 { scale: 1.5; }
+.rotate-0 { rotate: 0deg; }   .rotate-3 { rotate: 3deg; }   .rotate-6 { rotate: 6deg; }
+.rotate-12 { rotate: 12deg; } .rotate-45 { rotate: 45deg; } .rotate-90 { rotate: 90deg; }
+.rotate-180 { rotate: 180deg; }
+.-rotate-3 { rotate: -3deg; } .-rotate-6 { rotate: -6deg; } .-rotate-12 { rotate: -12deg; }
+.-rotate-45 { rotate: -45deg; } .-rotate-90 { rotate: -90deg; }
+.translate-x-1 { translate: 0.25rem 0; } .translate-x-2 { translate: 0.5rem 0; }
+.translate-x-4 { translate: 1rem 0; }    .translate-x-8 { translate: 2rem 0; }
+.-translate-x-1 { translate: -0.25rem 0; } .-translate-x-2 { translate: -0.5rem 0; }
+.-translate-x-4 { translate: -1rem 0; }
+.translate-y-1 { translate: 0 0.25rem; } .translate-y-2 { translate: 0 0.5rem; }
+.translate-y-4 { translate: 0 1rem; }    .translate-y-8 { translate: 0 2rem; }
+.-translate-y-1 { translate: 0 -0.25rem; } .-translate-y-2 { translate: 0 -0.5rem; }
+.-translate-y-4 { translate: 0 -1rem; }
+.origin-center { transform-origin: center; } .origin-top { transform-origin: top; }
+.origin-bottom { transform-origin: bottom; } .origin-left { transform-origin: left; }
+.origin-right { transform-origin: right; }
+.transform-none { transform: none; scale: none; rotate: none; translate: none; }
+
+/* Filters + backdrop (glassmorphism) */
+.blur-sm { filter: blur(4px); }  .blur { filter: blur(8px); }  .blur-lg { filter: blur(16px); }
+.grayscale { filter: grayscale(100%); }
+.brightness-75 { filter: brightness(0.75); } .brightness-90 { filter: brightness(0.9); }
+.brightness-110 { filter: brightness(1.1); } .brightness-125 { filter: brightness(1.25); }
+.contrast-125 { filter: contrast(1.25); }
+.saturate-150 { filter: saturate(1.5); }
+.invert { filter: invert(1); }
+.filter-none { filter: none; }
+.backdrop-blur-sm { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.backdrop-blur { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.backdrop-blur-lg { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.backdrop-blur-none { backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* Gradients — semantic stops, Tailwind syntax:
+   class="bg-gradient-to-r from-primary to-transparent" */
+.bg-gradient-to-t { background-image: linear-gradient(to top, var(--sk-grad-stops)); }
+.bg-gradient-to-tr { background-image: linear-gradient(to top right, var(--sk-grad-stops)); }
+.bg-gradient-to-r { background-image: linear-gradient(to right, var(--sk-grad-stops)); }
+.bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--sk-grad-stops)); }
+.bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--sk-grad-stops)); }
+.bg-gradient-to-bl { background-image: linear-gradient(to bottom left, var(--sk-grad-stops)); }
+.bg-gradient-to-l { background-image: linear-gradient(to left, var(--sk-grad-stops)); }
+.bg-gradient-to-tl { background-image: linear-gradient(to top left, var(--sk-grad-stops)); }
+.from-primary { --sk-grad-from: var(--sk-primary); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-primary-soft { --sk-grad-from: var(--sk-primary-soft); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-success { --sk-grad-from: var(--sk-success); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-warning { --sk-grad-from: var(--sk-warning); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-danger { --sk-grad-from: var(--sk-danger); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-info { --sk-grad-from: var(--sk-info); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-surface { --sk-grad-from: var(--sk-surface); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-surface-2 { --sk-grad-from: var(--sk-surface-2); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-bg { --sk-grad-from: var(--sk-bg); --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.from-transparent { --sk-grad-from: transparent; --sk-grad-stops: var(--sk-grad-from), var(--sk-grad-to, transparent); }
+.via-primary { --sk-grad-stops: var(--sk-grad-from, transparent), var(--sk-primary), var(--sk-grad-to, transparent); }
+.via-primary-soft { --sk-grad-stops: var(--sk-grad-from, transparent), var(--sk-primary-soft), var(--sk-grad-to, transparent); }
+.via-surface { --sk-grad-stops: var(--sk-grad-from, transparent), var(--sk-surface), var(--sk-grad-to, transparent); }
+.via-info { --sk-grad-stops: var(--sk-grad-from, transparent), var(--sk-info), var(--sk-grad-to, transparent); }
+.to-primary { --sk-grad-to: var(--sk-primary); }
+.to-primary-soft { --sk-grad-to: var(--sk-primary-soft); }
+.to-success { --sk-grad-to: var(--sk-success); }
+.to-warning { --sk-grad-to: var(--sk-warning); }
+.to-danger { --sk-grad-to: var(--sk-danger); }
+.to-info { --sk-grad-to: var(--sk-info); }
+.to-surface { --sk-grad-to: var(--sk-surface); }
+.to-surface-2 { --sk-grad-to: var(--sk-surface-2); }
+.to-bg { --sk-grad-to: var(--sk-bg); }
+.to-transparent { --sk-grad-to: transparent; }
+
+/* Animations */
+@keyframes sk-u-ping { 75%, 100% { scale: 2; opacity: 0; } }
+@keyframes sk-u-pulse { 50% { opacity: 0.5; } }
+@keyframes sk-u-bounce {
+  0%, 100% { translate: 0 -25%; animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { translate: 0 0; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+}
+.animate-spin { animation: sk-spin 1s linear infinite; }
+.animate-ping { animation: sk-u-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.animate-pulse { animation: sk-u-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.animate-bounce { animation: sk-u-bounce 1s infinite; }
+.animate-none { animation: none; }
+
+/* Ring (box-shadow based, themed) */
+.ring { box-shadow: 0 0 0 3px var(--sk-ring, var(--sk-primary-soft)); }
+.ring-1 { box-shadow: 0 0 0 1px var(--sk-ring, var(--sk-primary-soft)); }
+.ring-2 { box-shadow: 0 0 0 2px var(--sk-ring, var(--sk-primary-soft)); }
+.ring-4 { box-shadow: 0 0 0 4px var(--sk-ring, var(--sk-primary-soft)); }
+.ring-0 { box-shadow: none; }
+.ring-primary { --sk-ring: var(--sk-primary); }
+.ring-success { --sk-ring: var(--sk-success); }
+.ring-warning { --sk-ring: var(--sk-warning); }
+.ring-danger { --sk-ring: var(--sk-danger); }
+.ring-info { --sk-ring: var(--sk-info); }
+.ring-border { --sk-ring: var(--sk-border-2); }
+
+/* State variants — the high-traffic set */
+.hover\:bg-surface:hover { background-color: var(--sk-surface); }
+.hover\:bg-surface-2:hover { background-color: var(--sk-surface-2); }
+.hover\:bg-primary:hover { background-color: var(--sk-primary); }
+.hover\:bg-primary-soft:hover { background-color: var(--sk-primary-soft); }
+.hover\:bg-transparent:hover { background-color: transparent; }
+.hover\:text-primary:hover { color: var(--sk-primary); }
+.hover\:text-default:hover { color: var(--sk-text); }
+.hover\:text-muted:hover { color: var(--sk-muted); }
+.hover\:underline:hover { text-decoration: underline; }
+.hover\:no-underline:hover { text-decoration: none; }
+.hover\:opacity-80:hover { opacity: 0.8; }
+.hover\:opacity-100:hover { opacity: 1; }
+.hover\:shadow-md:hover { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22); }
+.hover\:shadow-lg:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28); }
+.hover\:scale-105:hover { scale: 1.05; }
+.hover\:scale-110:hover { scale: 1.1; }
+.hover\:-translate-y-1:hover { translate: 0 -0.25rem; }
+.hover\:border-primary:hover { border-color: var(--sk-primary); }
+.hover\:ring:hover { box-shadow: 0 0 0 3px var(--sk-ring, var(--sk-primary-soft)); }
+.focus\:outline-none:focus { outline: none; }
+.focus\:ring:focus { outline: none; box-shadow: 0 0 0 3px var(--sk-ring, var(--sk-primary-soft)); }
+.focus\:border-primary:focus { border-color: var(--sk-primary); }
+.active\:scale-95:active { scale: 0.95; }
+.active\:opacity-80:active { opacity: 0.8; }
+.disabled\:opacity-50:disabled { opacity: 0.5; }
+.disabled\:pointer-events-none:disabled { pointer-events: none; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+
+/* Group + peer (curated). Put class "group" on the parent / "peer" on the
+   sibling control, exactly like Tailwind. */
+.group:hover .group-hover\:block { display: block; }
+.group:hover .group-hover\:flex { display: flex; }
+.group:hover .group-hover\:hidden { display: none; }
+.group:hover .group-hover\:visible { visibility: visible; }
+.group:hover .group-hover\:opacity-100 { opacity: 1; }
+.group:hover .group-hover\:underline { text-decoration: underline; }
+.group:hover .group-hover\:text-primary { color: var(--sk-primary); }
+.group:hover .group-hover\:text-default { color: var(--sk-text); }
+.group:hover .group-hover\:scale-105 { scale: 1.05; }
+.group:hover .group-hover\:translate-x-1 { translate: 0.25rem 0; }
+.group:focus-within .group-focus\:opacity-100 { opacity: 1; }
+.peer:checked ~ .peer-checked\:block { display: block; }
+.peer:checked ~ .peer-checked\:hidden { display: none; }
+.peer:checked ~ .peer-checked\:flex { display: flex; }
+.peer:checked ~ .peer-checked\:text-primary { color: var(--sk-primary); }
+.peer:checked ~ .peer-checked\:border-primary { border-color: var(--sk-primary); }
+.peer:focus ~ .peer-focus\:text-primary { color: var(--sk-primary); }
+.peer:focus ~ .peer-focus\:ring { box-shadow: 0 0 0 3px var(--sk-ring, var(--sk-primary-soft)); }
+.peer:disabled ~ .peer-disabled\:opacity-50 { opacity: 0.5; }
+.peer:placeholder-shown ~ .peer-placeholder-shown\:hidden { display: none; }
+
+/* Negative margins */
+.-m-1 { margin: -0.25rem; }  .-m-2 { margin: -0.5rem; }  .-m-4 { margin: -1rem; }
+.-mt-1 { margin-top: -0.25rem; }  .-mt-2 { margin-top: -0.5rem; }
+.-mt-4 { margin-top: -1rem; }     .-mt-6 { margin-top: -1.5rem; }
+.-mt-8 { margin-top: -2rem; }     .-mt-12 { margin-top: -3rem; }  .-mt-16 { margin-top: -4rem; }
+.-mb-1 { margin-bottom: -0.25rem; } .-mb-2 { margin-bottom: -0.5rem; }
+.-mb-4 { margin-bottom: -1rem; }    .-mb-8 { margin-bottom: -2rem; }
+.-ml-1 { margin-left: -0.25rem; } .-ml-2 { margin-left: -0.5rem; } .-ml-4 { margin-left: -1rem; }
+.-mr-1 { margin-right: -0.25rem; } .-mr-2 { margin-right: -0.5rem; } .-mr-4 { margin-right: -1rem; }
+.-mx-2 { margin-left: -0.5rem; margin-right: -0.5rem; }
+.-mx-4 { margin-left: -1rem; margin-right: -1rem; }
+.-mx-6 { margin-left: -1.5rem; margin-right: -1.5rem; }
+.-my-2 { margin-top: -0.5rem; margin-bottom: -0.5rem; }
+.-my-4 { margin-top: -1rem; margin-bottom: -1rem; }
+
+/* Logical (RTL-aware) spacing + alignment — Tailwind's ps/pe/ms/me */
+.ps-0 { padding-inline-start: 0; }  .pe-0 { padding-inline-end: 0; }
+.ps-1 { padding-inline-start: 0.25rem; }  .pe-1 { padding-inline-end: 0.25rem; }
+.ps-2 { padding-inline-start: 0.5rem; }   .pe-2 { padding-inline-end: 0.5rem; }
+.ps-3 { padding-inline-start: 0.75rem; }  .pe-3 { padding-inline-end: 0.75rem; }
+.ps-4 { padding-inline-start: 1rem; }     .pe-4 { padding-inline-end: 1rem; }
+.ps-6 { padding-inline-start: 1.5rem; }   .pe-6 { padding-inline-end: 1.5rem; }
+.ps-8 { padding-inline-start: 2rem; }     .pe-8 { padding-inline-end: 2rem; }
+.ms-0 { margin-inline-start: 0; }  .me-0 { margin-inline-end: 0; }
+.ms-1 { margin-inline-start: 0.25rem; }  .me-1 { margin-inline-end: 0.25rem; }
+.ms-2 { margin-inline-start: 0.5rem; }   .me-2 { margin-inline-end: 0.5rem; }
+.ms-3 { margin-inline-start: 0.75rem; }  .me-3 { margin-inline-end: 0.75rem; }
+.ms-4 { margin-inline-start: 1rem; }     .me-4 { margin-inline-end: 1rem; }
+.ms-6 { margin-inline-start: 1.5rem; }   .me-6 { margin-inline-end: 1.5rem; }
+.ms-8 { margin-inline-start: 2rem; }     .me-8 { margin-inline-end: 2rem; }
+.ms-auto { margin-inline-start: auto; }  .me-auto { margin-inline-end: auto; }
+.text-start { text-align: start; }  .text-end { text-align: end; }
+.border-s { border-inline-start: 1px solid var(--sk-border); }
+.border-e { border-inline-end: 1px solid var(--sk-border); }
+.rounded-s { border-start-start-radius: var(--sk-radius); border-end-start-radius: var(--sk-radius); }
+.rounded-e { border-start-end-radius: var(--sk-radius); border-end-end-radius: var(--sk-radius); }
+
+/* Grid extras */
+.grid-rows-1 { grid-template-rows: repeat(1, minmax(0, 1fr)); }
+.grid-rows-2 { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.grid-rows-3 { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+.grid-rows-4 { grid-template-rows: repeat(4, minmax(0, 1fr)); }
+.grid-rows-6 { grid-template-rows: repeat(6, minmax(0, 1fr)); }
+.row-span-1 { grid-row: span 1 / span 1; }
+.row-span-2 { grid-row: span 2 / span 2; }
+.row-span-3 { grid-row: span 3 / span 3; }
+.row-span-full { grid-row: 1 / -1; }
+.grid-flow-row { grid-auto-flow: row; }
+.grid-flow-col { grid-auto-flow: column; }
+.grid-flow-dense { grid-auto-flow: dense; }
+.auto-cols-fr { grid-auto-columns: minmax(0, 1fr); }
+.auto-cols-auto { grid-auto-columns: auto; }
+.auto-rows-fr { grid-auto-rows: minmax(0, 1fr); }
+.auto-rows-auto { grid-auto-rows: auto; }
+.auto-rows-min { grid-auto-rows: min-content; }
+.justify-items-start { justify-items: start; }
+.justify-items-center { justify-items: center; }
+.justify-items-end { justify-items: end; }
+.justify-items-stretch { justify-items: stretch; }
+.place-content-center { place-content: center; }
+.col-start-1 { grid-column-start: 1; }
+.col-start-2 { grid-column-start: 2; }
+.col-start-3 { grid-column-start: 3; }
+.row-start-1 { grid-row-start: 1; }
+.row-start-2 { grid-row-start: 2; }
+
+/* Flex basis */
+.basis-0 { flex-basis: 0; }
+.basis-auto { flex-basis: auto; }
+.basis-full { flex-basis: 100%; }
+.basis-1\/2 { flex-basis: 50%; }
+.basis-1\/3 { flex-basis: 33.333333%; }
+.basis-2\/3 { flex-basis: 66.666667%; }
+.basis-1\/4 { flex-basis: 25%; }
+
+/* Shadow scale */
+.shadow { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.18); }
+.shadow-md { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.22), 0 2px 4px rgba(0, 0, 0, 0.16); }
+.shadow-lg { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28), 0 4px 8px rgba(0, 0, 0, 0.14); }
+.shadow-xl { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.34), 0 8px 16px rgba(0, 0, 0, 0.16); }
+.shadow-2xl { box-shadow: 0 25px 60px rgba(0, 0, 0, 0.42); }
+.shadow-inner { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.24); }
+
+/* Scroll + snap */
+.scroll-smooth { scroll-behavior: smooth; }
+.scroll-mt-16 { scroll-margin-top: 4rem; }
+.scroll-mt-20 { scroll-margin-top: 5rem; }
+.scroll-mt-24 { scroll-margin-top: 6rem; }
+.snap-x { scroll-snap-type: x var(--sk-snap-strictness, proximity); }
+.snap-y { scroll-snap-type: y var(--sk-snap-strictness, proximity); }
+.snap-both { scroll-snap-type: both var(--sk-snap-strictness, proximity); }
+.snap-mandatory { --sk-snap-strictness: mandatory; }
+.snap-proximity { --sk-snap-strictness: proximity; }
+.snap-start { scroll-snap-align: start; }
+.snap-center { scroll-snap-align: center; }
+.snap-end { scroll-snap-align: end; }
+.snap-none { scroll-snap-align: none; }
+.overscroll-contain { overscroll-behavior: contain; }
+.overscroll-none { overscroll-behavior: none; }
+
+/* Transition granularity */
+.transition-none { transition: none; }
+.transition-colors { transition: color var(--sk-transition), background-color var(--sk-transition), border-color var(--sk-transition); }
+.transition-opacity { transition: opacity var(--sk-transition); }
+.transition-transform { transition: scale var(--sk-transition), rotate var(--sk-transition), translate var(--sk-transition), transform var(--sk-transition); }
+.transition-shadow { transition: box-shadow var(--sk-transition); }
+.delay-75 { transition-delay: 75ms; }
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-500 { transition-delay: 500ms; }
+.ease-linear { transition-timing-function: linear; }
+.ease-in { transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+.ease-out { transition-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+.ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* CSS columns (cheap masonry for text/cards; see .sk-masonry for the real one) */
+.columns-1 { columns: 1; }
+.columns-2 { columns: 2; }
+.columns-3 { columns: 3; }
+.columns-4 { columns: 4; }
+.break-inside-avoid { break-inside: avoid; }
+
+/* Typography odds */
+.leading-snug { line-height: 1.375; }
+.leading-normal { line-height: 1.5; }
+.leading-loose { line-height: 2; }
+.leading-5 { line-height: 1.25rem; }
+.leading-6 { line-height: 1.5rem; }
+.leading-7 { line-height: 1.75rem; }
+.leading-8 { line-height: 2rem; }
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
+.text-nowrap { text-wrap: nowrap; white-space: nowrap; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.underline-offset-2 { text-underline-offset: 2px; }
+.underline-offset-4 { text-underline-offset: 4px; }
+.decoration-dotted { text-decoration-style: dotted; }
+.decoration-dashed { text-decoration-style: dashed; }
+
+/* Sizing extras */
+.size-4 { width: 1rem; height: 1rem; }
+.size-5 { width: 1.25rem; height: 1.25rem; }
+.size-6 { width: 1.5rem; height: 1.5rem; }
+.size-8 { width: 2rem; height: 2rem; }
+.size-10 { width: 2.5rem; height: 2.5rem; }
+.size-12 { width: 3rem; height: 3rem; }
+.size-16 { width: 4rem; height: 4rem; }
+.min-h-0 { min-height: 0; }
+.min-h-full { min-height: 100%; }
+.min-w-full { min-width: 100%; }
+
+/* Misc */
+.visible { visibility: visible; }
+.invisible { visibility: hidden; }
+.isolate { isolation: isolate; }
+.will-change-transform { will-change: transform; }
+.accent-primary { accent-color: var(--sk-primary); }
+.caret-primary { caret-color: var(--sk-primary); }
+.outline-none { outline: none; }
+.mix-blend-multiply { mix-blend-mode: multiply; }
+.mix-blend-screen { mix-blend-mode: screen; }
+.mix-blend-overlay { mix-blend-mode: overlay; }
+.bg-cover { background-size: cover; }
+.bg-contain { background-size: contain; }
+.bg-center { background-position: center; }
+.bg-top { background-position: top; }
+.bg-no-repeat { background-repeat: no-repeat; }
+.bg-fixed { background-attachment: fixed; }
+.pointer-events-auto { pointer-events: auto; }
+.select-text { user-select: text; }
+.select-all { user-select: all; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+
+/* xl / 2xl breakpoints + max-* variants for the high-traffic set */
+@media (min-width: 1280px) {
+  .xl\:hidden { display: none; }
+  .xl\:block { display: block; }
+  .xl\:flex { display: flex; }
+  .xl\:grid { display: grid; }
+  .xl\:flex-row { flex-direction: row; }
+  .xl\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .xl\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .xl\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .xl\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .xl\:col-span-2 { grid-column: span 2 / span 2; }
+  .xl\:w-auto { width: auto; }
+  .xl\:w-1\/2 { width: 50%; }
+  .xl\:text-left { text-align: left; }
+}
+@media (min-width: 1536px) {
+  .\32xl\:hidden { display: none; }
+  .\32xl\:block { display: block; }
+  .\32xl\:flex { display: flex; }
+  .\32xl\:grid { display: grid; }
+  .\32xl\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .\32xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .\32xl\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@media (max-width: 639.98px) {
+  .max-sm\:hidden { display: none; }
+  .max-sm\:block { display: block; }
+  .max-sm\:flex-col { flex-direction: column; }
+  .max-sm\:w-full { width: 100%; }
+  .max-sm\:text-center { text-align: center; }
+}
+@media (max-width: 767.98px) {
+  .max-md\:hidden { display: none; }
+  .max-md\:block { display: block; }
+  .max-md\:flex-col { flex-direction: column; }
+  .max-md\:w-full { width: 100%; }
+}
+@media (max-width: 1023.98px) {
+  .max-lg\:hidden { display: none; }
+  .max-lg\:block { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   65. MULTI-SELECT COMBOBOX  (behavior in skynet-ui.js)
+   Wraps a native <select multiple> so forms and a11y keep working:
+   Use: <div class="sk-multiselect" data-sk-multiselect>
+          <select multiple name="tags" aria-label="Tags">
+            <option>Alpha</option><option selected>Beta</option>
+          </select>
+        </div>
+   JS hides the select, renders chips + a filter input + a checkbox panel,
+   and syncs choices back onto the native options.
+   -------------------------------------------------------------------------- */
+.sk-multiselect { position: relative; }
+.sk-multiselect > select { display: none; }
+.sk-ms-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0.35rem 2rem 0.35rem 0.6rem;
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  cursor: text;
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-ms-control::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--sk-muted);
+  border-bottom: 2px solid var(--sk-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.sk-multiselect.sk-open .sk-ms-control,
+.sk-ms-control:focus-within {
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-ms-control input {
+  flex: 1;
+  min-width: 60px;
+  padding: 0.15rem 0.1rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.925rem;
+  color: var(--sk-text);
+}
+.sk-ms-control input::placeholder { color: var(--sk-faint); }
+.sk-ms-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 90;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.3rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  display: none;
+}
+.sk-multiselect.sk-open .sk-ms-panel { display: block; }
+.sk-ms-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--sk-radius-sm);
+  font-size: 0.925rem;
+  cursor: pointer;
+}
+.sk-ms-option:hover, .sk-ms-option.sk-active { background: var(--sk-surface-2); }
+.sk-ms-option .sk-ms-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  border: 1px solid var(--sk-border-2);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: transparent;
+}
+.sk-ms-option[aria-selected="true"] .sk-ms-check {
+  background: var(--sk-primary);
+  border-color: var(--sk-primary);
+  color: #fff;
+}
+.sk-ms-empty { padding: 0.5rem 0.6rem; color: var(--sk-faint); font-size: 0.875rem; }
+
+/* --------------------------------------------------------------------------
+   66. OTP / PIN INPUT  (behavior in skynet-ui.js)
+   Use: <div class="sk-otp" data-sk-otp data-sk-length="6" data-sk-name="code"
+             aria-label="Verification code"></div>
+   JS renders the boxes, auto-advances, handles paste + Backspace, and keeps
+   a hidden input (data-sk-name) carrying the joined value; fires "sk-otp"
+   CustomEvent (detail.value) when all boxes are filled.
+   -------------------------------------------------------------------------- */
+.sk-otp { display: inline-flex; gap: 0.5rem; }
+.sk-otp input {
+  width: 2.6rem;
+  height: 3.1rem;
+  padding: 0;
+  text-align: center;
+  font-family: var(--sk-font-mono);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--sk-text);
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  caret-color: var(--sk-primary);
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-otp input:focus {
+  outline: none;
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-otp.sk-otp-done input { border-color: var(--sk-success); }
+
+/* --------------------------------------------------------------------------
+   67. FILE DROPZONE  (behavior in skynet-ui.js)
+   Use: <label class="sk-dropzone" data-sk-dropzone>
+          <input type="file" multiple>
+          <strong>Drop files here</strong> or click to browse
+        </label>
+        <ul class="sk-dropzone-files"></ul>   (optional, auto-filled)
+   Drag-over highlights; selected/dropped files are listed with size and a
+   remove button; fires "sk-files" CustomEvent (detail.files) on change.
+   -------------------------------------------------------------------------- */
+.sk-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: var(--sk-muted);
+  background: var(--sk-bg);
+  border: 2px dashed var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  cursor: pointer;
+  transition: border-color var(--sk-transition), background var(--sk-transition);
+}
+.sk-dropzone:hover { border-color: var(--sk-primary); }
+.sk-dropzone.sk-dragover {
+  border-color: var(--sk-primary);
+  background: var(--sk-primary-soft);
+  color: var(--sk-text);
+}
+.sk-dropzone input[type="file"] { display: none; }
+.sk-dropzone strong { color: var(--sk-text); }
+.sk-dropzone-files { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.sk-dropzone-files li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-sm);
+}
+.sk-dropzone-files .sk-file-size { margin-left: auto; color: var(--sk-faint); font-size: 0.8rem; }
+.sk-dropzone-files .sk-file-remove {
+  background: none;
+  border: none;
+  padding: 0 0.2rem;
+  color: var(--sk-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.sk-dropzone-files .sk-file-remove:hover { color: var(--sk-danger); }
+
+/* --------------------------------------------------------------------------
+   68. CALENDAR MONTH VIEW  (display; built by skCalendar() in skynet-ui.js)
+   Use: <div data-sk-calendar></div>                        current month
+        skCalendar(el, { year, month (0-11), events: [{date: "2026-08-20",
+        label, color: "success" }], onSelect: fn(dateStr) }) to control it.
+   Not a picker — the datepicker input (data-sk-date) already exists.
+   -------------------------------------------------------------------------- */
+.sk-cal {
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  overflow: hidden;
+}
+.sk-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--sk-border);
+}
+.sk-cal-title { font-weight: 600; }
+.sk-cal-nav { display: flex; gap: 0.25rem; }
+.sk-cal-nav button {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-muted);
+  cursor: pointer;
+}
+.sk-cal-nav button:hover { color: var(--sk-text); border-color: var(--sk-primary); }
+.sk-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.sk-cal-dow {
+  padding: 0.4rem 0;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sk-faint);
+  border-bottom: 1px solid var(--sk-border);
+}
+.sk-cal-day {
+  min-height: 4.2rem;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--sk-border);
+  border-inline-end: 1px solid var(--sk-border);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--sk-transition);
+}
+.sk-cal-day:nth-child(7n) { border-inline-end: none; }
+.sk-cal-grid > .sk-cal-day:nth-last-child(-n+7) { border-bottom: none; }
+.sk-cal-day:hover { background: var(--sk-surface-2); }
+.sk-cal-day.sk-cal-out { color: var(--sk-faint); background: var(--sk-bg); }
+.sk-cal-day.sk-cal-today .sk-cal-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--sk-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.sk-cal-evt {
+  display: block;
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  border-radius: 4px;
+  background: var(--sk-primary-soft);
+  color: var(--sk-primary-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sk-cal-evt.sk-success { background: var(--sk-success-soft); color: var(--sk-success); }
+.sk-cal-evt.sk-warning { background: var(--sk-warning-soft); color: var(--sk-warning); }
+.sk-cal-evt.sk-danger { background: var(--sk-danger-soft); color: var(--sk-danger); }
+.sk-cal-evt.sk-info { background: var(--sk-info-soft); color: var(--sk-info); }
+@media (max-width: 640px) {
+  .sk-cal-day { min-height: 3rem; }
+  .sk-cal-evt { display: none; }
+  .sk-cal-day.sk-cal-has-evt .sk-cal-num::after {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 3px;
+    border-radius: 999px;
+    background: var(--sk-primary);
+    vertical-align: middle;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   69. SORTABLE / DRAG-TO-REORDER  (behavior in skynet-ui.js)
+   Use: <ul data-sk-sortable> <li>…</li> … </ul>  — children become draggable.
+   Works on any container (lists, kanban columns, card stacks). Add
+   data-sk-group="name" to allow dragging between containers that share the
+   group. Fires "sk-sorted" CustomEvent on the container after a drop.
+   Optional: put class sk-handle on an element inside an item to restrict
+   the drag grip to it.
+   -------------------------------------------------------------------------- */
+[data-sk-sortable] > * { cursor: grab; }
+[data-sk-sortable] > .sk-sorting {
+  opacity: 0.4;
+  border: 1px dashed var(--sk-primary) !important;
+  border-radius: var(--sk-radius-sm);
+}
+.sk-handle { cursor: grab; color: var(--sk-faint); user-select: none; touch-action: none; }
+.sk-handle:hover { color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   70. SPLIT PANES  (behavior in skynet-ui.js)
+   Use: <div class="sk-split" data-sk-split style="height: 300px">
+          <div>left</div><div>right</div>
+        </div>
+   Vertical: add sk-split-v. Persist sizes: data-sk-persist="unique-id".
+   The divider is injected by JS between the two panes.
+   -------------------------------------------------------------------------- */
+.sk-split { display: flex; overflow: hidden; }
+.sk-split > * { overflow: auto; min-width: 0; min-height: 0; }
+.sk-split > :first-child { flex: 0 0 var(--sk-split, 50%); }
+.sk-split > :last-child { flex: 1 1 auto; }
+.sk-split-bar {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: var(--sk-border);
+  transition: background var(--sk-transition);
+  touch-action: none;
+}
+.sk-split-bar:hover, .sk-split-bar.sk-active { background: var(--sk-primary); }
+.sk-split.sk-split-v { flex-direction: column; }
+.sk-split.sk-split-v > .sk-split-bar { cursor: row-resize; }
+
+/* --------------------------------------------------------------------------
+   71. MASONRY — pure CSS, column-based
+   Use: <div class="sk-masonry"> <div class="sk-card">…</div> … </div>
+   Columns: 1 on phones, 2 on tablet, --sk-masonry-cols (default 3) on
+   desktop. Children must not be split: handled automatically.
+   -------------------------------------------------------------------------- */
+.sk-masonry { columns: 1; column-gap: 1rem; }
+.sk-masonry > * { break-inside: avoid; margin-bottom: 1rem; }
+@media (min-width: 640px) { .sk-masonry { columns: 2; } }
+@media (min-width: 1024px) { .sk-masonry { columns: var(--sk-masonry-cols, 3); } }
+
+/* --------------------------------------------------------------------------
+   72. VIRTUAL SCROLL  (behavior in skynet-ui.js)
+   For 10k+ row lists: only visible rows exist in the DOM.
+   Use: <div class="sk-virtual" style="height: 320px" id="log"></div>
+        skVirtual(el, { count, itemHeight: 36, render: function (i) {
+          return "<div>row " + i + "</div>"; } })
+   Returned handle: .update(count), .scrollTo(i), .refresh().
+   -------------------------------------------------------------------------- */
+.sk-virtual { position: relative; overflow-y: auto; }
+.sk-virtual-spacer { position: relative; width: 100%; pointer-events: none; }
+.sk-virtual-item {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   73. STICKY FIRST COLUMN — wide tables keep the key column visible
+   Use: <div class="sk-table-wrap"><table class="sk-table sk-sticky-col">…
+   Pairs with sk-sticky-head for a fully pinned corner.
+   -------------------------------------------------------------------------- */
+.sk-table.sk-sticky-col th:first-child,
+.sk-table.sk-sticky-col td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--sk-surface);
+}
+.sk-table.sk-sticky-col thead th:first-child { z-index: 3; }
+.sk-table.sk-sticky-col th:first-child::after,
+.sk-table.sk-sticky-col td:first-child::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--sk-border);
+}
+
+/* --------------------------------------------------------------------------
+   74. AI KIT 2 — tool/thinking bubbles, message actions, prompt input, diffs
+   -------------------------------------------------------------------------- */
+
+/* Tool-call + thinking bubbles for agent UIs (native <details>) */
+.sk-msg-tool, .sk-msg-thinking {
+  align-self: flex-start;
+  max-width: 82%;
+  margin: 0;
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  background: var(--sk-bg);
+  font-size: 0.85rem;
+}
+.sk-msg-tool > summary, .sk-msg-thinking > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  color: var(--sk-muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.sk-msg-tool > summary::-webkit-details-marker,
+.sk-msg-thinking > summary::-webkit-details-marker { display: none; }
+.sk-msg-tool > summary::before { content: "⚙"; color: var(--sk-primary-text); }
+.sk-msg-thinking > summary::before { content: "…"; font-weight: 700; color: var(--sk-primary-text); }
+.sk-msg-tool > summary::after, .sk-msg-thinking > summary::after {
+  content: "";
+  margin-left: auto;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 2px solid var(--sk-faint);
+  border-bottom: 2px solid var(--sk-faint);
+  transform: rotate(45deg);
+  transition: transform var(--sk-transition);
+}
+.sk-msg-tool[open] > summary::after,
+.sk-msg-thinking[open] > summary::after { transform: rotate(-135deg); }
+.sk-msg-tool > div, .sk-msg-thinking > div {
+  padding: 0.6rem 0.75rem;
+  border-top: 1px solid var(--sk-border);
+}
+.sk-msg-tool > div {
+  font-family: var(--sk-font-mono);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--sk-muted);
+}
+.sk-msg-thinking > div { color: var(--sk-faint); font-style: italic; }
+
+/* Message actions — icon row under a bubble, shown on hover/focus */
+.sk-msg-wrap { display: flex; flex-direction: column; align-self: flex-start; max-width: 82%; }
+.sk-msg-wrap > .sk-msg { max-width: 100%; align-self: auto; }
+.sk-msg-actions {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  opacity: 0;
+  transition: opacity var(--sk-transition);
+}
+.sk-msg-wrap:hover .sk-msg-actions,
+.sk-msg-actions:focus-within { opacity: 1; }
+.sk-msg-actions button {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--sk-muted);
+  background: transparent;
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius-sm);
+  cursor: pointer;
+  transition: color var(--sk-transition), border-color var(--sk-transition);
+}
+.sk-msg-actions button:hover { color: var(--sk-text); border-color: var(--sk-border-2); }
+
+/* Prompt input — the "message the model" box  (behavior in skynet-ui.js)
+   Use: <form class="sk-prompt" data-sk-promptinput>
+          <textarea rows="1" placeholder="Message…"></textarea>
+          <button class="sk-btn sk-btn-primary" type="submit">Send</button>
+        </form>
+   Auto-grows to 8 rows; Enter submits (Shift+Enter = newline); fires
+   "sk-submit" CustomEvent (detail.value) and clears. */
+.sk-prompt {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  transition: border-color var(--sk-transition), box-shadow var(--sk-transition);
+}
+.sk-prompt:focus-within {
+  border-color: var(--sk-primary);
+  box-shadow: 0 0 0 3px var(--sk-primary-soft);
+}
+.sk-prompt textarea {
+  flex: 1;
+  max-height: 12rem;
+  padding: 0.35rem 0.4rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--sk-text);
+}
+.sk-prompt textarea::placeholder { color: var(--sk-faint); }
+
+/* Diff blocks — skDiff(before, after) renders into this */
+.sk-diff {
+  margin: 0;
+  padding: 0;
+  background: var(--sk-bg);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  font-family: var(--sk-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+.sk-diff > div { padding: 0 0.75rem; white-space: pre; }
+.sk-diff > div::before { display: inline-block; width: 1.1em; color: var(--sk-faint); content: " "; }
+.sk-diff .sk-diff-add { background: var(--sk-success-soft); color: var(--sk-success); }
+.sk-diff .sk-diff-add::before { content: "+"; color: var(--sk-success); }
+.sk-diff .sk-diff-del { background: var(--sk-danger-soft); color: var(--sk-danger); }
+.sk-diff .sk-diff-del::before { content: "-"; color: var(--sk-danger); }
+.sk-diff .sk-diff-meta { color: var(--sk-faint); background: var(--sk-surface); }
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {

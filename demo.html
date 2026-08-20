@@ -10,8 +10,8 @@
 <body>
 
   <!-- ============ ANNOUNCEMENT BANNER ============ -->
-  <div class="sk-banner" id="v3-banner" data-sk-banner>
-    <span>&#127881; <strong>v3.1</strong> — markdown renderer, syntax highlighting, CSS charts, RTL, theme builder v2 &amp; more. Dismiss me and I stay dismissed.</span>
+  <div class="sk-banner" id="v32-banner" data-sk-banner>
+    <span>&#127881; <strong>v3.2</strong> — multi-select, OTP, dropzone, sortable, split panes, virtual scroll, calendar, streaming chat, diffs &amp; the Tailwind parity pack. Dismiss me and I stay dismissed.</span>
     <button class="sk-banner-x" data-sk-dismiss aria-label="Dismiss">&times;</button>
   </div>
 
@@ -85,6 +85,11 @@
       <a href="#extras">Tour, banner &amp; lightbox</a>
       <a href="#lists">Lists &amp; empty state</a>
       <a href="#skeletons">Skeletons</a>
+      <a href="#forms32">Forms v3.2</a>
+      <a href="#interact">Sortable, split &amp; virtual</a>
+      <a href="#calendar32">Calendar</a>
+      <a href="#ai2">AI kit 2</a>
+      <a href="#parity">Tailwind parity</a>
       <div class="sk-sidebar-title">Layout</div>
       <a href="#grid">Grid system</a>
       <a href="#hero-footer">Hero &amp; footer</a>
@@ -98,7 +103,7 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v3.1.0 &middot; no build step</span>
+        <span class="sk-badge sk-badge-primary mb-3">v3.2.0 &middot; no build step</span>
         <h1 class="mt-2">Build modern dark UIs with two files</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a tiny CSS + JS framework: utility classes for layout and spacing,
@@ -891,6 +896,187 @@
       </section>
 
       <!-- ============ MISC ============ -->
+      <!-- v3.2 Forms -->
+      <section id="forms32" class="mb-12">
+        <h2>Forms v3.2</h2>
+        <div class="sk-grid sk-cols-2">
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-field">
+              <label class="sk-label">Multi-select combobox <span class="text-faint">(wraps a native <code>&lt;select multiple&gt;</code>)</span></label>
+              <div class="sk-multiselect" data-sk-multiselect data-sk-placeholder="Pick stacks&hellip;">
+                <select multiple name="stacks" aria-label="Stacks">
+                  <option>Frontend</option>
+                  <option selected>Backend</option>
+                  <option>Infra</option>
+                  <option selected>Design</option>
+                  <option>Data</option>
+                  <option>Mobile</option>
+                </select>
+              </div>
+              <div class="sk-help">Type to filter &middot; &uarr;&darr; + Enter &middot; Backspace removes</div>
+            </div>
+            <div class="sk-field mb-0">
+              <label class="sk-label">Phone <span class="text-faint">(<code>data-sk-mask</code>)</span></label>
+              <input class="sk-input" type="tel" data-sk-mask="(999) 999-9999" placeholder="(555) 123-4567">
+            </div>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-field">
+              <label class="sk-label">One-time code <span class="text-faint">(<code>data-sk-otp</code> &mdash; try pasting 6 digits)</span></label>
+              <div class="sk-otp" data-sk-otp data-sk-length="6" data-sk-name="code" id="demo-otp" aria-label="Verification code"></div>
+            </div>
+            <div class="sk-field mb-0">
+              <label class="sk-label">Attachments <span class="text-faint">(<code>data-sk-dropzone</code>)</span></label>
+              <label class="sk-dropzone" data-sk-dropzone>
+                <input type="file" multiple>
+                <strong>Drop files here</strong>
+                <span class="text-sm">or click to browse</span>
+              </label>
+            </div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- v3.2 Interaction -->
+      <section id="interact" class="mb-12">
+        <h2>Sortable, split &amp; virtual</h2>
+        <div class="sk-grid sk-cols-2 mb-6">
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Drag to reorder <span class="text-faint">(<code>data-sk-sortable</code>)</span></label>
+            <ul class="sk-list" data-sk-sortable id="demo-sortable">
+              <li><span class="sk-handle">&#8942;&#8942;</span> Ship the parity pack</li>
+              <li><span class="sk-handle">&#8942;&#8942;</span> Write the changelog</li>
+              <li><span class="sk-handle">&#8942;&#8942;</span> Publish to npm</li>
+              <li><span class="sk-handle">&#8942;&#8942;</span> Tell the group chat</li>
+            </ul>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Split panes <span class="text-faint">(<code>data-sk-split</code> &mdash; drag the divider)</span></label>
+            <div class="sk-split rounded-lg border" data-sk-split data-sk-persist="demo" style="height: 180px">
+              <div class="p-4 bg-surface"><strong>Left pane</strong><p class="text-sm text-muted mb-0">Sizes persist per <code>data-sk-persist</code> id.</p></div>
+              <div class="p-4"><strong>Right pane</strong><p class="text-sm text-muted mb-0">Add <code>sk-split-v</code> for vertical.</p></div>
+            </div>
+          </div></div>
+        </div>
+        <div class="sk-grid sk-cols-2 mb-6">
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Virtual scroll <span class="text-faint">(10,000 rows, ~20 in the DOM &mdash; <code>skVirtual</code>)</span></label>
+            <div class="sk-virtual rounded-lg border" style="height: 240px" id="demo-virtual"></div>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Sticky first column <span class="text-faint">(<code>sk-sticky-col</code> &mdash; scroll sideways)</span></label>
+            <div class="sk-table-wrap" style="max-width: 100%; overflow-x: auto">
+              <table class="sk-table sk-sticky-col" style="min-width: 720px">
+                <thead><tr><th>Service</th><th>Region</th><th>CPU</th><th>Memory</th><th>Requests</th><th>p95</th><th>Errors</th></tr></thead>
+                <tbody>
+                  <tr><td>api-gateway</td><td>us-east-1</td><td>42%</td><td>1.9 GB</td><td>18.2k/min</td><td>84 ms</td><td>0.02%</td></tr>
+                  <tr><td>auth</td><td>us-east-1</td><td>18%</td><td>820 MB</td><td>6.1k/min</td><td>31 ms</td><td>0.00%</td></tr>
+                  <tr><td>billing</td><td>eu-west-1</td><td>27%</td><td>1.2 GB</td><td>2.4k/min</td><td>102 ms</td><td>0.11%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div></div>
+        </div>
+        <div class="sk-card"><div class="sk-card-body">
+          <label class="sk-label">Masonry <span class="text-faint">(pure CSS &mdash; <code>sk-masonry</code>)</span></label>
+          <div class="sk-masonry">
+            <div class="sk-card"><div class="sk-card-body"><strong>Zero build</strong><p class="text-sm text-muted mb-0">Two files. No compiler, no config, no node_modules.</p></div></div>
+            <div class="sk-card"><div class="sk-card-body"><strong>Themes</strong><p class="text-sm text-muted mb-0">9 built in.</p></div></div>
+            <div class="sk-card"><div class="sk-card-body"><strong>AI-first</strong><p class="text-sm text-muted mb-0">Markdown renderer, chat API, syntax highlighting, llms.txt, and an MCP server at skynetui.com/mcp.</p></div></div>
+            <div class="sk-card"><div class="sk-card-body"><strong>Tailwind-shaped</strong><p class="text-sm text-muted mb-0">Utilities match Tailwind names.</p></div></div>
+            <div class="sk-card"><div class="sk-card-body"><strong>Accessible</strong><p class="text-sm text-muted mb-0">Focus traps, aria wiring, reduced-motion support.</p></div></div>
+            <div class="sk-card"><div class="sk-card-body"><strong>Tiny</strong><p class="text-sm text-muted mb-0">Under the size of one hero image.</p></div></div>
+          </div>
+        </div></div>
+      </section>
+
+      <!-- v3.2 Calendar -->
+      <section id="calendar32" class="mb-12">
+        <h2>Calendar</h2>
+        <div class="sk-card"><div class="sk-card-body">
+          <label class="sk-label">Month view <span class="text-faint">(<code>skCalendar</code> / <code>data-sk-calendar</code> &mdash; click a day)</span></label>
+          <div id="demo-cal"></div>
+        </div></div>
+      </section>
+
+      <!-- v3.2 AI kit 2 -->
+      <section id="ai2" class="mb-12">
+        <h2>AI kit 2: agents &amp; streaming</h2>
+        <div class="sk-grid sk-cols-2 mb-6">
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Tool calls, thinking &amp; message actions <span class="text-faint">(hover a reply)</span></label>
+            <div class="sk-chat" id="demo-chat2" data-sk-msg-actions data-sk-regen>
+              <div class="sk-msg sk-msg-user">Deploy the staging branch</div>
+              <details class="sk-msg-thinking"><summary>Thinking</summary><div>The user wants a staging deploy&hellip; check CI first, then trigger the workflow.</div></details>
+              <details class="sk-msg-tool"><summary>run_workflow(deploy-staging)</summary><div>&#10003; run #482 queued &rarr; success in 41s</div></details>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button class="sk-btn sk-btn-primary sk-btn-sm" id="demo-stream">&#9654; Stream a reply</button>
+            </div>
+            <form class="sk-prompt mt-4" data-sk-promptinput id="demo-prompt2">
+              <textarea rows="1" placeholder="Message&hellip; (Enter sends, Shift+Enter = newline)" aria-label="Message"></textarea>
+              <button class="sk-btn sk-btn-primary" type="submit">Send</button>
+            </form>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Diff renderer <span class="text-faint">(<code>skDiff(before, after)</code>)</span></label>
+            <div id="demo-diff"></div>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- v3.2 Tailwind parity -->
+      <section id="parity" class="mb-12">
+        <h2>Tailwind parity pack</h2>
+        <div class="sk-card mb-6"><div class="sk-card-body">
+          <label class="sk-label">Gradients &amp; backdrop blur <span class="text-faint">(<code>bg-gradient-to-r from-primary to-info</code>)</span></label>
+          <div class="bg-gradient-to-r from-primary to-info rounded-lg p-6 relative" style="min-height: 120px">
+            <div class="backdrop-blur bg-transparent rounded-lg p-4" style="background: rgba(0,0,0,0.25)">
+              <strong style="color:#fff">Glassmorphism</strong>
+              <p class="text-sm mb-0" style="color:rgba(255,255,255,0.85)">backdrop-blur over a semantic gradient &mdash; themes restyle it automatically.</p>
+            </div>
+          </div>
+        </div></div>
+        <div class="sk-grid sk-cols-2">
+          <div class="sk-card"><div class="sk-card-body">
+            <label class="sk-label">Animations</label>
+            <div class="flex items-center gap-6 mb-6">
+              <span class="sk-badge sk-badge-primary animate-pulse">animate-pulse</span>
+              <span class="relative inline-flex">
+                <span class="size-4 rounded-full bg-primary animate-ping absolute inset-0"></span>
+                <span class="size-4 rounded-full bg-primary relative"></span>
+              </span>
+              <span class="size-6 rounded bg-info animate-bounce"></span>
+              <span class="sk-spinner animate-spin"></span>
+            </div>
+            <label class="sk-label">States &amp; ring</label>
+            <div class="flex flex-wrap gap-3">
+              <button class="sk-btn hover:scale-105 active:scale-95 transition-transform">hover:scale-105</button>
+              <button class="sk-btn focus:ring ring-primary">focus:ring</button>
+              <button class="sk-btn sk-btn-outline hover:-translate-y-1 transition-transform">hover:-translate-y-1</button>
+            </div>
+          </div></div>
+          <div class="sk-card group"><div class="sk-card-body">
+            <label class="sk-label">group-hover <span class="text-faint">(hover this card)</span></label>
+            <div class="flex items-center justify-between">
+              <span>Revenue report.pdf</span>
+              <span class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="sk-btn sk-btn-sm">Share</button>
+                <button class="sk-btn sk-btn-sm sk-btn-outline">Download</button>
+              </span>
+            </div>
+            <div class="sk-divider"></div>
+            <label class="sk-label">Filters</label>
+            <div class="flex items-center gap-4">
+              <span class="sk-avatar grayscale">BW</span>
+              <span class="sk-avatar blur-sm">??</span>
+              <span class="sk-avatar brightness-125">HI</span>
+              <span class="sk-avatar hover:opacity-80 transition-opacity">HOV</span>
+            </div>
+          </div></div>
+        </div>
+      </section>
+
       <section id="misc" class="mb-12">
         <h2>Misc</h2>
         <div class="sk-card"><div class="sk-card-body">
@@ -940,7 +1126,7 @@
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v3.1.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v3.2.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
@@ -1066,6 +1252,57 @@
       if (input) input.addEventListener("keydown", function (e) {
         if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
       });
+
+      /* ---- v3.2 demos ---- */
+      if (window.skVirtual) {
+        skVirtual("demo-virtual", { count: 10000, itemHeight: 36, render: function (i) {
+          return '<span class="px-4 font-mono text-sm">row ' + (i + 1) + '</span><span class="text-faint text-sm ml-auto mr-4">' + (i % 7 === 0 ? "warm" : "ok") + '</span>';
+        } });
+      }
+      if (window.skCalendar) {
+        var calNow = new Date();
+        var dk = function (day) {
+          var m = calNow.getMonth() + 1;
+          return calNow.getFullYear() + "-" + (m < 10 ? "0" + m : m) + "-" + (day < 10 ? "0" + day : day);
+        };
+        skCalendar(document.getElementById("demo-cal"), {
+          events: [
+            { date: dk(3), label: "Sprint start", color: "info" },
+            { date: dk(12), label: "v3.2 release", color: "success" },
+            { date: dk(calNow.getDate()), label: "You are here" },
+            { date: dk(24), label: "Retro", color: "warning" }
+          ],
+          onSelect: function (day) { skToast("Selected " + day, "info"); }
+        });
+      }
+      if (window.skDiff) {
+        document.getElementById("demo-diff").innerHTML = skDiff(
+          'function greet(name) {\n  console.log("Hello " + name);\n  return name;\n}',
+          'function greet(name) {\n  console.log("Hello, " + name + "!");\n  return name.toUpperCase();\n}'
+        );
+      }
+      var streamBtn = document.getElementById("demo-stream");
+      if (streamBtn) streamBtn.addEventListener("click", function () {
+        skChat.streamAsync("demo-chat2", [
+          "Deployed ", "**staging** ", "in 41s.\n\n",
+          "- run: #482\n", "- commit: \u0060a1b2c3d\u0060\n\n",
+          "\u0060\u0060\u0060js\nstatus: \"green\"\n\u0060\u0060\u0060"
+        ], { delay: 120 });
+      });
+      var chat2 = document.getElementById("demo-chat2");
+      var prompt2 = document.getElementById("demo-prompt2");
+      if (chat2 && prompt2) prompt2.addEventListener("sk-submit", function (e) {
+        skChat.append(chat2, "user", e.detail.value);
+        skChat.typing(chat2, true);
+        setTimeout(function () {
+          skChat.typing(chat2, false);
+          skChat.streamAsync(chat2, ["Echo: ", e.detail.value], { delay: 100 });
+        }, 500);
+      });
+      var sortable = document.getElementById("demo-sortable");
+      if (sortable) sortable.addEventListener("sk-sorted", function () { skToast("Reordered", "info"); });
+      var otpEl = document.getElementById("demo-otp");
+      if (otpEl) otpEl.addEventListener("sk-otp", function (e) { skToast("Code: " + e.detail.value, "success"); });
     });
   </script>
 </body>

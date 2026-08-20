@@ -74,10 +74,50 @@ async function main() {
   check("donut present", (await page.locator(".sk-donut").count()) >= 1);
   check("bar chart present", (await page.locator(".sk-bar-row").count()) >= 3);
 
+  /* v3.2: widgets initialize */
+  check("multiselect built (chips + panel)", await page.evaluate(() =>
+    document.querySelector(".sk-multiselect .sk-ms-control") !== null &&
+    document.querySelectorAll(".sk-multiselect .sk-chip").length >= 2));
+  check("otp renders 6 boxes", (await page.locator("#demo-otp input:not([type=hidden])").count()) === 6);
+  check("calendar renders 42 day cells", (await page.locator("#demo-cal .sk-cal-day").count()) === 42);
+  check("split bar injected", (await page.locator("[data-sk-split] .sk-split-bar").count()) >= 1);
+  check("sortable items draggable", await page.evaluate(() =>
+    document.querySelector("#demo-sortable > li").draggable === true));
+  check("virtual list renders a window, not 10k rows", await page.evaluate(() => {
+    const n = document.querySelectorAll("#demo-virtual .sk-virtual-item").length;
+    return n > 3 && n < 60;
+  }));
+  check("skDiff marks adds and dels", await page.evaluate(() => {
+    const html = skDiff("a\nb\nc", "a\nx\nc");
+    return html.includes("sk-diff-add") && html.includes("sk-diff-del");
+  }));
+  check("input mask formats digits", await page.evaluate(() => {
+    const el = document.querySelector('[data-sk-mask]');
+    el.value = "5551234567";
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    return el.value === "(555) 123-4567";
+  }));
+  check("streamAsync renders markdown chunks", await page.evaluate(async () => {
+    const msg = await skChat.streamAsync("demo-chat2", ["**hi** ", "there"], { delay: 1 });
+    return msg && msg.innerHTML.includes("<strong>hi</strong>");
+  }));
+  check("parity: gradient utility produces a gradient", await page.evaluate(() => {
+    const el = document.querySelector(".bg-gradient-to-r");
+    return getComputedStyle(el).backgroundImage.includes("linear-gradient");
+  }));
+  check("parity: hover:scale class parsed (scale prop)", await page.evaluate(() => {
+    const el = document.createElement("div");
+    el.className = "scale-105";
+    document.body.appendChild(el);
+    const ok = getComputedStyle(el).scale === "1.05";
+    el.remove();
+    return ok;
+  }));
+
   /* site pages load cleanly */
   for (const p of ["site/index.html", "site/examples.html", "site/themer.html", "site/play.html",
-                   "site/changelog.html", "site/examples/dashboard.html", "site/examples/chat.html",
-                   "site/examples/auth.html"]) {
+                   "site/changelog.html", "site/compare.html", "site/examples/dashboard.html",
+                   "site/examples/chat.html", "site/examples/auth.html"]) {
     await page.goto(url(p));
     await page.waitForTimeout(400);
     check(`${p} has body content`, await page.evaluate(() => document.body.children.length > 1));
