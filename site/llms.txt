@@ -1,16 +1,17 @@
-# Skynet UI — LLM reference (v2.1.0)
+# Skynet UI — LLM reference (v3.0.0)
 
 Paste this file into an LLM conversation (or keep it in the repo as context) so the model can generate correct Skynet UI markup.
 
 RULES FOR GENERATION:
-- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v2.1.0/skynet-ui.css` and `https://skynetui.com/v2.1.0/skynet-ui.js` (pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
-- Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
+- Pure CSS + vanilla JS framework. Include with: `<link rel="stylesheet" href="/skynet-ui.css">` and `<script src="/skynet-ui.js" defer></script>` (local copies), or from the CDN: `https://skynetui.com/v3.0.0/skynet-ui.css` and `https://skynetui.com/v3.0.0/skynet-ui.js` (minified: `skynet-ui.min.css`/`.min.js`; SRI hashes at `/v3.0.0/sri.txt`; pin a version; bare `https://skynetui.com/skynet-ui.css` = latest). Always include `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
+- Dark theme is the default; no class needed. Built-in alternatives via `data-theme` on `<html>` — dark family: `"midnight"` (OLED black + cyan), `"forest"` (deep green + emerald), `"dusk"` (violet + fuchsia), `"contrast"` (max-legibility black/white/yellow); light family: `"light"`, `"paper"` (warm cream + amber), `"sky"` (cool blue + azure), `"rose"` (blush + rose). `"auto"` follows the OS. Density: `data-density="compact"` on <html> or a container tightens paddings. Custom themes = another `[data-theme="x"]{…}` block overriding :root vars (include color-scheme and --sk-primary-text).
 - Components are prefixed `sk-`. Utilities are short and unprefixed (`flex`, `p-4`, `mt-6`, `text-muted`).
 - Interactive behavior is declarative via `data-sk-*` attributes; never write custom JS for modals/tabs/dropdowns/toasts/mobile nav.
 - Mobile-first: `.sk-grid` is 1 column on phones; `sk-cols-*` add columns at ≥640px/≥1024px. Navbar collapses behind a `data-sk-burger` button; sidebar slides in via a `data-sk-sidebar` button.
 - Spacing scale: number × 0.25rem (`4` = 1rem), same as Tailwind. Steps 0–8 everywhere, plus 5/10/12/16/20/24 on common axes (see Tailwind-compat additions below).
 - Utilities include a Tailwind-compat layer (grid-cols-*, space-y-*, w-1/2, sm:/md:/lg: variants for a listed set, line-clamp, sr-only, …) — see "Tailwind-compat additions" and the conversion guide at the end of this file.
 - Do not invent class names not listed here.
+- AI agents can also consume this framework via MCP: streamable-HTTP server at https://skynetui.com/mcp (tools: get_reference, get_example). Example pages: https://skynetui.com/examples/{dashboard|chat|auth}.html
 
 ## CSS variables (in :root — override to theme)
 --sk-bg #0b0f17 page bg | --sk-surface #111826 cards/nav | --sk-surface-2 #172033 hover/inputs-on-cards | --sk-border #1e2836 subtle border | --sk-border-2 #2a3547 stronger border
@@ -24,9 +25,12 @@ RULES FOR GENERATION:
 skToast(message, type?, durationMsOrOpts?) — type: "info"(default)|"success"|"warning"|"danger"; 3rd arg: duration ms (default 3500, 0 = sticky) OR {duration, actionText, onAction} for an action button ("Undo")
 skOpenModal(id) / skCloseModal(id) — also open/close drawers and command palettes
 skToggleTheme() — flips dark family ↔ light family; persisted in localStorage
-skSetTheme(name) — switches to "dark"|"midnight"|"forest"|"dusk"|"light"|"paper"|"sky"|"rose" (or a custom theme); persisted
+skSetTheme(name) — switches to "dark"|"midnight"|"forest"|"dusk"|"contrast"|"light"|"paper"|"sky"|"rose"|"auto" (or a custom theme); persisted
 skConfirm(message, opts?) → Promise<boolean> — builds a confirm modal; opts: {title, okText, cancelText, danger}
 skPrompt(message, opts?) → Promise<string|null> — input dialog (null on cancel/Esc); opts: {title, okText, cancelText, placeholder, value}
+skTour() — starts an on-page tour of elements marked data-sk-tour (spotlight + explainer card, Back/Next, Esc ends)
+skTypewriter(el, text, msPerChar?) → Promise — types text into el (instant under reduced motion)
+skSelectedRows(tableOrId) → array of selected <tr> elements of a data-sk-select table
 
 ## Data attributes (wire up behavior, no JS)
 data-sk-open="id" — button opens that modal, drawer, OR command palette
@@ -39,7 +43,7 @@ data-sk-sidebar — button toggles .sk-sidebar on mobile
 data-sk-burger — button toggles navbar links on mobile
 data-sk-toast="Msg" + optional data-sk-toast-type="success|warning|danger" — button shows toast
 data-sk-theme-toggle — button flips dark ↔ light theme family (persisted across page loads)
-data-sk-theme="name" — button switches to that theme: dark|midnight|forest|dusk|light|paper|sky|rose (persisted)
+data-sk-theme="name" — button switches to that theme: dark|midnight|forest|dusk|contrast|light|paper|sky|rose|auto (persisted)
 data-sk-validate — on a <form>: blocks invalid submits; bad fields get .sk-invalid + a styled .sk-error line from the browser's validationMessage (uses required/type/minlength etc.); errors clear on edit
 data-sk-autogrow — on a <textarea>: height grows with content
 data-sk-count — on an input/textarea with maxlength: live "37 / 200" counter appears under the field (warns near the limit)
@@ -54,6 +58,16 @@ data-sk-filter="target-id" — on an <input>: typing hides non-matching rows (ta
 data-sk-paginate="10" — on a <table>: client-side pagination, N rows/page; controls render below the table automatically; composes with data-sk-sort and data-sk-filter
 data-sk-taginput — on a div containing a text input: tag/chip input (Enter/comma adds, Backspace removes last, × on chips); data-sk-name="tags" adds a hidden form field with the comma-joined value; data-sk-value="a,b" seeds tags
 data-sk-context="menu-id" — right-click on the element opens that .sk-context-menu at the cursor (any click / Esc closes)
+data-sk-combobox — on div.sk-combobox: searchable select (type filters, ↑↓ + Enter or click selects into the input)
+data-sk-datepicker — on div.sk-datepicker containing an input: calendar dropdown writing YYYY-MM-DD
+data-sk-range-dual — on div.sk-range-dual: two-handle slider; data-sk-min/max, data-sk-values="20,80", data-sk-name="field" (hidden input "low,high")
+data-sk-stepper — on div.sk-number: +/- buttons (each has data-sk-step="-1"/"1") stepping the number input inside
+data-sk-banner — on .sk-banner with an id: dismissal (via its data-sk-dismiss button) is remembered in localStorage
+data-sk-lightbox — on an <img> (value = optional full-size URL): click opens it full-screen; click/Esc closes
+data-sk-tour="N" + data-sk-tour-text="…" — ordered tour stops for skTour()
+data-sk-select — on a <table>: injects a row-selection checkbox column; data-sk-bulkbar="id" shows that .sk-bulkbar element while rows are selected (its .sk-selected-count gets the live count)
+data-sk-export="table-id" — button downloads that table as CSV (selection column excluded)
+data-sk-typewriter — element's own text types in the first time it scrolls into view
 data-sk-scroll-top — button smooth-scrolls the window to the top
 data-sk-scrollspy — on a nav/sidebar of href="#id" links: link for the section on screen gets .active automatically
 
@@ -298,6 +312,83 @@ Trigger: any element with data-sk-context="menu-id" (right-click opens). Menu (p
 <div class="sk-card" data-sk-context="m1">Right-click me</div>
 <div class="sk-context-menu" id="m1" role="menu"><button onclick="open()">Open</button><hr><button class="text-danger">Delete</button></div>
 ```
+
+### Prose (rendered markdown / LLM output)
+Wrap rendered markdown in class sk-prose — headings, lists, blockquotes, inline code, pre blocks, tables, links, images all styled. Combine with chat: class="sk-msg sk-msg-assistant sk-prose".
+```html
+<article class="sk-prose"><h2>Title</h2><p>Text with <code>code</code>…</p></article>
+```
+
+### Chat kit
+div.sk-chat > div.sk-msg + variant sk-msg-user (right, accent) | sk-msg-assistant (left, surface) | sk-msg-system (centered, faint). Typing dots: <span class="sk-typing"><i></i><i></i><i></i></span> inside a message. Optional div.sk-msg-meta timestamp. Prompt bar below the chat:
+```html
+<div class="sk-chat">
+  <div class="sk-msg sk-msg-user">Hi!</div>
+  <div class="sk-msg sk-msg-assistant sk-prose"><p>Hello!</p></div>
+  <div class="sk-msg sk-msg-assistant"><span class="sk-typing"><i></i><i></i><i></i></span></div>
+</div>
+<div class="sk-promptbar">
+  <textarea class="sk-textarea" data-sk-autogrow rows="1" placeholder="Message…" aria-label="Message"></textarea>
+  <button class="sk-btn sk-btn-primary">Send</button>
+</div>
+```
+
+### Combobox (searchable select)
+div.sk-combobox[data-sk-combobox] > input.sk-input[role=combobox][autocomplete=off] + div.sk-combobox-list of <button type=button> options (optional data-sk-value) + optional div.sk-combobox-empty.
+```html
+<div class="sk-combobox" data-sk-combobox>
+  <input class="sk-input" type="text" name="fw" placeholder="Search…" role="combobox" aria-expanded="false" autocomplete="off">
+  <div class="sk-combobox-list"><button type="button">Option A</button><button type="button">Option B</button></div>
+  <div class="sk-combobox-empty">No matches.</div>
+</div>
+```
+
+### Date picker
+div.sk-datepicker[data-sk-datepicker] > input.sk-input (text, autocomplete=off). Calendar opens on focus; picking writes YYYY-MM-DD. (Native <input type="date" class="sk-input"> also themed — use either.)
+```html
+<div class="sk-datepicker" data-sk-datepicker><input class="sk-input" type="text" name="due" placeholder="YYYY-MM-DD" autocomplete="off"></div>
+```
+
+### Dual range slider
+```html
+<div class="sk-range-dual" data-sk-range-dual data-sk-min="0" data-sk-max="100" data-sk-values="20,80" data-sk-name="price"></div>
+```
+Handles + fill + "low – high" readout are generated; hidden input carries "low,high".
+
+### Number stepper
+```html
+<div class="sk-number" data-sk-stepper><button type="button" data-sk-step="-1" aria-label="Decrease">&minus;</button><input class="sk-input" type="number" value="1" min="0"><button type="button" data-sk-step="1" aria-label="Increase">+</button></div>
+```
+
+### Star rating (pure CSS; write inputs HIGH→LOW, CSS reverses display)
+```html
+<div class="sk-rating" role="radiogroup" aria-label="Rating"><input type="radio" name="rate" id="r5" value="5"><label for="r5" aria-label="5 stars">&#9733;</label><input type="radio" name="rate" id="r4" value="4"><label for="r4" aria-label="4 stars">&#9733;</label><input type="radio" name="rate" id="r3" value="3" checked><label for="r3" aria-label="3 stars">&#9733;</label><input type="radio" name="rate" id="r2" value="2"><label for="r2" aria-label="2 stars">&#9733;</label><input type="radio" name="rate" id="r1" value="1"><label for="r1" aria-label="1 star">&#9733;</label></div>
+```
+
+### Announcement banner (place as first element in <body>)
+```html
+<div class="sk-banner" id="promo-1" data-sk-banner><span>News — <a href="/x">read more</a></span><button class="sk-banner-x" data-sk-dismiss aria-label="Dismiss">&times;</button></div>
+```
+
+### Lightbox
+```html
+<img src="thumb.jpg" data-sk-lightbox="full.jpg" alt="…">   <!-- value optional; defaults to src -->
+```
+
+### Onboarding tour
+Mark stops with data-sk-tour="1|2|…" + data-sk-tour-text="explainer"; start with skTour() (e.g. onclick).
+
+### Table extras (compose with sort/filter/paginate)
+- Selection: table[data-sk-select][data-sk-bulkbar="bar-id"] + a bar: <div class="sk-bulkbar" id="bar-id"><strong><span class="sk-selected-count">0</span> selected</strong><button class="sk-btn sk-btn-sm">Action</button></div>; read rows via skSelectedRows("table-id")
+- CSV: <button class="sk-btn" data-sk-export="table-id">Export CSV</button>
+- Sticky header: add sk-sticky-head + a max-height style to the .sk-table-wrap
+- Stat delta: <span class="sk-delta sk-delta-up">12%</span> (or sk-delta-down)
+
+### Pricing recipe (no new CSS needed)
+sk-grid sk-cols-3 of sk-card plans; add class sk-featured to the highlighted plan's card (accent ring). Inside: sk-card-body > h3.sk-card-title, div.sk-stat-value price, ul.list-none features with ✓, sk-btn-block CTA.
+
+### Comparison table recipe
+Standard sk-table in sk-table-wrap; first column = feature names (font-medium text-main), one column per product; ✓ as <span class="text-success">&check;</span>, ✗ as <span class="text-faint">&mdash;</span>.
 
 ### Breadcrumbs
 nav.sk-breadcrumbs > <a> per ancestor + <span> for the current page. Separators added by CSS.

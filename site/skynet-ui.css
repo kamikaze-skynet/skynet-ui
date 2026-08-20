@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v2.1.0
+   Skynet UI v3.0.0
    A tiny dark-first UI framework. Pure CSS — no build step.
    Drop into any page:  <link rel="stylesheet" href="/skynet-ui.css">
    Theme everything by editing the variables in :root below.
@@ -204,6 +204,28 @@
   --sk-shadow:    0 1px 2px rgba(84,26,42,.06), 0 4px 16px rgba(84,26,42,.09);
   --sk-shadow-lg: 0 8px 40px rgba(84,26,42,.18);
 }
+
+/* Contrast — maximum-legibility dark theme (WCAG-friendly), yellow accent */
+[data-theme="contrast"] {
+  color-scheme: dark;
+  --sk-bg:        #000000;
+  --sk-surface:   #000000;
+  --sk-surface-2: #1a1a1a;
+  --sk-border:    #666666;
+  --sk-border-2:  #999999;
+  --sk-text:      #ffffff;
+  --sk-text-2:    #f0f0f0;
+  --sk-muted:     #cccccc;
+  --sk-faint:     #999999;
+  --sk-primary:        #ffd400;
+  --sk-primary-hover:  #e6bf00;
+  --sk-primary-soft:   rgba(255, 212, 0, 0.18);
+  --sk-primary-text:   #ffd400;
+  --sk-shadow:    none;
+  --sk-shadow-lg: 0 0 0 2px #999999;
+}
+[data-theme="contrast"] .sk-btn-primary { color: #000; }
+[data-theme="contrast"] .sk-msg-user { color: #000; }
 
 /* --------------------------------------------------------------------------
    2. RESET + BASE
@@ -2604,6 +2626,413 @@ th[data-sk-sort].sk-sort-desc::after { content: "\2193"; opacity: 1; color: var(
   text-decoration: none;
 }
 .sk-context-menu hr { border: none; border-top: 1px solid var(--sk-border); margin: 0.35rem 0; }
+
+/* --------------------------------------------------------------------------
+   47. PROSE — beautiful defaults for rendered markdown / LLM output
+   Use: <article class="sk-prose"> …rendered markdown HTML… </article>
+   Styles headings, paragraphs, lists, blockquotes, inline code, code
+   blocks, tables, links, images, and hr — everything a model emits.
+   -------------------------------------------------------------------------- */
+.sk-prose { line-height: 1.75; color: var(--sk-text-2); }
+.sk-prose > :first-child { margin-top: 0; }
+.sk-prose > :last-child { margin-bottom: 0; }
+.sk-prose h1, .sk-prose h2, .sk-prose h3, .sk-prose h4 {
+  color: var(--sk-text);
+  line-height: 1.25;
+  margin: 1.6em 0 0.6em;
+}
+.sk-prose h1 { font-size: 1.9rem; }
+.sk-prose h2 { font-size: 1.45rem; padding-bottom: 0.3em; border-bottom: 1px solid var(--sk-border); }
+.sk-prose h3 { font-size: 1.15rem; }
+.sk-prose h4 { font-size: 1rem; }
+.sk-prose p { margin: 0 0 1em; }
+.sk-prose a { color: var(--sk-primary); text-decoration: underline; text-underline-offset: 2px; }
+.sk-prose strong { color: var(--sk-text); }
+.sk-prose ul, .sk-prose ol { margin: 0 0 1em; padding-left: 1.5rem; }
+.sk-prose li { margin-bottom: 0.35em; }
+.sk-prose li > ul, .sk-prose li > ol { margin: 0.35em 0 0; }
+.sk-prose blockquote {
+  margin: 1.25em 0;
+  padding: 0.5em 1.1em;
+  border-left: 4px solid var(--sk-primary);
+  background: var(--sk-surface);
+  border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0;
+  color: var(--sk-muted);
+}
+.sk-prose blockquote p { margin: 0; }
+.sk-prose code {
+  font-family: var(--sk-font-mono);
+  font-size: 0.85em;
+  padding: 0.15em 0.45em;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border);
+  border-radius: 5px;
+  color: var(--sk-primary-text);
+}
+.sk-prose pre {
+  margin: 1.25em 0;
+  padding: 1rem 1.2rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-radius: var(--sk-radius);
+  overflow-x: auto;
+  line-height: 1.55;
+}
+.sk-prose pre code { padding: 0; background: none; border: none; color: var(--sk-text-2); font-size: 0.875rem; }
+.sk-prose table { width: 100%; border-collapse: collapse; margin: 1.25em 0; font-size: 0.925rem; }
+.sk-prose th, .sk-prose td { padding: 0.5rem 0.8rem; border: 1px solid var(--sk-border); text-align: left; }
+.sk-prose th { background: var(--sk-surface); color: var(--sk-text); }
+.sk-prose img { max-width: 100%; border-radius: var(--sk-radius); }
+.sk-prose hr { border: none; border-top: 1px solid var(--sk-border); margin: 2em 0; }
+
+/* --------------------------------------------------------------------------
+   48. CHAT KIT — message bubbles, typing indicator, prompt bar
+   Use: <div class="sk-chat">
+          <div class="sk-msg sk-msg-user">Hi!</div>
+          <div class="sk-msg sk-msg-assistant sk-prose">Hello — how can I help?</div>
+          <div class="sk-msg sk-msg-assistant"><span class="sk-typing"><i></i><i></i><i></i></span></div>
+        </div>
+        <div class="sk-promptbar">
+          <textarea class="sk-textarea" data-sk-autogrow placeholder="Message…"></textarea>
+          <button class="sk-btn sk-btn-primary">Send</button>
+        </div>
+   Combine sk-msg-assistant with sk-prose for rendered-markdown replies.
+   data-sk-typewriter (skynet-ui.js) types an element's text in on reveal.
+   -------------------------------------------------------------------------- */
+.sk-chat { display: flex; flex-direction: column; gap: 0.75rem; }
+.sk-msg {
+  max-width: 82%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--sk-radius-lg);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+.sk-msg-user {
+  align-self: flex-end;
+  background: var(--sk-primary);
+  color: #fff;
+  border-bottom-right-radius: var(--sk-radius-sm);
+}
+.sk-msg-assistant {
+  align-self: flex-start;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border);
+  border-bottom-left-radius: var(--sk-radius-sm);
+}
+.sk-msg-system {
+  align-self: center;
+  background: none;
+  color: var(--sk-faint);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+}
+.sk-msg-meta { font-size: 0.7rem; color: var(--sk-faint); margin-top: 0.35rem; }
+.sk-typing { display: inline-flex; gap: 0.3rem; padding: 0.2rem 0; }
+.sk-typing i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--sk-muted);
+  animation: sk-typing 1.2s ease-in-out infinite;
+}
+.sk-typing i:nth-child(2) { animation-delay: 0.15s; }
+.sk-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes sk-typing { 0%, 60%, 100% { transform: none; opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+.sk-promptbar { display: flex; gap: 0.6rem; align-items: flex-end; }
+.sk-promptbar .sk-textarea { flex: 1; resize: none; max-height: 200px; min-height: 0; }
+
+/* --------------------------------------------------------------------------
+   49. COMBOBOX — searchable select  (behavior in skynet-ui.js)
+   Use: <div class="sk-combobox" data-sk-combobox>
+          <input class="sk-input" type="text" name="country" placeholder="Search countries…"
+                 role="combobox" aria-expanded="false" autocomplete="off">
+          <div class="sk-combobox-list">
+            <button type="button">Germany</button>
+            <button type="button">Ghana</button>
+          </div>
+        </div>
+   Typing filters the options; ↑/↓ + Enter or click selects into the input.
+   -------------------------------------------------------------------------- */
+.sk-combobox { position: relative; }
+.sk-combobox-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.3rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  z-index: 150;
+  display: none;
+}
+.sk-combobox.sk-open .sk-combobox-list { display: block; }
+.sk-combobox-list > button {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  background: none;
+  border: none;
+  border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+.sk-combobox-list > button:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+.sk-combobox-list > button.active { background: var(--sk-primary-soft); color: var(--sk-text); }
+.sk-combobox-empty { padding: 0.6rem; text-align: center; color: var(--sk-muted); font-size: 0.85rem; display: none; }
+.sk-combobox.sk-no-results .sk-combobox-empty { display: block; }
+
+/* --------------------------------------------------------------------------
+   50. DATE PICKER  (behavior in skynet-ui.js)
+   Use: <div class="sk-datepicker" data-sk-datepicker>
+          <input class="sk-input" type="text" name="due" placeholder="YYYY-MM-DD" autocomplete="off">
+        </div>
+   Focusing the input opens a calendar; picking a day writes YYYY-MM-DD.
+   (Plain <input type="date" class="sk-input"> also works — native pickers
+   follow the theme via color-scheme. Use this one for a consistent look.)
+   -------------------------------------------------------------------------- */
+.sk-datepicker { position: relative; }
+.sk-datepicker-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 272px;
+  padding: 0.75rem;
+  background: var(--sk-surface);
+  border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius);
+  box-shadow: var(--sk-shadow-lg);
+  z-index: 150;
+  display: none;
+}
+.sk-datepicker.sk-open .sk-datepicker-panel { display: block; }
+.sk-datepicker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.sk-datepicker-title { font-weight: 600; font-size: 0.9rem; }
+.sk-datepicker-nav {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--sk-border-2); border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2); cursor: pointer; font-family: inherit;
+}
+.sk-datepicker-nav:hover { background: var(--sk-surface-2); }
+.sk-datepicker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.sk-datepicker-grid .sk-dow { text-align: center; font-size: 0.65rem; color: var(--sk-faint); text-transform: uppercase; padding: 0.25rem 0; }
+.sk-datepicker-grid button {
+  aspect-ratio: 1;
+  border: none; background: none; border-radius: var(--sk-radius-sm);
+  color: var(--sk-text-2); font-family: inherit; font-size: 0.8rem; cursor: pointer;
+}
+.sk-datepicker-grid button:hover { background: var(--sk-surface-2); color: var(--sk-text); }
+.sk-datepicker-grid button.sk-today { border: 1px solid var(--sk-primary); }
+.sk-datepicker-grid button.sk-selected { background: var(--sk-primary); color: #fff; }
+.sk-datepicker-grid button:disabled { opacity: 0; pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   51. DUAL RANGE SLIDER  (behavior in skynet-ui.js)
+   Use: <div class="sk-range-dual" data-sk-range-dual data-sk-min="0" data-sk-max="100"
+             data-sk-values="20,80" data-sk-name="price"></div>
+   Two draggable handles; a hidden input carries "low,high" for forms.
+   -------------------------------------------------------------------------- */
+.sk-range-dual { position: relative; height: 26px; }
+.sk-range-dual::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 6px;
+  background: var(--sk-border-2); border-radius: 9999px;
+}
+.sk-range-dual .sk-range-fill {
+  position: absolute; top: 10px; height: 6px;
+  background: var(--sk-primary); border-radius: 9999px; pointer-events: none;
+}
+.sk-range-dual input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 26px;
+  background: none; pointer-events: none; margin: 0;
+}
+.sk-range-dual input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; pointer-events: auto;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--sk-primary); border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2); cursor: grab; margin-top: 4px;
+}
+.sk-range-dual input[type="range"]::-moz-range-thumb {
+  pointer-events: auto; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--sk-primary); border: 3px solid var(--sk-bg);
+  box-shadow: 0 0 0 1px var(--sk-border-2); cursor: grab;
+}
+.sk-range-dual-values { font-size: 0.8rem; color: var(--sk-muted); margin-top: 0.3rem; }
+
+/* --------------------------------------------------------------------------
+   52. NUMBER STEPPER  (behavior in skynet-ui.js)
+   Use: <div class="sk-number" data-sk-stepper>
+          <button type="button" data-sk-step="-1" aria-label="Decrease">&minus;</button>
+          <input class="sk-input" type="number" value="1" min="0" max="99">
+          <button type="button" data-sk-step="1" aria-label="Increase">+</button>
+        </div>
+   -------------------------------------------------------------------------- */
+.sk-number { display: inline-flex; }
+.sk-number .sk-input {
+  width: 4.5rem; text-align: center; border-radius: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.sk-number .sk-input::-webkit-outer-spin-button,
+.sk-number .sk-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sk-number > button {
+  width: 2.4rem;
+  background: var(--sk-surface-2);
+  border: 1px solid var(--sk-border-2);
+  color: var(--sk-text-2);
+  font-family: inherit; font-size: 1rem; cursor: pointer;
+}
+.sk-number > button:hover { background: var(--sk-border); color: var(--sk-text); }
+.sk-number > button:first-child { border-radius: var(--sk-radius-sm) 0 0 var(--sk-radius-sm); border-right: none; }
+.sk-number > button:last-child { border-radius: 0 var(--sk-radius-sm) var(--sk-radius-sm) 0; border-left: none; }
+
+/* --------------------------------------------------------------------------
+   53. STAR RATING — pure CSS, radio-based
+   Use: <div class="sk-rating" role="radiogroup" aria-label="Rating">
+          <input type="radio" name="rate" id="r5" value="5"><label for="r5" aria-label="5 stars">&#9733;</label>
+          <input type="radio" name="rate" id="r4" value="4"><label for="r4" aria-label="4 stars">&#9733;</label>
+          <input type="radio" name="rate" id="r3" value="3" checked><label for="r3" aria-label="3 stars">&#9733;</label>
+          <input type="radio" name="rate" id="r2" value="2"><label for="r2" aria-label="2 stars">&#9733;</label>
+          <input type="radio" name="rate" id="r1" value="1"><label for="r1" aria-label="1 star">&#9733;</label>
+        </div>
+   NOTE: write the inputs HIGH to LOW (5→1); CSS reverses the display order.
+   -------------------------------------------------------------------------- */
+.sk-rating { display: inline-flex; flex-direction: row-reverse; }
+.sk-rating input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sk-rating label {
+  font-size: 1.5rem; color: var(--sk-border-2); cursor: pointer;
+  padding: 0 0.1rem; transition: color var(--sk-transition), transform 0.1s ease;
+}
+.sk-rating label:hover { transform: scale(1.15); }
+.sk-rating input:checked ~ label { color: var(--sk-warning-text); }
+.sk-rating label:hover, .sk-rating label:hover ~ label { color: var(--sk-warning-text); }
+.sk-rating input:focus-visible + label { outline: 2px solid var(--sk-primary); border-radius: 4px; }
+
+/* --------------------------------------------------------------------------
+   54. ANNOUNCEMENT BANNER  (behavior in skynet-ui.js)
+   Use: <div class="sk-banner" id="promo-2026" data-sk-banner>
+          <span>&#127881; v3.0 is out — <a href="/changelog">see what's new</a></span>
+          <button class="sk-banner-x" data-sk-dismiss aria-label="Dismiss">&times;</button>
+        </div>
+   Dismissal is remembered per id in localStorage; omit the id to always show.
+   -------------------------------------------------------------------------- */
+.sk-banner {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  padding: 0.55rem 1rem;
+  background: var(--sk-primary-soft);
+  border-bottom: 1px solid var(--sk-border);
+  color: var(--sk-text);
+  font-size: 0.875rem; text-align: center;
+}
+.sk-banner a { color: var(--sk-primary-text); font-weight: 600; }
+.sk-banner-x {
+  background: none; border: none; color: var(--sk-muted);
+  font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0.1rem;
+}
+.sk-banner-x:hover { color: var(--sk-text); }
+
+/* --------------------------------------------------------------------------
+   55. LIGHTBOX  (behavior in skynet-ui.js)
+   Use: <img src="thumb.jpg" data-sk-lightbox alt="…">          ← opens itself
+        <img src="thumb.jpg" data-sk-lightbox="full.jpg" alt="…"> ← opens the full-size URL
+   Click/Esc closes.
+   -------------------------------------------------------------------------- */
+[data-sk-lightbox] { cursor: zoom-in; }
+.sk-lightbox {
+  position: fixed; inset: 0; z-index: 340;
+  background: rgba(3, 6, 12, 0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem; cursor: zoom-out;
+}
+.sk-lightbox img {
+  max-width: 100%; max-height: 100%;
+  border-radius: var(--sk-radius); box-shadow: var(--sk-shadow-lg);
+}
+
+/* --------------------------------------------------------------------------
+   56. ONBOARDING TOUR  (behavior in skynet-ui.js — call skTour())
+   Mark stops: <button data-sk-tour="1" data-sk-tour-text="This starts a build.">…
+   skTour() walks them in order with a spotlight + explainer card.
+   -------------------------------------------------------------------------- */
+.sk-tour-backdrop { position: fixed; inset: 0; z-index: 350; background: rgba(3, 6, 12, 0.6); }
+.sk-tour-target { position: relative; z-index: 351; box-shadow: 0 0 0 4px var(--sk-primary), 0 0 0 9999px rgba(3, 6, 12, 0.6); border-radius: var(--sk-radius-sm); }
+.sk-tour-card {
+  position: fixed; z-index: 352; width: min(320px, calc(100vw - 2rem));
+  padding: 1rem 1.1rem;
+  background: var(--sk-surface); border: 1px solid var(--sk-border-2);
+  border-radius: var(--sk-radius); box-shadow: var(--sk-shadow-lg);
+  font-size: 0.9rem; color: var(--sk-text-2);
+}
+.sk-tour-card .sk-tour-step { font-size: 0.7rem; color: var(--sk-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+.sk-tour-card .sk-tour-actions { display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 0.8rem; }
+
+/* --------------------------------------------------------------------------
+   57. TABLE EXTRAS — row selection, sticky header, stat deltas
+   Selection: <table class="sk-table" data-sk-select data-sk-bulkbar="bulkbar-id">
+   → checkbox column is injected; the bulk bar element shows while rows are
+   selected and its .sk-selected-count element gets the live count.
+   Sticky header: add sk-sticky-head to the .sk-table-wrap and give it a
+   max-height (e.g. style="max-height: 300px").
+   -------------------------------------------------------------------------- */
+.sk-select-cell { width: 2.2rem; text-align: center; }
+.sk-select-cell input { accent-color: var(--sk-primary); cursor: pointer; }
+tr.sk-row-selected > td { background: var(--sk-primary-soft); }
+.sk-bulkbar {
+  display: none;
+  align-items: center; gap: 0.75rem;
+  padding: 0.6rem 1rem; margin-bottom: 0.75rem;
+  background: var(--sk-primary-soft);
+  border: 1px solid var(--sk-primary);
+  border-radius: var(--sk-radius);
+  font-size: 0.875rem;
+}
+.sk-bulkbar.sk-show { display: flex; }
+.sk-table-wrap.sk-sticky-head { overflow-y: auto; }
+.sk-sticky-head thead th { position: sticky; top: 0; background: var(--sk-surface); z-index: 2; }
+
+.sk-delta { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.8rem; font-weight: 600; }
+.sk-delta-up { color: var(--sk-success-text); }
+.sk-delta-up::before { content: "\25B2"; font-size: 0.65em; }
+.sk-delta-down { color: var(--sk-danger-text); }
+.sk-delta-down::before { content: "\25BC"; font-size: 0.65em; }
+
+/* --------------------------------------------------------------------------
+   58. PRICING HELPER — highlight the featured plan in a pricing grid
+   Use: <div class="sk-grid sk-cols-3"> <div class="sk-card">…</div>
+          <div class="sk-card sk-featured">…</div> … </div>
+   -------------------------------------------------------------------------- */
+.sk-featured { border-color: var(--sk-primary); box-shadow: 0 0 0 1px var(--sk-primary), var(--sk-shadow-lg); position: relative; }
+
+/* --------------------------------------------------------------------------
+   59. DENSITY — data-density="compact" on <html> or any container tightens
+   paddings for data-heavy screens.
+   -------------------------------------------------------------------------- */
+[data-density="compact"] .sk-btn { padding: 0.35rem 0.8rem; font-size: 0.85rem; }
+[data-density="compact"] .sk-input,
+[data-density="compact"] .sk-select,
+[data-density="compact"] .sk-textarea { padding: 0.35rem 0.65rem; font-size: 0.875rem; }
+[data-density="compact"] .sk-card-body { padding: 0.9rem 1rem; }
+[data-density="compact"] .sk-card-header, [data-density="compact"] .sk-card-footer { padding: 0.6rem 1rem; }
+[data-density="compact"] .sk-table th, [data-density="compact"] .sk-table td { padding: 0.4rem 0.7rem; }
+[data-density="compact"] .sk-field { margin-bottom: 0.75rem; }
+[data-density="compact"] .sk-list > * { padding: 0.5rem 0.9rem; }
+
+/* --------------------------------------------------------------------------
+   60. PRINT — pages print clean: chrome hidden, light colors
+   -------------------------------------------------------------------------- */
+@media print {
+  .sk-navbar, .sk-sidebar, .sk-banner, .sk-toast-container, .sk-modal,
+  .sk-drawer, .sk-cmdk, .sk-context-menu, [data-sk-scroll-top] { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .sk-main { margin-left: 0 !important; }
+  .sk-card, .sk-table-wrap { box-shadow: none !important; border-color: #ccc !important; }
+  a { color: #000 !important; }
+}
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {

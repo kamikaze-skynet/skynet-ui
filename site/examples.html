@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examples — Skynet UI</title>
+  <link rel="stylesheet" href="skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Skynet UI</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="/">Components</a></li>
+      <li><a href="/examples.html" class="active">Examples</a></li>
+      <li><a href="/themer.html">Theme builder</a></li>
+      <li><a href="/changelog.html">Changelog</a></li>
+    </ul>
+    <div class="sk-navbar-end">
+      <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+    </div>
+  </nav>
+
+  <div class="sk-container py-8">
+    <h1>Complete example pages</h1>
+    <p class="text-muted max-w-2xl">Each is a full working page built only with Skynet UI. Open it, view source to copy the HTML, or copy the prompt and have your LLM build a variation. AI agents can also fetch these via the <a href="/llms.txt">llms.txt</a> reference or the MCP server at <code>skynetui.com/mcp</code>.</p>
+
+    <div class="sk-grid sk-cols-3 mt-6">
+      <div class="sk-card sk-card-hover"><div class="sk-card-body">
+        <h3 class="sk-card-title">&#128202; Ops dashboard</h3>
+        <p class="text-muted text-sm">Stats with deltas, a selectable + sortable + filterable + paginated table with bulk actions and CSV export, timeline, callouts.</p>
+        <div class="flex gap-2 flex-wrap mt-4">
+          <a class="sk-btn sk-btn-primary sk-btn-sm" href="/examples/dashboard.html">Open</a>
+          <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-copy="Read https://skynetui.com/llms.txt, then look at https://skynetui.com/examples/dashboard.html as a reference. Build me a similar operations dashboard with Skynet UI for: [describe your data]">Copy prompt</button>
+        </div>
+      </div></div>
+      <div class="sk-card sk-card-hover"><div class="sk-card-body">
+        <h3 class="sk-card-title">&#128172; AI chat</h3>
+        <p class="text-muted text-sm">Message bubbles, markdown replies via <code>sk-prose</code>, a typing indicator, a prompt bar, and the typewriter effect — a ChatGPT-style UI.</p>
+        <div class="flex gap-2 flex-wrap mt-4">
+          <a class="sk-btn sk-btn-primary sk-btn-sm" href="/examples/chat.html">Open</a>
+          <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-copy="Read https://skynetui.com/llms.txt, then look at https://skynetui.com/examples/chat.html as a reference. Build me an AI chat interface with Skynet UI wired to: [your API]">Copy prompt</button>
+        </div>
+      </div></div>
+      <div class="sk-card sk-card-hover"><div class="sk-card-body">
+        <h3 class="sk-card-title">&#128273; Auth page</h3>
+        <p class="text-muted text-sm">Centered sign-in card with validated form, social buttons, and the divider — the classic auth screen.</p>
+        <div class="flex gap-2 flex-wrap mt-4">
+          <a class="sk-btn sk-btn-primary sk-btn-sm" href="/examples/auth.html">Open</a>
+          <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-copy="Read https://skynetui.com/llms.txt, then look at https://skynetui.com/examples/auth.html as a reference. Build me a sign-up page with Skynet UI including: [your fields]">Copy prompt</button>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="sk-callout mt-8">
+      <div class="sk-callout-title">Recipes for LLMs</div>
+      Pricing tables, comparison tables, and marketing sections are documented as composition recipes inside <a href="/llms.txt">llms.txt</a> — models build them from existing components, no extra CSS needed.
+    </div>
+  </div>
+
+  <script src="skynet-ui.js" defer></script>
+</body>
+</html>

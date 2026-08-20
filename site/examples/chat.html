@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chat — Skynet UI example</title>
+  <link rel="stylesheet" href="../skynet-ui.css">
+</head>
+<body class="min-h-screen flex flex-col">
+  <nav class="sk-navbar">
+    <a href="#" class="sk-navbar-brand"><span class="sk-navbar-logo">A</span> Aria</a>
+    <div class="sk-navbar-end">
+      <span class="sk-chip sk-chip-success">gpt-skynet-1</span>
+      <button class="sk-btn sk-btn-ghost sk-btn-icon" data-sk-theme-toggle aria-label="Toggle theme">&#9681;</button>
+    </div>
+  </nav>
+
+  <main class="sk-container py-8 flex-1 w-full" style="max-width: 760px">
+    <div class="sk-chat" id="chat">
+      <div class="sk-msg sk-msg-system">Today, 09:41</div>
+      <div class="sk-msg sk-msg-user">Explain what Skynet UI is in one paragraph.</div>
+      <div class="sk-msg sk-msg-assistant sk-prose">
+        <p><strong>Skynet UI</strong> is a two-file, zero-build CSS + JS framework designed to be written by language models. You include one stylesheet and one script, then compose pages from <code>sk-</code> components and Tailwind-style utilities — with <em>nine built-in themes</em> and declarative behavior via <code>data-sk-*</code> attributes.</p>
+        <pre><code>&lt;link rel="stylesheet" href="https://skynetui.com/skynet-ui.css"&gt;
+&lt;script src="https://skynetui.com/skynet-ui.js" defer&gt;&lt;/script&gt;</code></pre>
+      </div>
+      <div class="sk-msg sk-msg-user">Nice — show me a typing indicator.</div>
+      <div class="sk-msg sk-msg-assistant" id="typing"><span class="sk-typing"><i></i><i></i><i></i></span></div>
+    </div>
+  </main>
+
+  <div class="sk-container w-full pb-6" style="max-width: 760px">
+    <div class="sk-promptbar">
+      <textarea class="sk-textarea" id="prompt" data-sk-autogrow rows="1" placeholder="Message Aria&hellip;" aria-label="Message"></textarea>
+      <button class="sk-btn sk-btn-primary" id="send">Send</button>
+    </div>
+    <p class="text-faint text-xs text-center mt-2 mb-0">Demo only — replies are canned. Built entirely with Skynet UI.</p>
+  </div>
+
+  <script src="../skynet-ui.js" defer></script>
+  <script defer>
+    addEventListener("DOMContentLoaded", function () {
+      var chat = document.getElementById("chat");
+      var promptEl = document.getElementById("prompt");
+      function send() {
+        var text = promptEl.value.trim();
+        if (!text) return;
+        promptEl.value = "";
+        var user = document.createElement("div");
+        user.className = "sk-msg sk-msg-user";
+        user.textContent = text;
+        chat.appendChild(user);
+        var reply = document.createElement("div");
+        reply.className = "sk-msg sk-msg-assistant";
+        reply.innerHTML = '<span class="sk-typing"><i></i><i></i><i></i></span>';
+        chat.appendChild(reply);
+        reply.scrollIntoView({ block: "end", behavior: "smooth" });
+        setTimeout(function () {
+          reply.innerHTML = "";
+          skTypewriter(reply, "This is a canned demo reply — but the bubbles, typing dots, prompt bar, and this typewriter effect are all Skynet UI. Wire it to a real model and ship it.");
+        }, 900);
+      }
+      document.getElementById("send").addEventListener("click", send);
+      promptEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+      });
+      setTimeout(function () {
+        var typing = document.getElementById("typing");
+        typing.innerHTML = "";
+        skTypewriter(typing, "Here's one right above this message — three bouncing dots, pure CSS. ✨");
+      }, 1600);
+    });
+  </script>
+</body>
+</html>

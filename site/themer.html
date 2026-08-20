@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme builder — Skynet UI</title>
+  <link rel="stylesheet" href="skynet-ui.css">
+</head>
+<body>
+  <nav class="sk-navbar">
+    <a href="/" class="sk-navbar-brand"><span class="sk-navbar-logo">S</span> Skynet UI</a>
+    <button class="sk-navbar-burger" data-sk-burger aria-label="Menu">&#9776;</button>
+    <ul class="sk-navbar-nav">
+      <li><a href="/">Components</a></li>
+      <li><a href="/examples.html">Examples</a></li>
+      <li><a href="/themer.html" class="active">Theme builder</a></li>
+      <li><a href="/changelog.html">Changelog</a></li>
+    </ul>
+  </nav>
+
+  <div class="sk-container py-8">
+    <h1>Theme builder</h1>
+    <p class="text-muted max-w-2xl">Pick colors, watch the live preview, copy the CSS. Your theme is one <code>[data-theme]</code> block — paste it after the stylesheet and set <code>data-theme="custom"</code> on <code>&lt;html&gt;</code>.</p>
+
+    <div class="sk-grid sk-cols-2 mt-6">
+      <div class="sk-card"><div class="sk-card-body">
+        <h3 class="sk-card-title mb-4">Colors</h3>
+        <div class="sk-grid sk-cols-2 gap-sm">
+          <div class="sk-field"><label class="sk-label" for="c-bg">Page background</label><input type="color" class="sk-input" id="c-bg" value="#0b0f17"></div>
+          <div class="sk-field"><label class="sk-label" for="c-surface">Surface (cards)</label><input type="color" class="sk-input" id="c-surface" value="#111826"></div>
+          <div class="sk-field"><label class="sk-label" for="c-surface2">Surface 2 (wells)</label><input type="color" class="sk-input" id="c-surface2" value="#172033"></div>
+          <div class="sk-field"><label class="sk-label" for="c-border">Border</label><input type="color" class="sk-input" id="c-border" value="#1e2836"></div>
+          <div class="sk-field"><label class="sk-label" for="c-text">Text</label><input type="color" class="sk-input" id="c-text" value="#e6eaf2"></div>
+          <div class="sk-field"><label class="sk-label" for="c-primary">Accent</label><input type="color" class="sk-input" id="c-primary" value="#6366f1"></div>
+        </div>
+        <div class="sk-field">
+          <label class="sk-label" for="c-family">Family (for native widgets + theme toggle)</label>
+          <select class="sk-select" id="c-family"><option value="dark">Dark</option><option value="light">Light</option></select>
+        </div>
+        <button class="sk-btn sk-btn-primary" data-sk-copy-target="css-out">Copy theme CSS</button>
+      </div></div>
+
+      <div>
+        <div class="sk-card" id="preview"><div class="sk-card-body">
+          <h3 class="sk-card-title">Live preview</h3>
+          <p class="sk-card-subtitle">Every component follows your palette</p>
+          <div class="flex gap-2 flex-wrap mb-4 mt-3">
+            <button class="sk-btn sk-btn-primary">Primary</button>
+            <button class="sk-btn">Default</button>
+            <button class="sk-btn sk-btn-outline">Outline</button>
+            <span class="sk-badge sk-badge-primary">Badge</span>
+          </div>
+          <div class="sk-field mb-3"><input class="sk-input" placeholder="An input…" aria-label="Preview input"></div>
+          <div class="sk-progress mb-4"><div class="sk-progress-bar" style="width: 60%"></div></div>
+          <div class="sk-alert sk-alert-info mb-0">An informational alert.</div>
+        </div></div>
+        <pre id="css-out" class="mt-4 text-sm" style="max-height: 260px; overflow: auto"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="skynet-ui.js" defer></script>
+  <script defer>
+    addEventListener("DOMContentLoaded", function () {
+      var preview = document.getElementById("preview");
+      var out = document.getElementById("css-out");
+      var ids = ["c-bg", "c-surface", "c-surface2", "c-border", "c-text", "c-primary", "c-family"];
+
+      function hexToRgb(hex) {
+        return [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
+      }
+      function shade(hex, pct) { /* pct < 0 darkens, > 0 lightens */
+        var rgb = hexToRgb(hex).map(function (v) {
+          return Math.max(0, Math.min(255, Math.round(pct > 0 ? v + (255 - v) * pct : v * (1 + pct))));
+        });
+        return "#" + rgb.map(function (v) { return v.toString(16).padStart(2, "0"); }).join("");
+      }
+      function update() {
+        var v = {};
+        ids.forEach(function (id) { v[id] = document.getElementById(id).value; });
+        var dark = v["c-family"] === "dark";
+        var rgb = hexToRgb(v["c-primary"]).join(", ");
+        var vars = {
+          "color-scheme": v["c-family"],
+          "--sk-bg": v["c-bg"], "--sk-surface": v["c-surface"], "--sk-surface-2": v["c-surface2"],
+          "--sk-border": v["c-border"], "--sk-border-2": shade(v["c-border"], dark ? 0.18 : -0.15),
+          "--sk-text": v["c-text"], "--sk-text-2": shade(v["c-text"], dark ? -0.18 : 0.25),
+          "--sk-muted": shade(v["c-text"], dark ? -0.35 : 0.45), "--sk-faint": shade(v["c-text"], dark ? -0.55 : 0.6),
+          "--sk-primary": v["c-primary"], "--sk-primary-hover": shade(v["c-primary"], -0.15),
+          "--sk-primary-soft": "rgba(" + rgb + ", 0.14)",
+          "--sk-primary-text": shade(v["c-primary"], dark ? 0.35 : -0.3)
+        };
+        var css = '[data-theme="custom"] {\n';
+        Object.keys(vars).forEach(function (k) {
+          css += "  " + k + ": " + vars[k] + ";\n";
+          if (k !== "color-scheme") preview.style.setProperty(k, vars[k]);
+        });
+        css += "}";
+        preview.style.background = vars["--sk-surface"];
+        out.textContent = css;
+      }
+      ids.forEach(function (id) { document.getElementById(id).addEventListener("input", update); });
+      update();
+    });
+  </script>
+</body>
+</html>

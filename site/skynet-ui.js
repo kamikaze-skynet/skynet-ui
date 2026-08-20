@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Skynet UI v2.1.0 — behavior script
+   Skynet UI v3.0.0 — behavior script
    Drop into any page AFTER your content or with defer:
      <script src="/skynet-ui.js" defer></script>
 
@@ -35,6 +35,18 @@
      data-sk-taginput          → tag/chip input (Enter adds, × removes;
                                  data-sk-name="tags" adds a hidden form field)
      data-sk-context="menu-id" → right-click opens that .sk-context-menu
+     data-sk-combobox          → searchable select (type to filter, ↑↓ Enter)
+     data-sk-datepicker        → calendar picker on the input inside
+     data-sk-range-dual        → two-handle range slider (data-sk-min/max/
+                                 values/name)
+     data-sk-stepper           → number input with +/- buttons (data-sk-step)
+     data-sk-banner            → dismissible bar; dismissal remembered by id
+     data-sk-lightbox          → click image to open it full-screen
+     data-sk-tour="1" + data-sk-tour-text="…" → tour stops for skTour()
+     data-sk-select            → on a <table>: row-selection checkboxes
+                                 (+ data-sk-bulkbar="id" live bulk bar)
+     data-sk-export="table-id" → button downloads the table as CSV
+     data-sk-typewriter        → element's text types in when scrolled to
      data-sk-scroll-top        → button smooth-scrolls back to the top
      data-sk-scrollspy         → on a sidebar/nav of #links: highlights the
                                  link whose section is currently on screen
@@ -54,6 +66,9 @@
                                     → Promise<boolean> confirm dialog
      skPrompt("Rename to?", {title, okText, cancelText, placeholder, value})
                                     → Promise<string|null> input dialog
+     skTour()                       starts the on-page tour (data-sk-tour stops)
+     skTypewriter(el, text, msPerChar?) → Promise; types text into el
+     skSelectedRows("table-id")     → array of selected <tr>s
    ========================================================================== */
 (function () {
   "use strict";
@@ -67,13 +82,28 @@
   var THEME_KEY = "sk-theme";
   var LIGHT_THEMES = ["light", "paper", "sky", "rose"];
 
+  var osLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)");
+
+  function applyTheme(name) {
+    if (name === "auto") name = osLight && osLight.matches ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", name);
+  }
+
   try {
     var savedTheme = localStorage.getItem(THEME_KEY);
-    if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+    if (savedTheme) applyTheme(savedTheme);
   } catch (err) { /* localStorage unavailable (e.g. file:// in some browsers) */ }
 
+  if (osLight && osLight.addEventListener) {
+    osLight.addEventListener("change", function () {
+      try {
+        if (localStorage.getItem(THEME_KEY) === "auto") applyTheme("auto");
+      } catch (err) { /* ignore */ }
+    });
+  }
+
   function skSetTheme(name) {
-    document.documentElement.setAttribute("data-theme", name);
+    applyTheme(name);
     try { localStorage.setItem(THEME_KEY, name); } catch (err) { /* ignore */ }
   }
 
@@ -381,8 +411,10 @@
 
     group.querySelectorAll(".sk-tab").forEach(function (t) {
       t.classList.remove("active");
+      t.setAttribute("aria-selected", "false");
     });
     button.classList.add("active");
+    button.setAttribute("aria-selected", "true");
 
     /* Hide sibling panels: every panel whose id is referenced by this group */
     group.querySelectorAll("[data-sk-tab]").forEach(function (t) {
@@ -397,13 +429,21 @@
      ---------------------------------------------------------------------- */
   function closeAllDropdowns(except) {
     document.querySelectorAll(".sk-dropdown.sk-open").forEach(function (d) {
-      if (d !== except) d.classList.remove("sk-open");
+      if (d !== except) {
+        d.classList.remove("sk-open");
+        var trig = d.querySelector("[data-sk-dropdown]");
+        if (trig) trig.setAttribute("aria-expanded", "false");
+      }
     });
   }
 
   function closeAllPopovers(except) {
     document.querySelectorAll(".sk-popover.sk-open").forEach(function (p) {
-      if (p !== except) p.classList.remove("sk-open");
+      if (p !== except) {
+        p.classList.remove("sk-open");
+        var trig = p.querySelector("[data-sk-popover]");
+        if (trig) trig.setAttribute("aria-expanded", "false");
+      }
     });
   }
 
@@ -493,6 +533,7 @@
       if (pop) {
         var popWillOpen = !pop.classList.contains("sk-open");
         closeAllPopovers();
+        t.setAttribute("aria-expanded", String(popWillOpen));
         if (popWillOpen) pop.classList.add("sk-open");
       }
       return;
@@ -527,6 +568,7 @@
       if (dd) {
         var willOpen = !dd.classList.contains("sk-open");
         closeAllDropdowns();
+        t.setAttribute("aria-expanded", String(willOpen));
         if (willOpen) {
           dd.classList.add("sk-open");
           var menu = dd.querySelector(".sk-dropdown-menu");
@@ -610,9 +652,14 @@
     t = e.target.closest("[data-sk-dismiss]");
     if (t) {
       e.preventDefault();
-      var box = t.closest(".sk-chip, .sk-alert");
+      var box = t.closest(".sk-chip, .sk-alert, .sk-banner");
       var tagOwner = t.closest("[data-sk-taginput]");
-      if (box && box.parentNode) box.parentNode.removeChild(box);
+      if (box && box.parentNode) {
+        if (box.classList.contains("sk-banner") && box.hasAttribute("data-sk-banner") && box.id) {
+          try { localStorage.setItem("sk-banner-" + box.id, "1"); } catch (err) { /* ignore */ }
+        }
+        box.parentNode.removeChild(box);
+      }
       if (tagOwner) syncTagInput(tagOwner);
       return;
     }
@@ -642,6 +689,45 @@
       return;
     }
 
+    /* Number stepper +/- buttons */
+    t = e.target.closest("[data-sk-step]");
+    if (t) {
+      e.preventDefault();
+      var stepBox = t.closest("[data-sk-stepper]");
+      var numInput = stepBox && stepBox.querySelector("input");
+      if (numInput) {
+        if (parseFloat(t.getAttribute("data-sk-step")) < 0) numInput.stepDown();
+        else numInput.stepUp();
+        numInput.dispatchEvent(new Event("input", { bubbles: true }));
+        numInput.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return;
+    }
+
+    /* CSV export */
+    t = e.target.closest("[data-sk-export]");
+    if (t) {
+      e.preventDefault();
+      exportTableCsv(t.getAttribute("data-sk-export"));
+      return;
+    }
+
+    /* Lightbox open */
+    t = e.target.closest("[data-sk-lightbox]");
+    if (t) {
+      e.preventDefault();
+      openLightbox(t.getAttribute("data-sk-lightbox") || t.getAttribute("src"));
+      return;
+    }
+
+    /* Combobox: choosing an option */
+    t = e.target.closest(".sk-combobox-list > button");
+    if (t) {
+      e.preventDefault();
+      chooseComboOption(t);
+      return;
+    }
+
     /* Back to top */
     t = e.target.closest("[data-sk-scroll-top]");
     if (t) {
@@ -655,11 +741,21 @@
       closeSidebar();
     }
 
-    /* Any other click closes open dropdowns, popovers, and context menus */
+    /* Any other click closes open dropdowns, popovers, pickers, menus */
     if (!e.target.closest(".sk-dropdown")) closeAllDropdowns();
     if (!e.target.closest(".sk-popover")) closeAllPopovers();
+    if (!e.target.closest(".sk-combobox")) closeAll(".sk-combobox.sk-open");
+    if (!e.target.closest(".sk-datepicker")) closeAll(".sk-datepicker.sk-open");
     closeAllContextMenus();
   });
+
+  function closeAll(selector) {
+    document.querySelectorAll(selector).forEach(function (el) {
+      el.classList.remove("sk-open");
+      var trigger = el.querySelector("[aria-expanded]");
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    });
+  }
 
   /* Escape closes overlays, dropdowns, popovers, and the mobile sidebar.
      Ctrl/Cmd+K toggles the command palette; ↑/↓/Enter navigate it. */
@@ -669,8 +765,33 @@
       closeAllDropdowns();
       closeAllPopovers();
       closeAllContextMenus();
+      closeAll(".sk-combobox.sk-open");
+      closeAll(".sk-datepicker.sk-open");
+      closeLightbox();
+      endTour();
       closeSidebar();
       return;
+    }
+
+    /* Focus trap: Tab cycles inside the topmost open modal/drawer/palette */
+    if (e.key === "Tab") {
+      var overlays = document.querySelectorAll(OPEN_OVERLAYS);
+      var overlay = overlays[overlays.length - 1];
+      if (overlay) {
+        var focusables = Array.prototype.filter.call(
+          overlay.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex='-1'])"),
+          function (el) { return el.offsetParent !== null; }
+        );
+        if (focusables.length) {
+          var first = focusables[0], last = focusables[focusables.length - 1];
+          if (e.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
+            e.preventDefault(); last.focus();
+          } else if (!e.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+            else if (!overlay.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+          }
+        }
+      }
     }
 
     if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
@@ -1074,6 +1195,443 @@
   });
 
   /* ----------------------------------------------------------------------
+     TYPEWRITER — skTypewriter(el, text, ms?) types text in; elements with
+     data-sk-typewriter type their own text the first time they're visible.
+     ---------------------------------------------------------------------- */
+  var motionOff = window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function skTypewriter(el, text, ms) {
+    ms = typeof ms === "number" ? ms : 18;
+    if (motionOff) { el.textContent = text; return Promise.resolve(); }
+    el.textContent = "";
+    return new Promise(function (resolve) {
+      var i = 0;
+      (function tick() {
+        el.textContent = text.slice(0, ++i);
+        if (i < text.length) setTimeout(tick, ms);
+        else resolve();
+      })();
+    });
+  }
+  window.skTypewriter = skTypewriter;
+
+  if ("IntersectionObserver" in window) {
+    var typeObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        typeObserver.unobserve(entry.target);
+        skTypewriter(entry.target, entry.target._skText || "");
+      });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    document.querySelectorAll("[data-sk-typewriter]").forEach(function (el) {
+      el._skText = el.textContent;
+      el.textContent = "";
+      typeObserver.observe(el);
+    });
+  }
+
+  /* ----------------------------------------------------------------------
+     COMBOBOX — searchable select
+     ---------------------------------------------------------------------- */
+  function comboOptions(box) {
+    return Array.prototype.slice.call(box.querySelectorAll(".sk-combobox-list > button"));
+  }
+
+  function comboFilter(box, query) {
+    var visible = [];
+    comboOptions(box).forEach(function (opt) {
+      var show = opt.textContent.toLowerCase().indexOf(query) > -1;
+      opt.style.display = show ? "" : "none";
+      opt.classList.remove("active");
+      if (show) visible.push(opt);
+    });
+    if (visible[0]) visible[0].classList.add("active");
+    box.classList.toggle("sk-no-results", visible.length === 0);
+    return visible;
+  }
+
+  function chooseComboOption(opt) {
+    var box = opt.closest(".sk-combobox");
+    var input = box && box.querySelector("input");
+    if (!input) return;
+    input.value = opt.getAttribute("data-sk-value") || opt.textContent.trim();
+    box.classList.remove("sk-open");
+    input.setAttribute("aria-expanded", "false");
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  document.querySelectorAll("[data-sk-combobox]").forEach(function (box) {
+    var input = box.querySelector("input");
+    if (!input) return;
+    input.setAttribute("aria-expanded", "false");
+    function open() {
+      box.classList.add("sk-open");
+      input.setAttribute("aria-expanded", "true");
+      comboFilter(box, input.value.toLowerCase());
+    }
+    input.addEventListener("focus", open);
+    input.addEventListener("input", open);
+    input.addEventListener("keydown", function (e) {
+      if (!box.classList.contains("sk-open")) return;
+      var visible = comboOptions(box).filter(function (o) { return o.style.display !== "none"; });
+      var idx = visible.indexOf(box.querySelector(".sk-combobox-list > button.active"));
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!visible.length) return;
+        var next = e.key === "ArrowDown" ? Math.min(idx + 1, visible.length - 1) : Math.max(idx - 1, 0);
+        visible.forEach(function (o) { o.classList.remove("active"); });
+        visible[next].classList.add("active");
+        visible[next].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter") {
+        var active = box.querySelector(".sk-combobox-list > button.active");
+        if (active) { e.preventDefault(); chooseComboOption(active); }
+      }
+    });
+  });
+
+  /* ----------------------------------------------------------------------
+     DATE PICKER — calendar dropdown writing YYYY-MM-DD into its input
+     ---------------------------------------------------------------------- */
+  var MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+  function isoDate(y, m, d) { return y + "-" + pad2(m + 1) + "-" + pad2(d); }
+
+  document.querySelectorAll("[data-sk-datepicker]").forEach(function (box) {
+    var input = box.querySelector("input");
+    if (!input) return;
+    var panel = document.createElement("div");
+    panel.className = "sk-datepicker-panel";
+    box.appendChild(panel);
+    var now = new Date();
+    var view = { y: now.getFullYear(), m: now.getMonth() };
+
+    function render() {
+      var today = new Date();
+      var selected = input.value;
+      var parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(selected);
+      var first = new Date(view.y, view.m, 1);
+      var days = new Date(view.y, view.m + 1, 0).getDate();
+      var lead = first.getDay();
+
+      panel.innerHTML = "";
+      var head = document.createElement("div");
+      head.className = "sk-datepicker-head";
+      var prev = document.createElement("button");
+      prev.type = "button"; prev.className = "sk-datepicker-nav";
+      prev.setAttribute("aria-label", "Previous month");
+      prev.innerHTML = "&larr;";
+      prev.addEventListener("click", function () {
+        view.m--; if (view.m < 0) { view.m = 11; view.y--; } render();
+      });
+      var title = document.createElement("span");
+      title.className = "sk-datepicker-title";
+      title.textContent = MONTHS[view.m] + " " + view.y;
+      var next = document.createElement("button");
+      next.type = "button"; next.className = "sk-datepicker-nav";
+      next.setAttribute("aria-label", "Next month");
+      next.innerHTML = "&rarr;";
+      next.addEventListener("click", function () {
+        view.m++; if (view.m > 11) { view.m = 0; view.y++; } render();
+      });
+      head.appendChild(prev); head.appendChild(title); head.appendChild(next);
+      panel.appendChild(head);
+
+      var grid = document.createElement("div");
+      grid.className = "sk-datepicker-grid";
+      ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].forEach(function (d) {
+        var dow = document.createElement("span");
+        dow.className = "sk-dow"; dow.textContent = d;
+        grid.appendChild(dow);
+      });
+      var i;
+      for (i = 0; i < lead; i++) {
+        var pad = document.createElement("button");
+        pad.type = "button"; pad.disabled = true;
+        grid.appendChild(pad);
+      }
+      for (i = 1; i <= days; i++) {
+        (function (day) {
+          var b = document.createElement("button");
+          b.type = "button"; b.textContent = day;
+          if (view.y === today.getFullYear() && view.m === today.getMonth() && day === today.getDate()) {
+            b.classList.add("sk-today");
+          }
+          if (parsed && +parsed[1] === view.y && +parsed[2] === view.m + 1 && +parsed[3] === day) {
+            b.classList.add("sk-selected");
+          }
+          b.addEventListener("click", function () {
+            input.value = isoDate(view.y, view.m, day);
+            box.classList.remove("sk-open");
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          });
+          grid.appendChild(b);
+        })(i);
+      }
+      panel.appendChild(grid);
+    }
+
+    input.addEventListener("focus", function () {
+      var parsed = /^(\d{4})-(\d{2})/.exec(input.value);
+      if (parsed) { view.y = +parsed[1]; view.m = +parsed[2] - 1; }
+      render();
+      box.classList.add("sk-open");
+    });
+  });
+
+  /* ----------------------------------------------------------------------
+     DUAL RANGE SLIDER
+     ---------------------------------------------------------------------- */
+  document.querySelectorAll("[data-sk-range-dual]").forEach(function (box) {
+    var min = parseFloat(box.getAttribute("data-sk-min") || "0");
+    var max = parseFloat(box.getAttribute("data-sk-max") || "100");
+    var seed = (box.getAttribute("data-sk-values") || min + "," + max).split(",");
+
+    var lo = document.createElement("input");
+    var hi = document.createElement("input");
+    [lo, hi].forEach(function (r) { r.type = "range"; r.min = min; r.max = max; });
+    lo.value = seed[0]; hi.value = seed[1] !== undefined ? seed[1] : max;
+
+    var fill = document.createElement("div");
+    fill.className = "sk-range-fill";
+    var readout = document.createElement("div");
+    readout.className = "sk-range-dual-values";
+
+    var hidden = null;
+    var name = box.getAttribute("data-sk-name");
+    if (name) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden"; hidden.name = name;
+      box.appendChild(hidden);
+    }
+
+    function update() {
+      var a = parseFloat(lo.value), b = parseFloat(hi.value);
+      if (a > b) { var swap = a; a = b; b = swap; }
+      var span = max - min || 1;
+      fill.style.left = ((a - min) / span * 100) + "%";
+      fill.style.right = (100 - (b - min) / span * 100) + "%";
+      readout.textContent = a + " – " + b;
+      if (hidden) hidden.value = a + "," + b;
+    }
+    lo.addEventListener("input", update);
+    hi.addEventListener("input", update);
+
+    box.appendChild(fill);
+    box.appendChild(lo);
+    box.appendChild(hi);
+    box.parentNode.insertBefore(readout, box.nextSibling);
+    update();
+  });
+
+  /* ----------------------------------------------------------------------
+     BANNERS — remove ones already dismissed (remembered per id)
+     ---------------------------------------------------------------------- */
+  document.querySelectorAll(".sk-banner[data-sk-banner][id]").forEach(function (banner) {
+    try {
+      if (localStorage.getItem("sk-banner-" + banner.id) === "1") {
+        banner.parentNode.removeChild(banner);
+      }
+    } catch (err) { /* ignore */ }
+  });
+
+  /* ----------------------------------------------------------------------
+     LIGHTBOX
+     ---------------------------------------------------------------------- */
+  var lightboxEl = null;
+
+  function openLightbox(src) {
+    if (!src) return;
+    closeLightbox();
+    lightboxEl = document.createElement("div");
+    lightboxEl.className = "sk-lightbox";
+    var img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    lightboxEl.appendChild(img);
+    lightboxEl.addEventListener("click", closeLightbox);
+    document.body.appendChild(lightboxEl);
+  }
+
+  function closeLightbox() {
+    if (lightboxEl && lightboxEl.parentNode) lightboxEl.parentNode.removeChild(lightboxEl);
+    lightboxEl = null;
+  }
+
+  /* ----------------------------------------------------------------------
+     ONBOARDING TOUR — skTour() walks [data-sk-tour] stops in order
+     ---------------------------------------------------------------------- */
+  var tourState = null;
+
+  function endTour() {
+    if (!tourState) return;
+    if (tourState.backdrop.parentNode) tourState.backdrop.parentNode.removeChild(tourState.backdrop);
+    if (tourState.card.parentNode) tourState.card.parentNode.removeChild(tourState.card);
+    tourState.stops.forEach(function (el) { el.classList.remove("sk-tour-target"); });
+    tourState = null;
+  }
+
+  function showTourStep(i) {
+    var stops = tourState.stops;
+    stops.forEach(function (el) { el.classList.remove("sk-tour-target"); });
+    var target = stops[i];
+    target.classList.add("sk-tour-target");
+    target.scrollIntoView({ block: "center", behavior: motionOff ? "auto" : "smooth" });
+
+    var card = tourState.card;
+    card.innerHTML = "";
+    var step = document.createElement("div");
+    step.className = "sk-tour-step";
+    step.textContent = "Step " + (i + 1) + " of " + stops.length;
+    var text = document.createElement("div");
+    text.textContent = target.getAttribute("data-sk-tour-text") || "";
+    var actions = document.createElement("div");
+    actions.className = "sk-tour-actions";
+    var back = document.createElement("button");
+    back.className = "sk-btn sk-btn-ghost sk-btn-sm";
+    back.textContent = "Back";
+    back.disabled = i === 0;
+    back.addEventListener("click", function () { showTourStep(i - 1); });
+    var fwd = document.createElement("button");
+    fwd.className = "sk-btn sk-btn-primary sk-btn-sm";
+    fwd.textContent = i === stops.length - 1 ? "Done" : "Next";
+    fwd.addEventListener("click", function () {
+      if (i === stops.length - 1) endTour();
+      else showTourStep(i + 1);
+    });
+    actions.appendChild(back);
+    actions.appendChild(fwd);
+    card.appendChild(step);
+    card.appendChild(text);
+    card.appendChild(actions);
+
+    setTimeout(function () {
+      var r = target.getBoundingClientRect();
+      var top = r.bottom + 12;
+      if (top + card.offsetHeight > window.innerHeight - 12) top = Math.max(12, r.top - card.offsetHeight - 12);
+      var left = Math.min(Math.max(12, r.left), window.innerWidth - card.offsetWidth - 12);
+      card.style.top = top + "px";
+      card.style.left = left + "px";
+      fwd.focus();
+    }, motionOff ? 0 : 350);
+  }
+
+  function skTour() {
+    var stops = Array.prototype.slice.call(document.querySelectorAll("[data-sk-tour]"));
+    if (!stops.length) return;
+    stops.sort(function (a, b) {
+      return parseFloat(a.getAttribute("data-sk-tour")) - parseFloat(b.getAttribute("data-sk-tour"));
+    });
+    endTour();
+    var backdrop = document.createElement("div");
+    backdrop.className = "sk-tour-backdrop";
+    backdrop.addEventListener("click", endTour);
+    var card = document.createElement("div");
+    card.className = "sk-tour-card";
+    document.body.appendChild(backdrop);
+    document.body.appendChild(card);
+    tourState = { stops: stops, backdrop: backdrop, card: card };
+    showTourStep(0);
+  }
+  window.skTour = skTour;
+
+  /* ----------------------------------------------------------------------
+     ROW SELECTION — table[data-sk-select] gets a checkbox column; a
+     data-sk-bulkbar="id" element shows while rows are selected.
+     ---------------------------------------------------------------------- */
+  function updateBulkbar(table) {
+    var barId = table.getAttribute("data-sk-bulkbar");
+    var selected = table.querySelectorAll("tbody tr.sk-row-selected").length;
+    if (barId) {
+      var bar = document.getElementById(barId);
+      if (bar) {
+        bar.classList.toggle("sk-show", selected > 0);
+        var count = bar.querySelector(".sk-selected-count");
+        if (count) count.textContent = selected;
+      }
+    }
+    var headCheck = table.querySelector("thead .sk-select-cell input");
+    if (headCheck) {
+      var total = table.querySelectorAll("tbody tr").length;
+      headCheck.checked = selected > 0 && selected === total;
+      headCheck.indeterminate = selected > 0 && selected < total;
+    }
+  }
+
+  function setRowSelected(row, on) {
+    row.classList.toggle("sk-row-selected", on);
+    var cb = row.querySelector(".sk-select-cell input");
+    if (cb) cb.checked = on;
+  }
+
+  document.querySelectorAll("table[data-sk-select]").forEach(function (table) {
+    var headRow = table.tHead && table.tHead.rows[0];
+    if (headRow) {
+      var th = document.createElement("th");
+      th.className = "sk-select-cell";
+      var all = document.createElement("input");
+      all.type = "checkbox";
+      all.setAttribute("aria-label", "Select all rows");
+      all.addEventListener("change", function () {
+        Array.prototype.forEach.call(table.tBodies[0].rows, function (row) {
+          if (row.style.display !== "none") setRowSelected(row, all.checked);
+        });
+        updateBulkbar(table);
+      });
+      th.appendChild(all);
+      headRow.insertBefore(th, headRow.firstChild);
+    }
+    Array.prototype.forEach.call(table.tBodies[0].rows, function (row) {
+      var td = document.createElement("td");
+      td.className = "sk-select-cell";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.setAttribute("aria-label", "Select row");
+      cb.addEventListener("change", function () {
+        setRowSelected(row, cb.checked);
+        updateBulkbar(table);
+      });
+      td.appendChild(cb);
+      row.insertBefore(td, row.firstChild);
+    });
+  });
+
+  window.skSelectedRows = function (tableOrId) {
+    var table = typeof tableOrId === "string" ? document.getElementById(tableOrId) : tableOrId;
+    return table ? Array.prototype.slice.call(table.querySelectorAll("tbody tr.sk-row-selected")) : [];
+  };
+
+  /* ----------------------------------------------------------------------
+     CSV EXPORT — [data-sk-export="table-id"] downloads all rows as CSV
+     ---------------------------------------------------------------------- */
+  function exportTableCsv(tableId) {
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    function esc(text) {
+      text = text.replace(/\s+/g, " ").trim();
+      return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    }
+    function rowToCsv(row) {
+      return Array.prototype.filter.call(row.cells, function (cell) {
+        return !cell.classList.contains("sk-select-cell");
+      }).map(function (cell) { return esc(cell.textContent); }).join(",");
+    }
+    var lines = [];
+    if (table.tHead) Array.prototype.forEach.call(table.tHead.rows, function (r) { lines.push(rowToCsv(r)); });
+    Array.prototype.forEach.call(table.tBodies[0].rows, function (r) { lines.push(rowToCsv(r)); });
+    var blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (tableId || "table") + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  }
+
+    /* ----------------------------------------------------------------------
      SCROLLSPY — data-sk-scrollspy on a nav/sidebar of #anchor links keeps
      the link for the section currently on screen marked .active
      ---------------------------------------------------------------------- */

@@ -8,6 +8,12 @@
 </head>
 <body>
 
+  <!-- ============ ANNOUNCEMENT BANNER ============ -->
+  <div class="sk-banner" id="v3-banner" data-sk-banner>
+    <span>&#127881; <strong>v3.0</strong> — chat kit, prose, combobox, date picker, MCP server &amp; more. Dismiss me and I stay dismissed.</span>
+    <button class="sk-banner-x" data-sk-dismiss aria-label="Dismiss">&times;</button>
+  </div>
+
   <!-- ============ NAVBAR ============ -->
   <nav class="sk-navbar">
     <a href="#" class="sk-navbar-brand">
@@ -26,11 +32,13 @@
       <div class="sk-dropdown">
         <button class="sk-btn sk-btn-ghost sk-btn-sm" data-sk-dropdown>&#9681; Theme &#9662;</button>
         <div class="sk-dropdown-menu sk-right">
+          <button data-sk-theme="auto">Auto (follow OS)</button>
           <button data-sk-theme="dark">Dark (default)</button>
           <button data-sk-theme="light">Light</button>
           <button data-sk-theme="midnight">Midnight &mdash; OLED + cyan</button>
           <button data-sk-theme="forest">Forest &mdash; green + emerald</button>
           <button data-sk-theme="dusk">Dusk &mdash; violet + fuchsia</button>
+          <button data-sk-theme="contrast">Contrast &mdash; max legibility</button>
           <hr class="sk-dropdown-divider">
           <button data-sk-theme="paper">Paper &mdash; warm + amber</button>
           <button data-sk-theme="sky">Sky &mdash; cool + azure</button>
@@ -69,7 +77,10 @@
       <a href="#progress">Stepper &amp; timeline</a>
       <a href="#groups">Groups &amp; avatars</a>
       <a href="#callouts">Callouts</a>
+      <a href="#ai">AI kit: chat &amp; prose</a>
+      <a href="#pickers">Pickers &amp; inputs</a>
       <a href="#advanced">Tags, tree &amp; context menu</a>
+      <a href="#extras">Tour, banner &amp; lightbox</a>
       <a href="#lists">Lists &amp; empty state</a>
       <a href="#skeletons">Skeletons</a>
       <div class="sk-sidebar-title">Layout</div>
@@ -85,7 +96,7 @@
         <div class="flex items-center gap-3 mb-4 hide-desktop">
           <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-sidebar>&#9776; Menu</button>
         </div>
-        <span class="sk-badge sk-badge-primary mb-3">v2.1.0 &middot; no build step</span>
+        <span class="sk-badge sk-badge-primary mb-3">v3.0.0 &middot; no build step</span>
         <h1 class="mt-2">Build modern dark UIs with two files</h1>
         <p class="text-muted max-w-2xl">
           Skynet UI is a tiny CSS + JS framework: utility classes for layout and spacing,
@@ -102,7 +113,7 @@
       <div class="sk-grid sk-cols-4 mb-12">
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Components</div>
-          <div class="sk-stat-value">50+</div>
+          <div class="sk-stat-value">70+</div>
         </div></div>
         <div class="sk-card"><div class="sk-card-body">
           <div class="sk-stat-label">Dependencies</div>
@@ -316,9 +327,16 @@
       <section id="tables" class="mb-12">
         <h2>Tables</h2>
         <p class="text-muted">Wrap in <code>.sk-table-wrap</code> so wide tables scroll sideways on phones. Add <code>.sk-table-hover</code> and/or <code>.sk-table-striped</code>. Add-ons: <code>data-sk-sort</code> on a <code>&lt;th&gt;</code> (click-sortable), <code>data-sk-filter="table-id"</code> on an input (live filter), and <code>data-sk-paginate="4"</code> on the table (client-side pages) &mdash; all three compose.</p>
-        <input class="sk-input mb-3" type="search" placeholder="Filter services&hellip;" data-sk-filter="services-table" aria-label="Filter table rows">
+        <div class="flex gap-2 mb-3">
+          <input class="sk-input" type="search" placeholder="Filter services&hellip;" data-sk-filter="services-table" aria-label="Filter table rows">
+          <button class="sk-btn sk-btn-outline shrink-0" data-sk-export="services-table">Export CSV</button>
+        </div>
+        <div class="sk-bulkbar" id="services-bulk">
+          <strong><span class="sk-selected-count">0</span> selected</strong>
+          <button class="sk-btn sk-btn-sm" onclick="skToast('Restarted ' + skSelectedRows('services-table').length + ' services', 'success')">Restart selected</button>
+        </div>
         <div class="sk-table-wrap">
-          <table class="sk-table sk-table-hover" id="services-table" data-sk-paginate="4">
+          <table class="sk-table sk-table-hover" id="services-table" data-sk-paginate="4" data-sk-select data-sk-bulkbar="services-bulk">
             <thead>
               <tr><th data-sk-sort>Service</th><th data-sk-sort>Region</th><th data-sk-sort>Uptime</th><th>Status</th><th></th></tr>
             </thead>
@@ -622,6 +640,80 @@
         </div>
       </section>
 
+      <!-- ============ AI KIT: CHAT + PROSE ============ -->
+      <section id="ai" class="mb-12">
+        <h2>AI kit: chat &amp; prose</h2>
+        <p class="text-muted"><code>.sk-chat</code> bubbles + <code>.sk-typing</code> dots + a prompt bar, and <code>.sk-prose</code> for rendered markdown. <code>data-sk-typewriter</code> types text in on reveal.</p>
+        <div class="sk-card"><div class="sk-card-body">
+          <div class="sk-chat mb-4">
+            <div class="sk-msg sk-msg-system">Today, 09:41</div>
+            <div class="sk-msg sk-msg-user">What makes Skynet UI good for AI apps?</div>
+            <div class="sk-msg sk-msg-assistant sk-prose">
+              <p>Three things: <strong>sk-prose</strong> styles model output (like this bubble), the <code>chat kit</code> gives you bubbles and typing dots, and everything is documented in one <a href="/llms.txt">llms.txt</a> your model can read.</p>
+            </div>
+            <div class="sk-msg sk-msg-assistant"><span data-sk-typewriter>…and this reply is typing itself in with skTypewriter, the streaming-text effect.</span></div>
+            <div class="sk-msg sk-msg-assistant"><span class="sk-typing"><i></i><i></i><i></i></span></div>
+          </div>
+          <div class="sk-promptbar">
+            <textarea class="sk-textarea" data-sk-autogrow rows="1" placeholder="Message&hellip; (demo)" aria-label="Message"></textarea>
+            <button class="sk-btn sk-btn-primary" data-sk-toast="This demo doesn't send — see /examples/chat.html for the working one" data-sk-toast-type="info">Send</button>
+          </div>
+        </div></div>
+      </section>
+
+      <!-- ============ PICKERS + INPUTS ============ -->
+      <section id="pickers" class="mb-12">
+        <h2>Pickers &amp; inputs</h2>
+        <div class="sk-grid sk-cols-2">
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-field">
+              <label class="sk-label" for="combo-in">Combobox (searchable select)</label>
+              <div class="sk-combobox" data-sk-combobox>
+                <input class="sk-input" id="combo-in" type="text" placeholder="Search a framework&hellip;" role="combobox" aria-expanded="false" autocomplete="off">
+                <div class="sk-combobox-list">
+                  <button type="button">Skynet UI</button>
+                  <button type="button">Tailwind CSS</button>
+                  <button type="button">Bootstrap</button>
+                  <button type="button">Bulma</button>
+                  <button type="button">Pico.css</button>
+                </div>
+                <div class="sk-combobox-empty">No matches.</div>
+              </div>
+            </div>
+            <div class="sk-field">
+              <label class="sk-label" for="date-in">Date picker</label>
+              <div class="sk-datepicker" data-sk-datepicker>
+                <input class="sk-input" id="date-in" type="text" placeholder="YYYY-MM-DD" autocomplete="off">
+              </div>
+            </div>
+          </div></div>
+          <div class="sk-card"><div class="sk-card-body">
+            <div class="sk-field">
+              <label class="sk-label">Dual range (20&ndash;80 of 0&ndash;100)</label>
+              <div class="sk-range-dual" data-sk-range-dual data-sk-min="0" data-sk-max="100" data-sk-values="20,80" data-sk-name="range-demo"></div>
+            </div>
+            <div class="sk-field">
+              <label class="sk-label">Number stepper</label>
+              <div class="sk-number" data-sk-stepper>
+                <button type="button" data-sk-step="-1" aria-label="Decrease">&minus;</button>
+                <input class="sk-input" type="number" value="2" min="0" max="99" aria-label="Quantity">
+                <button type="button" data-sk-step="1" aria-label="Increase">+</button>
+              </div>
+            </div>
+            <div class="sk-field mb-0">
+              <label class="sk-label">Star rating (pure CSS)</label>
+              <div class="sk-rating" role="radiogroup" aria-label="Rating">
+                <input type="radio" name="rate" id="r5" value="5"><label for="r5" aria-label="5 stars">&#9733;</label>
+                <input type="radio" name="rate" id="r4" value="4"><label for="r4" aria-label="4 stars">&#9733;</label>
+                <input type="radio" name="rate" id="r3" value="3" checked><label for="r3" aria-label="3 stars">&#9733;</label>
+                <input type="radio" name="rate" id="r2" value="2"><label for="r2" aria-label="2 stars">&#9733;</label>
+                <input type="radio" name="rate" id="r1" value="1"><label for="r1" aria-label="1 star">&#9733;</label>
+              </div>
+            </div>
+          </div></div>
+        </div>
+      </section>
+
       <!-- ============ TAG INPUT + TREE + CONTEXT MENU ============ -->
       <section id="advanced" class="mb-12">
         <h2>Tag input, tree &amp; context menu</h2>
@@ -660,6 +752,19 @@
         </div>
         <div class="sk-card" data-sk-context="demo-context"><div class="sk-card-body text-center py-10">
           <div class="text-muted"><strong class="text-main">Right-click anywhere in this card</strong> to open a context menu (<code>data-sk-context="menu-id"</code>).</div>
+        </div></div>
+      </section>
+
+      <!-- ============ TOUR + LIGHTBOX ============ -->
+      <section id="extras" class="mb-12">
+        <h2>Tour, banner &amp; lightbox</h2>
+        <div class="sk-card"><div class="sk-card-body">
+          <p class="text-muted text-sm">The banner at the very top of this page is <code>.sk-banner</code> (dismiss is remembered). <code>skTour()</code> walks elements marked <code>data-sk-tour</code>; images with <code>data-sk-lightbox</code> open full-screen.</p>
+          <div class="flex gap-3 flex-wrap items-center">
+            <button class="sk-btn sk-btn-primary" onclick="skTour()" data-sk-tour="1" data-sk-tour-text="This button starts the tour. Tours walk any elements marked with data-sk-tour, in order.">Start tour</button>
+            <button class="sk-btn" data-sk-tour="2" data-sk-tour-text="Step two: any element can be a stop — buttons, cards, nav items.">A second stop</button>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240'%3E%3Crect width='400' height='240' rx='16' fill='%236366f1'/%3E%3Ctext x='200' y='130' font-family='sans-serif' font-size='28' fill='white' text-anchor='middle'%3ESkynet UI%3C/text%3E%3C/svg%3E" data-sk-lightbox alt="Click to zoom" width="87" height="52" class="rounded" data-sk-tour="3" data-sk-tour-text="Step three: this thumbnail opens in a lightbox when clicked.">
+          </div>
         </div></div>
       </section>
 
@@ -798,7 +903,7 @@
           </div>
           <div class="sk-footer-bottom">
             <span>Skynet UI &mdash; one stylesheet, one script, zero build steps.</span>
-            <span class="flex items-center gap-3">v2.1.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
+            <span class="flex items-center gap-3">v3.0.0 <button class="sk-btn sk-btn-outline sk-btn-sm" data-sk-scroll-top>&uarr; Top</button></span>
           </div>
         </div>
       </footer>
